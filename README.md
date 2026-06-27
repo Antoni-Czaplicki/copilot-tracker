@@ -5,7 +5,7 @@ Monorepo for tracking GitHub Copilot Chat token usage by developer, workspace, r
 The project has three packages:
 
 - `apps/extension` - VS Code extension that observes Copilot Chat session metadata and sends usage records.
-- `apps/web` - Next.js app with ingestion API routes, GitHub login, dashboard, public leaderboard, admin views, and Drizzle/Postgres storage.
+- `apps/web` - Next.js app with ingestion API routes, GitHub login, dashboard, authenticated leaderboard, admin views, and Drizzle/Postgres storage.
 - `packages/shared` - shared TypeScript event and request contracts.
 
 ## Current Tracking Model
@@ -89,8 +89,8 @@ Create a GitHub OAuth app and set:
 ```sh
 NEXT_PUBLIC_APP_URL=http://localhost:3737
 DATABASE_URL=postgres://copilot_tracker:copilot_tracker@localhost:54329/copilot_tracker
-GITHUB_CLIENT_ID=...
-GITHUB_CLIENT_SECRET=...
+GITHUB_CLIENT_ID=your-github-oauth-client-id
+GITHUB_CLIENT_SECRET=your-github-oauth-client-secret
 ADMIN_GITHUB_LOGINS=your-github-login
 COPILOT_TRACKER_AUTH_MODE=github
 GITHUB_COPILOT_BILLING_TOKEN=...
@@ -104,6 +104,8 @@ Use this callback URL in the GitHub OAuth app:
 ```text
 http://localhost:3737/api/auth/callback/github
 ```
+
+`GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` are required when `COPILOT_TRACKER_AUTH_MODE=github`.
 
 `apps/web/.env.example` contains the expected environment variables.
 

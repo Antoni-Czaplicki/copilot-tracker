@@ -31,7 +31,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                 <span>Usage attribution for busy engineering teams</span>
               </Link>
               <nav className="nav">
-                <LinkButton href="/leaderboard" variant="ghost">Leaderboard</LinkButton>
+                {user ? <LinkButton href="/leaderboard" variant="ghost">Leaderboard</LinkButton> : null}
                 {user ? <LinkButton href="/dashboard" variant="ghost">Dashboard</LinkButton> : null}
                 {isAdmin(user) ? <LinkButton href="/admin" variant="ghost">Admin</LinkButton> : null}
                 <ThemeToggle />

@@ -1,9 +1,19 @@
 import { NextResponse } from 'next/server';
-import { appBaseUrl, requireGithubOAuthConfig } from '@/lib/config';
+import { appBaseUrl, MissingGithubOAuthConfigError, requireGithubOAuthConfig } from '@/lib/config';
 import { oauthStateCookie } from '@/lib/auth';
 
-export async function GET() {
-  const { clientId } = requireGithubOAuthConfig();
+export function GET() {
+  let clientId: string;
+  try {
+    ({ clientId } = requireGithubOAuthConfig());
+  } catch (error) {
+    if (error instanceof MissingGithubOAuthConfigError) {
+      return NextResponse.redirect(new URL('/?auth=misconfigured', appBaseUrl()));
+    }
+
+    throw error;
+  }
+
   const state = crypto.randomUUID();
   const url = new URL('https://github.com/login/oauth/authorize');
   url.searchParams.set('client_id', clientId);

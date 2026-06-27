@@ -13,7 +13,7 @@ export function githubCopilotBillingConfig() {
   const scopeType = env.GITHUB_COPILOT_BILLING_SCOPE_TYPE;
   const scope = env.GITHUB_COPILOT_BILLING_SCOPE;
 
-  if (!token || !scopeType || !scope) {
+  if (token === undefined || scopeType === undefined || scope === undefined) {
     return null;
   }
 
@@ -41,11 +41,18 @@ export function adminGithubLogins() {
   );
 }
 
+export class MissingGithubOAuthConfigError extends Error {
+  constructor() {
+    super('GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET are required for GitHub login.');
+    this.name = 'MissingGithubOAuthConfigError';
+  }
+}
+
 export function requireGithubOAuthConfig() {
   const clientId = env.GITHUB_CLIENT_ID;
   const clientSecret = env.GITHUB_CLIENT_SECRET;
-  if (!clientId || !clientSecret) {
-    throw new Error('GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET are required for GitHub login.');
+  if (clientId === undefined || clientSecret === undefined) {
+    throw new MissingGithubOAuthConfigError();
   }
 
   return { clientId, clientSecret };

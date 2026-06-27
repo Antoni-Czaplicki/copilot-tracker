@@ -6,16 +6,36 @@ import { readDatabase } from '@/lib/store';
 
 export const dynamic = 'force-dynamic';
 
-export default async function HomePage() {
+interface HomePageProps {
+  searchParams?: Promise<{
+    auth?: string;
+  }>;
+}
+
+export default async function HomePage({ searchParams }: HomePageProps) {
   const user = await currentUser();
-  if (user) {
+  if (user !== null) {
     const database = await readDatabase();
     const requests = database.chatRequests.filter((request) => request.githubId === user.githubId);
     return <DashboardOverview login={user.login} requests={requests} />;
   }
 
+  const parameters = await searchParams;
+  const authError = parameters?.auth;
+
   return (
     <main className="stack">
+      {authError === 'misconfigured' ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>GitHub login is not configured</CardTitle>
+            <CardDescription>
+              Set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET for this deployment, then try logging in again.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      ) : null}
+
       <section className="page-title">
         <div>
           <h1>Assign Copilot usage to the work it actually supported.</h1>

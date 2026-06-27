@@ -1,12 +1,19 @@
+import { redirect } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TBody, TD, TH, THead, TR } from '@/components/ui/table';
 import { formatNumber, publicLeaderboard } from '@/lib/analytics';
+import { currentUser } from '@/lib/auth';
 import { readDatabase } from '@/lib/store';
 
 export const dynamic = 'force-dynamic';
 
 export default async function LeaderboardPage() {
+  const user = await currentUser();
+  if (user === null) {
+    redirect('/');
+  }
+
   const database = await readDatabase();
   const rows = publicLeaderboard(database);
 
@@ -14,7 +21,7 @@ export default async function LeaderboardPage() {
     <main className="stack">
       <section className="page-title">
         <div>
-          <h1>Public leaderboard</h1>
+          <h1>Leaderboard</h1>
           <p>Team-level visibility into Copilot token usage. Detailed request history remains in personal and admin views.</p>
         </div>
         <Badge>{rows.length} developers</Badge>
