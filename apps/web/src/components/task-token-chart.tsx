@@ -1,17 +1,18 @@
-"use client"
+"use client";
 
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
+import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart"
+} from "@/components/ui/chart";
 
 export interface TaskTokenChartDatum {
-  task: string
-  input: number
-  output: number
+  task: string;
+  input: number;
+  output: number;
 }
 
 const chartConfig = {
@@ -23,7 +24,7 @@ const chartConfig = {
     label: "Output",
     color: "var(--chart-2)",
   },
-} satisfies ChartConfig
+} satisfies ChartConfig;
 
 export function TaskTokenChart({ data }: { data: TaskTokenChartDatum[] }) {
   return (
@@ -41,9 +42,19 @@ export function TaskTokenChart({ data }: { data: TaskTokenChartDatum[] }) {
           tickMargin={10}
         />
         <ChartTooltip content={<ChartTooltipContent />} cursor={false} />
-        <Bar dataKey="input" fill="var(--color-input)" radius={0} stackId="tokens" />
-        <Bar dataKey="output" fill="var(--color-output)" radius={0} stackId="tokens" />
+        <Bar
+          dataKey="input"
+          fill="var(--color-input)"
+          radius={0}
+          stackId="tokens"
+        />
+        <Bar
+          dataKey="output"
+          fill="var(--color-output)"
+          radius={0}
+          stackId="tokens"
+        />
       </BarChart>
     </ChartContainer>
-  )
+  );
 }

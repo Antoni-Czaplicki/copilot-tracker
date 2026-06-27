@@ -1,10 +1,28 @@
-import { CopilotChatRequest } from '@copilot-tracker/shared';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TBody, TD, TH, THead, TR } from '@/components/ui/table';
-import { TaskEditor } from '@/components/task-editor';
-import { TaskTokenChart } from '@/components/task-token-chart';
-import { formatNumber, summarizeRequests, taskSummaries } from '@/lib/analytics';
+import { CopilotChatRequest } from "@copilot-tracker/shared";
+
+import { TaskEditor } from "@/components/task-editor";
+import { TaskTokenChart } from "@/components/task-token-chart";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  formatNumber,
+  summarizeRequests,
+  taskSummaries,
+} from "@/lib/analytics";
 
 interface DashboardOverviewProps {
   login: string;
@@ -15,7 +33,11 @@ export function DashboardOverview({ login, requests }: DashboardOverviewProps) {
   const metrics = summarizeRequests(requests);
   const summaries = taskSummaries(requests);
   const recentRequests = [...requests]
-    .sort((a, b) => Date.parse(b.requestStartedAt ?? b.capturedAt) - Date.parse(a.requestStartedAt ?? a.capturedAt))
+    .sort(
+      (a, b) =>
+        Date.parse(b.requestStartedAt ?? b.capturedAt) -
+        Date.parse(a.requestStartedAt ?? a.capturedAt),
+    )
     .slice(0, 20);
   const chartData = summaries.slice(0, 8).map((summary) => ({
     task: summary.task,
@@ -28,7 +50,10 @@ export function DashboardOverview({ login, requests }: DashboardOverviewProps) {
       <section className="page-title">
         <div>
           <h1>Your Copilot usage</h1>
-          <p>Review token usage, see which tasks it belongs to, and correct assignments when the branch guess was wrong.</p>
+          <p>
+            Review token usage, see which tasks it belongs to, and correct
+            assignments when the branch guess was wrong.
+          </p>
         </div>
         <Badge>@{login}</Badge>
       </section>
@@ -37,19 +62,26 @@ export function DashboardOverview({ login, requests }: DashboardOverviewProps) {
         <Metric label="Requests" value={metrics.requestCount} />
         <Metric label="Input tokens" value={metrics.inputTokens} />
         <Metric label="Output tokens" value={metrics.outputTokens} />
-        <Metric label="Avg tokens/request" value={metrics.averageTokensPerRequest} />
+        <Metric
+          label="Avg tokens/request"
+          value={metrics.averageTokensPerRequest}
+        />
       </section>
 
       <Card>
         <CardHeader>
           <CardTitle>Token usage by task</CardTitle>
-          <CardDescription>Input and output tokens grouped by selected Azure DevOps task.</CardDescription>
+          <CardDescription>
+            Input and output tokens grouped by selected Azure DevOps task.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {chartData.length > 0 ? (
             <TaskTokenChart data={chartData} />
           ) : (
-            <p className="muted">No tokenized Copilot requests have been captured yet.</p>
+            <p className="muted">
+              No tokenized Copilot requests have been captured yet.
+            </p>
           )}
         </CardContent>
       </Card>
@@ -57,32 +89,38 @@ export function DashboardOverview({ login, requests }: DashboardOverviewProps) {
       <Card>
         <CardHeader>
           <CardTitle>Tasks</CardTitle>
-          <CardDescription>Grouped by selected task, repository, and branch.</CardDescription>
+          <CardDescription>
+            Grouped by selected task, repository, and branch.
+          </CardDescription>
         </CardHeader>
         <CardContent className="table-wrap">
           <Table>
-            <THead>
-              <TR>
-                <TH>Task</TH>
-                <TH>Branch</TH>
-                <TH>Requests</TH>
-                <TH>Input</TH>
-                <TH>Output</TH>
-                <TH>Total</TH>
-              </TR>
-            </THead>
-            <TBody>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Task</TableHead>
+                <TableHead>Branch</TableHead>
+                <TableHead>Requests</TableHead>
+                <TableHead>Input</TableHead>
+                <TableHead>Output</TableHead>
+                <TableHead>Total</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {summaries.map((summary) => (
-                <TR key={`${summary.task}-${summary.repositoryRoot}-${summary.branch}`}>
-                  <TD><strong>{summary.task}</strong></TD>
-                  <TD>{summary.branch ?? 'none'}</TD>
-                  <TD>{formatNumber(summary.requestCount)}</TD>
-                  <TD>{formatNumber(summary.inputTokens)}</TD>
-                  <TD>{formatNumber(summary.outputTokens)}</TD>
-                  <TD>{formatNumber(summary.totalTokens)}</TD>
-                </TR>
+                <TableRow
+                  key={`${summary.task}-${summary.repositoryRoot}-${summary.branch}`}
+                >
+                  <TableCell>
+                    <strong>{summary.task}</strong>
+                  </TableCell>
+                  <TableCell>{summary.branch ?? "none"}</TableCell>
+                  <TableCell>{formatNumber(summary.requestCount)}</TableCell>
+                  <TableCell>{formatNumber(summary.inputTokens)}</TableCell>
+                  <TableCell>{formatNumber(summary.outputTokens)}</TableCell>
+                  <TableCell>{formatNumber(summary.totalTokens)}</TableCell>
+                </TableRow>
               ))}
-            </TBody>
+            </TableBody>
           </Table>
         </CardContent>
       </Card>
@@ -90,33 +128,43 @@ export function DashboardOverview({ login, requests }: DashboardOverviewProps) {
       <Card>
         <CardHeader>
           <CardTitle>Recent requests</CardTitle>
-          <CardDescription>Task reassignment updates future summaries immediately.</CardDescription>
+          <CardDescription>
+            Task reassignment updates future summaries immediately.
+          </CardDescription>
         </CardHeader>
         <CardContent className="table-wrap">
           <Table>
-            <THead>
-              <TR>
-                <TH>Session</TH>
-                <TH>Model</TH>
-                <TH>Tokens</TH>
-                <TH>Task</TH>
-              </TR>
-            </THead>
-            <TBody>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Session</TableHead>
+                <TableHead>Model</TableHead>
+                <TableHead>Tokens</TableHead>
+                <TableHead>Task</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {recentRequests.map((request) => (
-                <TR key={request.requestRecordId}>
-                  <TD>{request.sessionTitle ?? request.sessionId}</TD>
-                  <TD>{request.modelId ?? 'unknown'}</TD>
-                  <TD>{request.totalTokens === null ? 'missing' : formatNumber(request.totalTokens)}</TD>
-                  <TD>
+                <TableRow key={request.requestRecordId}>
+                  <TableCell>
+                    {request.sessionTitle ?? request.sessionId}
+                  </TableCell>
+                  <TableCell>{request.modelId ?? "unknown"}</TableCell>
+                  <TableCell>
+                    {request.totalTokens === null
+                      ? "missing"
+                      : formatNumber(request.totalTokens)}
+                  </TableCell>
+                  <TableCell>
                     <TaskEditor
-                      initialTask={request.selectedTask ?? request.defaultTask ?? 'No task'}
+                      initialTask={
+                        request.selectedTask ?? request.defaultTask ?? "No task"
+                      }
                       requestRecordId={request.requestRecordId}
                     />
-                  </TD>
-                </TR>
+                  </TableCell>
+                </TableRow>
               ))}
-            </TBody>
+            </TableBody>
           </Table>
         </CardContent>
       </Card>

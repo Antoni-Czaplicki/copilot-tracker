@@ -1,29 +1,48 @@
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { ReactNode } from 'react';
-import './globals.css';
-import { currentUser, isAdmin } from '@/lib/auth';
-import { Button, LinkButton } from '@/components/ui/button';
+import type { Metadata } from "next";
 import { JetBrains_Mono } from "next/font/google";
-import { cn } from "@/lib/utils";
-import { ThemeToggle } from '@/components/theme-toggle';
-import { ThemeProvider } from '@/components/theme-provider';
+import Link from "next/link";
+import { ReactNode } from "react";
 
-const jetbrainsMono = JetBrains_Mono({subsets:['latin'],variable:'--font-mono'});
+import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { Button, LinkButton } from "@/components/ui/button";
+import { currentUser, isAdmin } from "@/lib/auth";
+import { cn } from "@/lib/utils";
+
+import "./globals.css";
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+});
 
 export const metadata: Metadata = {
-  title: 'Copilot Tracker',
-  description: 'Track GitHub Copilot usage by developer, workspace, branch, and task.',
+  title: "Copilot Tracker",
+  description:
+    "Track GitHub Copilot usage by developer, workspace, branch, and task.",
 };
 
-export default async function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const user = await currentUser();
 
   return (
-    <html lang="en" suppressHydrationWarning className={cn("font-mono", jetbrainsMono.variable)}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={cn("font-mono", jetbrainsMono.variable)}
+    >
       <head />
       <body>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
           <div className="shell">
             <header className="topbar">
               <Link className="brand" href="/">
@@ -31,16 +50,32 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                 <span>Usage attribution for busy engineering teams</span>
               </Link>
               <nav className="nav">
-                {user ? <LinkButton href="/leaderboard" variant="ghost">Leaderboard</LinkButton> : null}
-                {user ? <LinkButton href="/dashboard" variant="ghost">Dashboard</LinkButton> : null}
-                {isAdmin(user) ? <LinkButton href="/admin" variant="ghost">Admin</LinkButton> : null}
+                {user ? (
+                  <LinkButton href="/leaderboard" variant="ghost">
+                    Leaderboard
+                  </LinkButton>
+                ) : null}
+                {user ? (
+                  <LinkButton href="/dashboard" variant="ghost">
+                    Dashboard
+                  </LinkButton>
+                ) : null}
+                {isAdmin(user) ? (
+                  <LinkButton href="/admin" variant="ghost">
+                    Admin
+                  </LinkButton>
+                ) : null}
                 <ThemeToggle />
                 {user ? (
                   <form action="/api/auth/logout" method="post">
-                    <Button type="submit" variant="secondary">Log out @{user.login}</Button>
+                    <Button type="submit" variant="secondary">
+                      Log out @{user.login}
+                    </Button>
                   </form>
                 ) : (
-                  <LinkButton href="/api/auth/github">Log in with GitHub</LinkButton>
+                  <LinkButton href="/api/auth/github">
+                    Log in with GitHub
+                  </LinkButton>
                 )}
               </nav>
             </header>

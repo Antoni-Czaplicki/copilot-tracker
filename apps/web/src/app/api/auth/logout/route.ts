@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { deleteSession } from '@/lib/store';
-import { appBaseUrl } from '@/lib/config';
-import { sessionCookie } from '@/lib/auth';
+import { NextRequest, NextResponse } from "next/server";
+
+import { sessionCookie } from "@/lib/auth";
+import { appBaseUrl } from "@/lib/config";
+import { deleteSession } from "@/lib/store";
 
 export async function POST(request: NextRequest) {
   const sessionId = request.cookies.get(sessionCookie())?.value;
@@ -9,7 +10,7 @@ export async function POST(request: NextRequest) {
     await deleteSession(sessionId);
   }
 
-  const response = NextResponse.redirect(new URL('/', appBaseUrl()));
+  const response = NextResponse.redirect(new URL("/", appBaseUrl()));
   response.cookies.delete(sessionCookie());
   return response;
 }

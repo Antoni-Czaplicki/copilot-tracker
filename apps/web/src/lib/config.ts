@@ -1,4 +1,4 @@
-import { env } from '@/env';
+import { env } from "@/env";
 
 export function appBaseUrl() {
   return env.NEXT_PUBLIC_APP_URL;
@@ -34,8 +34,8 @@ export function authMode() {
 
 export function adminGithubLogins() {
   return new Set(
-    (env.ADMIN_GITHUB_LOGINS ?? '')
-      .split(',')
+    (env.ADMIN_GITHUB_LOGINS ?? "")
+      .split(",")
       .map((login) => login.trim().toLowerCase())
       .filter(Boolean),
   );
@@ -43,8 +43,10 @@ export function adminGithubLogins() {
 
 export class MissingGithubOAuthConfigError extends Error {
   constructor() {
-    super('GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET are required for GitHub login.');
-    this.name = 'MissingGithubOAuthConfigError';
+    super(
+      "GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET are required for GitHub login.",
+    );
+    this.name = "MissingGithubOAuthConfigError";
   }
 }
 

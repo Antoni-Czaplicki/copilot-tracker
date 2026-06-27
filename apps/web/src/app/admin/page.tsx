@@ -1,10 +1,23 @@
-import { redirect } from 'next/navigation';
-import { Badge } from '@/components/ui/badge';
-import { LinkButton } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TBody, TD, TH, THead, TR } from '@/components/ui/table';
-import { TaskEditor } from '@/components/task-editor';
-import { currentUser, isAdmin } from '@/lib/auth';
+import { redirect } from "next/navigation";
+
+import { TaskEditor } from "@/components/task-editor";
+import { Badge } from "@/components/ui/badge";
+import { LinkButton } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   developerTaskSummaries,
   formatNumber,
@@ -12,21 +25,36 @@ import {
   publicLeaderboard,
   summarizeRequests,
   taskSummaries,
-} from '@/lib/analytics';
-import { estimateRequestsCost, formatCurrency } from '@/lib/pricing';
-import { readDatabase } from '@/lib/store';
+} from "@/lib/analytics";
+import { currentUser, isAdmin } from "@/lib/auth";
+import { estimateRequestsCost, formatCurrency } from "@/lib/pricing";
+import { readDatabase } from "@/lib/store";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
-type AdminView = 'overview' | 'tasks' | 'developer-tasks' | 'models' | 'requests' | 'github-billing';
+type AdminView =
+  | "overview"
+  | "tasks"
+  | "developer-tasks"
+  | "models"
+  | "requests"
+  | "github-billing";
 
 const views: Array<{ id: AdminView; label: string; exportType: string }> = [
-  { id: 'overview', label: 'Overview', exportType: 'developers' },
-  { id: 'tasks', label: 'Tasks', exportType: 'tasks' },
-  { id: 'developer-tasks', label: 'People x tasks', exportType: 'developer-tasks' },
-  { id: 'models', label: 'Models', exportType: 'models' },
-  { id: 'requests', label: 'Requests', exportType: 'requests' },
-  { id: 'github-billing', label: 'GitHub billing', exportType: 'github-billing' },
+  { id: "overview", label: "Overview", exportType: "developers" },
+  { id: "tasks", label: "Tasks", exportType: "tasks" },
+  {
+    id: "developer-tasks",
+    label: "People x tasks",
+    exportType: "developer-tasks",
+  },
+  { id: "models", label: "Models", exportType: "models" },
+  { id: "requests", label: "Requests", exportType: "requests" },
+  {
+    id: "github-billing",
+    label: "GitHub billing",
+    exportType: "github-billing",
+  },
 ];
 
 export default async function AdminPage({
@@ -36,7 +64,7 @@ export default async function AdminPage({
 }) {
   const user = await currentUser();
   if (!isAdmin(user)) {
-    redirect('/');
+    redirect("/");
   }
 
   const params = await searchParams;
@@ -51,7 +79,10 @@ export default async function AdminPage({
       <section className="page-title">
         <div>
           <h1>Admin overview</h1>
-          <p>Full team usage, task attribution, model cost estimates, GitHub billing sync, and CSV exports.</p>
+          <p>
+            Full team usage, task attribution, model cost estimates, GitHub
+            billing sync, and CSV exports.
+          </p>
         </div>
         <Badge>Admin</Badge>
       </section>
@@ -59,8 +90,14 @@ export default async function AdminPage({
       <section className="metrics-grid">
         <Metric label="Captured requests" value={metrics.requestCount} />
         <Metric label="Total tokens" value={metrics.totalTokens} />
-        <Metric label="Estimated AI credits" value={Math.round(cost.estimatedAiCredits)} />
-        <Metric label="Estimated cost" value={formatCurrency(cost.estimatedUsd)} />
+        <Metric
+          label="Estimated AI credits"
+          value={Math.round(cost.estimatedAiCredits)}
+        />
+        <Metric
+          label="Estimated cost"
+          value={formatCurrency(cost.estimatedUsd)}
+        />
       </section>
 
       <section className="inline-actions">
@@ -68,236 +105,311 @@ export default async function AdminPage({
           <LinkButton
             key={entry.id}
             href={`/admin?view=${entry.id}`}
-            variant={entry.id === view ? 'default' : 'outline'}
+            variant={entry.id === view ? "default" : "outline"}
           >
             {entry.label}
           </LinkButton>
         ))}
-        <LinkButton href={`/api/admin/export?type=${currentView.exportType}`} variant="secondary">
+        <LinkButton
+          href={`/api/admin/export?type=${currentView.exportType}`}
+          variant="secondary"
+        >
           Export CSV
         </LinkButton>
       </section>
 
-      {view === 'overview' && <Overview database={database} />}
-      {view === 'tasks' && <Tasks database={database} />}
-      {view === 'developer-tasks' && <DeveloperTasks database={database} />}
-      {view === 'models' && <Models database={database} />}
-      {view === 'requests' && <Requests database={database} />}
-      {view === 'github-billing' && <GithubBilling database={database} />}
+      {view === "overview" && <Overview database={database} />}
+      {view === "tasks" && <Tasks database={database} />}
+      {view === "developer-tasks" && <DeveloperTasks database={database} />}
+      {view === "models" && <Models database={database} />}
+      {view === "requests" && <Requests database={database} />}
+      {view === "github-billing" && <GithubBilling database={database} />}
     </main>
   );
 }
 
-function Overview({ database }: { database: Awaited<ReturnType<typeof readDatabase>> }) {
+function Overview({
+  database,
+}: {
+  database: Awaited<ReturnType<typeof readDatabase>>;
+}) {
   const leaderboard = publicLeaderboard(database);
   return (
     <Card>
       <CardHeader>
         <CardTitle>Developers</CardTitle>
-        <CardDescription>Public leaderboard plus admin-visible totals.</CardDescription>
+        <CardDescription>
+          Public leaderboard plus admin-visible totals.
+        </CardDescription>
       </CardHeader>
       <CardContent className="table-wrap">
         <Table>
-          <THead>
-            <TR>
-              <TH>Developer</TH>
-              <TH>Requests</TH>
-              <TH>Missing</TH>
-              <TH>Total tokens</TH>
-              <TH>Average</TH>
-            </TR>
-          </THead>
-          <TBody>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Developer</TableHead>
+              <TableHead>Requests</TableHead>
+              <TableHead>Missing</TableHead>
+              <TableHead>Total tokens</TableHead>
+              <TableHead>Average</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {leaderboard.map((row) => (
-              <TR key={row.githubLogin}>
-                <TD><strong>@{row.githubLogin}</strong></TD>
-                <TD>{formatNumber(row.requestCount)}</TD>
-                <TD>{formatNumber(row.missingTokenCount)}</TD>
-                <TD>{formatNumber(row.totalTokens)}</TD>
-                <TD>{formatNumber(row.averageTokensPerRequest)}</TD>
-              </TR>
+              <TableRow key={row.githubLogin}>
+                <TableCell>
+                  <strong>@{row.githubLogin}</strong>
+                </TableCell>
+                <TableCell>{formatNumber(row.requestCount)}</TableCell>
+                <TableCell>{formatNumber(row.missingTokenCount)}</TableCell>
+                <TableCell>{formatNumber(row.totalTokens)}</TableCell>
+                <TableCell>
+                  {formatNumber(row.averageTokensPerRequest)}
+                </TableCell>
+              </TableRow>
             ))}
-          </TBody>
+          </TableBody>
         </Table>
       </CardContent>
     </Card>
   );
 }
 
-function Tasks({ database }: { database: Awaited<ReturnType<typeof readDatabase>> }) {
+function Tasks({
+  database,
+}: {
+  database: Awaited<ReturnType<typeof readDatabase>>;
+}) {
   const rows = taskSummaries(database.chatRequests);
   return (
     <Card>
       <CardHeader>
         <CardTitle>Per task usage</CardTitle>
-        <CardDescription>Azure DevOps numeric task attribution with local estimated AI credit cost.</CardDescription>
+        <CardDescription>
+          Azure DevOps numeric task attribution with local estimated AI credit
+          cost.
+        </CardDescription>
       </CardHeader>
       <CardContent className="table-wrap">
         <Table>
-          <THead>
-            <TR>
-              <TH>Task</TH>
-              <TH>Branch</TH>
-              <TH>Requests</TH>
-              <TH>Total tokens</TH>
-              <TH>Estimated cost</TH>
-              <TH>Priced</TH>
-            </TR>
-          </THead>
-          <TBody>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Task</TableHead>
+              <TableHead>Branch</TableHead>
+              <TableHead>Requests</TableHead>
+              <TableHead>Total tokens</TableHead>
+              <TableHead>Estimated cost</TableHead>
+              <TableHead>Priced</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {rows.map((row) => {
-              const matching = database.chatRequests.filter((request) => (
-                (request.selectedTask ?? 'No task') === row.task
-                && (request.repositoryRoot ?? null) === row.repositoryRoot
-                && (request.branch ?? null) === row.branch
-              ));
+              const matching = database.chatRequests.filter(
+                (request) =>
+                  (request.selectedTask ?? "No task") === row.task &&
+                  (request.repositoryRoot ?? null) === row.repositoryRoot &&
+                  (request.branch ?? null) === row.branch,
+              );
               const cost = estimateRequestsCost(matching);
               return (
-                <TR key={`${row.task}-${row.repositoryRoot}-${row.branch}`}>
-                  <TD><strong>{row.task}</strong></TD>
-                  <TD>{row.branch ?? 'none'}</TD>
-                  <TD>{formatNumber(row.requestCount)}</TD>
-                  <TD>{formatNumber(row.totalTokens)}</TD>
-                  <TD>{formatCurrency(cost.estimatedUsd)}</TD>
-                  <TD>{formatNumber(cost.pricedRequestCount)} / {formatNumber(row.requestCount)}</TD>
-                </TR>
+                <TableRow
+                  key={`${row.task}-${row.repositoryRoot}-${row.branch}`}
+                >
+                  <TableCell>
+                    <strong>{row.task}</strong>
+                  </TableCell>
+                  <TableCell>{row.branch ?? "none"}</TableCell>
+                  <TableCell>{formatNumber(row.requestCount)}</TableCell>
+                  <TableCell>{formatNumber(row.totalTokens)}</TableCell>
+                  <TableCell>{formatCurrency(cost.estimatedUsd)}</TableCell>
+                  <TableCell>
+                    {formatNumber(cost.pricedRequestCount)} /{" "}
+                    {formatNumber(row.requestCount)}
+                  </TableCell>
+                </TableRow>
               );
             })}
-          </TBody>
+          </TableBody>
         </Table>
       </CardContent>
     </Card>
   );
 }
 
-function DeveloperTasks({ database }: { database: Awaited<ReturnType<typeof readDatabase>> }) {
+function DeveloperTasks({
+  database,
+}: {
+  database: Awaited<ReturnType<typeof readDatabase>>;
+}) {
   const rows = developerTaskSummaries(database.chatRequests);
   return (
     <Card>
       <CardHeader>
         <CardTitle>People x tasks</CardTitle>
-        <CardDescription>Shows which developers generated usage against each assigned task.</CardDescription>
+        <CardDescription>
+          Shows which developers generated usage against each assigned task.
+        </CardDescription>
       </CardHeader>
       <CardContent className="table-wrap">
         <Table>
-          <THead>
-            <TR>
-              <TH>Developer</TH>
-              <TH>Task</TH>
-              <TH>Requests</TH>
-              <TH>Input</TH>
-              <TH>Output</TH>
-              <TH>Total</TH>
-            </TR>
-          </THead>
-          <TBody>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Developer</TableHead>
+              <TableHead>Task</TableHead>
+              <TableHead>Requests</TableHead>
+              <TableHead>Input</TableHead>
+              <TableHead>Output</TableHead>
+              <TableHead>Total</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {rows.map((row) => (
-              <TR key={`${row.githubLogin}-${row.task}`}>
-                <TD>@{row.githubLogin}</TD>
-                <TD><strong>{row.task}</strong></TD>
-                <TD>{formatNumber(row.requestCount)}</TD>
-                <TD>{formatNumber(row.inputTokens)}</TD>
-                <TD>{formatNumber(row.outputTokens)}</TD>
-                <TD>{formatNumber(row.totalTokens)}</TD>
-              </TR>
+              <TableRow key={`${row.githubLogin}-${row.task}`}>
+                <TableCell>@{row.githubLogin}</TableCell>
+                <TableCell>
+                  <strong>{row.task}</strong>
+                </TableCell>
+                <TableCell>{formatNumber(row.requestCount)}</TableCell>
+                <TableCell>{formatNumber(row.inputTokens)}</TableCell>
+                <TableCell>{formatNumber(row.outputTokens)}</TableCell>
+                <TableCell>{formatNumber(row.totalTokens)}</TableCell>
+              </TableRow>
             ))}
-          </TBody>
+          </TableBody>
         </Table>
       </CardContent>
     </Card>
   );
 }
 
-function Models({ database }: { database: Awaited<ReturnType<typeof readDatabase>> }) {
+function Models({
+  database,
+}: {
+  database: Awaited<ReturnType<typeof readDatabase>>;
+}) {
   const rows = modelSummaries(database.chatRequests);
   return (
     <Card>
       <CardHeader>
         <CardTitle>Model usage</CardTitle>
-        <CardDescription>Token usage grouped by captured Copilot model id.</CardDescription>
+        <CardDescription>
+          Token usage grouped by captured Copilot model id.
+        </CardDescription>
       </CardHeader>
       <CardContent className="table-wrap">
         <Table>
-          <THead>
-            <TR>
-              <TH>Model</TH>
-              <TH>Requests</TH>
-              <TH>Input</TH>
-              <TH>Output</TH>
-              <TH>Total</TH>
-              <TH>Estimated cost</TH>
-            </TR>
-          </THead>
-          <TBody>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Model</TableHead>
+              <TableHead>Requests</TableHead>
+              <TableHead>Input</TableHead>
+              <TableHead>Output</TableHead>
+              <TableHead>Total</TableHead>
+              <TableHead>Estimated cost</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {rows.map((row) => {
-              const matching = database.chatRequests.filter((request) => (
-                (request.modelId ?? request.resolvedModel ?? request.modelName ?? 'unknown') === row.model
-              ));
+              const matching = database.chatRequests.filter(
+                (request) =>
+                  (request.modelId ??
+                    request.resolvedModel ??
+                    request.modelName ??
+                    "unknown") === row.model,
+              );
               return (
-                <TR key={row.model}>
-                  <TD><strong>{row.model}</strong></TD>
-                  <TD>{formatNumber(row.requestCount)}</TD>
-                  <TD>{formatNumber(row.inputTokens)}</TD>
-                  <TD>{formatNumber(row.outputTokens)}</TD>
-                  <TD>{formatNumber(row.totalTokens)}</TD>
-                  <TD>{formatCurrency(estimateRequestsCost(matching).estimatedUsd)}</TD>
-                </TR>
+                <TableRow key={row.model}>
+                  <TableCell>
+                    <strong>{row.model}</strong>
+                  </TableCell>
+                  <TableCell>{formatNumber(row.requestCount)}</TableCell>
+                  <TableCell>{formatNumber(row.inputTokens)}</TableCell>
+                  <TableCell>{formatNumber(row.outputTokens)}</TableCell>
+                  <TableCell>{formatNumber(row.totalTokens)}</TableCell>
+                  <TableCell>
+                    {formatCurrency(
+                      estimateRequestsCost(matching).estimatedUsd,
+                    )}
+                  </TableCell>
+                </TableRow>
               );
             })}
-          </TBody>
+          </TableBody>
         </Table>
       </CardContent>
     </Card>
   );
 }
 
-function Requests({ database }: { database: Awaited<ReturnType<typeof readDatabase>> }) {
+function Requests({
+  database,
+}: {
+  database: Awaited<ReturnType<typeof readDatabase>>;
+}) {
   const recentRequests = [...database.chatRequests]
-    .sort((a, b) => Date.parse(b.requestStartedAt ?? b.capturedAt) - Date.parse(a.requestStartedAt ?? a.capturedAt))
+    .sort(
+      (a, b) =>
+        Date.parse(b.requestStartedAt ?? b.capturedAt) -
+        Date.parse(a.requestStartedAt ?? a.capturedAt),
+    )
     .slice(0, 100);
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Recent team requests</CardTitle>
-        <CardDescription>Prompt and response bodies are not stored; this table shows metadata only.</CardDescription>
+        <CardDescription>
+          Prompt and response bodies are not stored; this table shows metadata
+          only.
+        </CardDescription>
       </CardHeader>
       <CardContent className="table-wrap">
         <Table>
-          <THead>
-            <TR>
-              <TH>Developer</TH>
-              <TH>Session</TH>
-              <TH>Branch</TH>
-              <TH>Model</TH>
-              <TH>Tokens</TH>
-              <TH>Task</TH>
-            </TR>
-          </THead>
-          <TBody>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Developer</TableHead>
+              <TableHead>Session</TableHead>
+              <TableHead>Branch</TableHead>
+              <TableHead>Model</TableHead>
+              <TableHead>Tokens</TableHead>
+              <TableHead>Task</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {recentRequests.map((request) => (
-              <TR key={request.requestRecordId}>
-                <TD>@{request.githubLogin ?? 'unknown'}</TD>
-                <TD>{request.sessionTitle ?? request.sessionId}</TD>
-                <TD>{request.branch ?? 'none'}</TD>
-                <TD>{request.modelId ?? 'unknown'}</TD>
-                <TD>{request.totalTokens === null ? 'missing' : formatNumber(request.totalTokens)}</TD>
-                <TD>
+              <TableRow key={request.requestRecordId}>
+                <TableCell>@{request.githubLogin ?? "unknown"}</TableCell>
+                <TableCell>
+                  {request.sessionTitle ?? request.sessionId}
+                </TableCell>
+                <TableCell>{request.branch ?? "none"}</TableCell>
+                <TableCell>{request.modelId ?? "unknown"}</TableCell>
+                <TableCell>
+                  {request.totalTokens === null
+                    ? "missing"
+                    : formatNumber(request.totalTokens)}
+                </TableCell>
+                <TableCell>
                   <TaskEditor
-                    initialTask={request.selectedTask ?? request.defaultTask ?? 'No task'}
+                    initialTask={
+                      request.selectedTask ?? request.defaultTask ?? "No task"
+                    }
                     requestRecordId={request.requestRecordId}
                   />
-                </TD>
-              </TR>
+                </TableCell>
+              </TableRow>
             ))}
-          </TBody>
+          </TableBody>
         </Table>
       </CardContent>
     </Card>
   );
 }
 
-function GithubBilling({ database }: { database: Awaited<ReturnType<typeof readDatabase>> }) {
+function GithubBilling({
+  database,
+}: {
+  database: Awaited<ReturnType<typeof readDatabase>>;
+}) {
   const rows = [...database.githubCopilotBillingUsage]
     .sort((a, b) => Date.parse(b.date) - Date.parse(a.date))
     .slice(0, 100);
@@ -306,38 +418,49 @@ function GithubBilling({ database }: { database: Awaited<ReturnType<typeof readD
     <Card>
       <CardHeader>
         <CardTitle>GitHub AI credit billing</CardTitle>
-        <CardDescription>Synced from GitHub billing AI credit usage. Configure a daily cron against the sync API.</CardDescription>
+        <CardDescription>
+          Synced from GitHub billing AI credit usage. Configure a daily cron
+          against the sync API.
+        </CardDescription>
       </CardHeader>
       <CardContent className="stack">
         <section className="inline-actions">
-          <LinkButton href="/api/admin/github-billing/sync" variant="secondary">Sync now</LinkButton>
+          <LinkButton href="/api/admin/github-billing/sync" variant="secondary">
+            Sync now
+          </LinkButton>
         </section>
         <div className="table-wrap">
           <Table>
-            <THead>
-              <TR>
-                <TH>Date</TH>
-                <TH>Scope</TH>
-                <TH>Product</TH>
-                <TH>SKU</TH>
-                <TH>Quantity</TH>
-                <TH>Net amount</TH>
-                <TH>Fetched</TH>
-              </TR>
-            </THead>
-            <TBody>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Date</TableHead>
+                <TableHead>Scope</TableHead>
+                <TableHead>Product</TableHead>
+                <TableHead>SKU</TableHead>
+                <TableHead>Quantity</TableHead>
+                <TableHead>Net amount</TableHead>
+                <TableHead>Fetched</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {rows.map((row) => (
-                <TR key={row.id}>
-                  <TD>{row.date}</TD>
-                  <TD>{row.scopeType}:{row.scope}</TD>
-                  <TD>{row.product ?? 'unknown'}</TD>
-                  <TD>{row.sku ?? 'unknown'}</TD>
-                  <TD>{row.quantity ?? 'unknown'} {row.unitType ?? ''}</TD>
-                  <TD>{row.netAmount ?? 'unknown'}</TD>
-                  <TD>{new Date(row.fetchedAt).toLocaleString()}</TD>
-                </TR>
+                <TableRow key={row.id}>
+                  <TableCell>{row.date}</TableCell>
+                  <TableCell>
+                    {row.scopeType}:{row.scope}
+                  </TableCell>
+                  <TableCell>{row.product ?? "unknown"}</TableCell>
+                  <TableCell>{row.sku ?? "unknown"}</TableCell>
+                  <TableCell>
+                    {row.quantity ?? "unknown"} {row.unitType ?? ""}
+                  </TableCell>
+                  <TableCell>{row.netAmount ?? "unknown"}</TableCell>
+                  <TableCell>
+                    {new Date(row.fetchedAt).toLocaleString()}
+                  </TableCell>
+                </TableRow>
               ))}
-            </TBody>
+            </TableBody>
           </Table>
         </div>
       </CardContent>
@@ -350,13 +473,16 @@ function Metric({ label, value }: { label: string; value: number | string }) {
     <Card>
       <CardContent>
         <div className="metric-label">{label}</div>
-        <div className="metric-value">{typeof value === 'number' ? formatNumber(value) : value}</div>
+        <div className="metric-value">
+          {typeof value === "number" ? formatNumber(value) : value}
+        </div>
       </CardContent>
     </Card>
   );
 }
 
 function normalizeView(view: string | undefined): AdminView {
-  return views.some((entry) => entry.id === view) ? view as AdminView : 'overview';
+  return views.some((entry) => entry.id === view)
+    ? (view as AdminView)
+    : "overview";
 }
-

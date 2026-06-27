@@ -265,12 +265,8 @@
           "name": "chat_requests_github_id_users_github_id_fk",
           "tableFrom": "chat_requests",
           "tableTo": "users",
-          "columnsFrom": [
-            "github_id"
-          ],
-          "columnsTo": [
-            "github_id"
-          ],
+          "columnsFrom": ["github_id"],
+          "columnsTo": ["github_id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -475,12 +471,8 @@
           "name": "sessions_github_id_users_github_id_fk",
           "tableFrom": "sessions",
           "tableTo": "users",
-          "columnsFrom": [
-            "github_id"
-          ],
-          "columnsTo": [
-            "github_id"
-          ],
+          "columnsFrom": ["github_id"],
+          "columnsTo": ["github_id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -650,12 +642,8 @@
           "name": "tracker_events_github_id_users_github_id_fk",
           "tableFrom": "tracker_events",
           "tableTo": "users",
-          "columnsFrom": [
-            "github_id"
-          ],
-          "columnsTo": [
-            "github_id"
-          ],
+          "columnsFrom": ["github_id"],
+          "columnsTo": ["github_id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }

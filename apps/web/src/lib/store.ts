@@ -1,7 +1,19 @@
-import { CopilotChatRequest, TokenSource, TrackerEvent, TrackerEventType } from '@copilot-tracker/shared';
-import { eq, sql } from 'drizzle-orm';
-import { db } from './db';
-import { chatRequests, githubCopilotBillingUsage, sessions, trackerEvents, users } from './db/schema';
+import {
+  CopilotChatRequest,
+  TokenSource,
+  TrackerEvent,
+  TrackerEventType,
+} from "@copilot-tracker/shared";
+import { eq, sql } from "drizzle-orm";
+
+import { db } from "./db";
+import {
+  chatRequests,
+  githubCopilotBillingUsage,
+  sessions,
+  trackerEvents,
+  users,
+} from "./db/schema";
 
 export interface StoredUser {
   githubId: number;
@@ -9,7 +21,7 @@ export interface StoredUser {
   name: string | null;
   avatarUrl: string | null;
   email: string | null;
-  role: 'admin' | 'user';
+  role: "admin" | "user";
   createdAt: string;
   lastSeenAt: string;
 }
@@ -41,7 +53,7 @@ export interface TrackerDatabase {
 
 export interface StoredGithubCopilotBillingUsage {
   id: string;
-  scopeType: 'user' | 'organization' | 'enterprise';
+  scopeType: "user" | "organization" | "enterprise";
   scope: string;
   date: string;
   product: string | null;
@@ -56,7 +68,13 @@ export interface StoredGithubCopilotBillingUsage {
 }
 
 export async function readDatabase(): Promise<TrackerDatabase> {
-  const [storedUsers, storedSessions, storedEvents, storedChatRequests, storedGithubCopilotBillingUsage] = await Promise.all([
+  const [
+    storedUsers,
+    storedSessions,
+    storedEvents,
+    storedChatRequests,
+    storedGithubCopilotBillingUsage,
+  ] = await Promise.all([
     db.select().from(users),
     db.select().from(sessions),
     db.select().from(trackerEvents),
@@ -73,7 +91,9 @@ export async function readDatabase(): Promise<TrackerDatabase> {
   };
 }
 
-export async function upsertUser(user: Omit<StoredUser, 'createdAt' | 'lastSeenAt'>): Promise<StoredUser> {
+export async function upsertUser(
+  user: Omit<StoredUser, "createdAt" | "lastSeenAt">,
+): Promise<StoredUser> {
   const now = new Date().toISOString();
   const [stored] = await db
     .insert(users)
@@ -112,7 +132,10 @@ export async function deleteSession(sessionId: string): Promise<void> {
   await db.delete(sessions).where(eq(sessions.id, sessionId));
 }
 
-export async function insertTrackerEvent(event: TrackerEvent, user: StoredUser): Promise<void> {
+export async function insertTrackerEvent(
+  event: TrackerEvent,
+  user: StoredUser,
+): Promise<void> {
   await db
     .insert(trackerEvents)
     .values({
@@ -124,20 +147,25 @@ export async function insertTrackerEvent(event: TrackerEvent, user: StoredUser):
     .onConflictDoNothing({ target: trackerEvents.eventId });
 }
 
-export async function upsertChatRequests(requests: CopilotChatRequest[], user: StoredUser): Promise<void> {
+export async function upsertChatRequests(
+  requests: CopilotChatRequest[],
+  user: StoredUser,
+): Promise<void> {
   if (requests.length === 0) {
     return;
   }
 
   await db
     .insert(chatRequests)
-    .values(requests.map((request) => ({
-      ...request,
-      promptTokenDetails: request.promptTokenDetails ?? [],
-      stopReasons: request.stopReasons ?? [],
-      githubLogin: user.login,
-      githubId: user.githubId,
-    })))
+    .values(
+      requests.map((request) => ({
+        ...request,
+        promptTokenDetails: request.promptTokenDetails ?? [],
+        stopReasons: request.stopReasons ?? [],
+        githubLogin: user.login,
+        githubId: user.githubId,
+      })),
+    )
     .onConflictDoUpdate({
       target: chatRequests.requestRecordId,
       set: {
@@ -199,7 +227,9 @@ export async function updateChatRequestTask(
   return true;
 }
 
-export async function upsertGithubCopilotBillingUsage(rows: StoredGithubCopilotBillingUsage[]): Promise<void> {
+export async function upsertGithubCopilotBillingUsage(
+  rows: StoredGithubCopilotBillingUsage[],
+): Promise<void> {
   if (rows.length === 0) {
     return;
   }
@@ -223,7 +253,9 @@ export async function upsertGithubCopilotBillingUsage(rows: StoredGithubCopilotB
     });
 }
 
-function toStoredEvent(row: typeof trackerEvents.$inferSelect): StoredTrackerEvent {
+function toStoredEvent(
+  row: typeof trackerEvents.$inferSelect,
+): StoredTrackerEvent {
   return {
     eventId: row.eventId,
     eventType: row.eventType as TrackerEventType,
@@ -245,7 +277,9 @@ function toStoredEvent(row: typeof trackerEvents.$inferSelect): StoredTrackerEve
   };
 }
 
-function toStoredChatRequest(row: typeof chatRequests.$inferSelect): StoredChatRequest {
+function toStoredChatRequest(
+  row: typeof chatRequests.$inferSelect,
+): StoredChatRequest {
   return {
     requestRecordId: row.requestRecordId,
     requestId: row.requestId,
