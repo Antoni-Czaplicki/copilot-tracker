@@ -59,36 +59,36 @@ Start Postgres and apply migrations:
 
 ```sh
 docker compose up -d postgres
-DATABASE_URL=postgres://copilot_tracker:copilot_tracker@127.0.0.1:54329/copilot_tracker pnpm db:migrate
+DATABASE_URL=postgres://copilot_tracker:copilot_tracker@localhost:54329/copilot_tracker pnpm db:migrate
 ```
 
 Build everything:
 
 ```sh
-DATABASE_URL=postgres://copilot_tracker:copilot_tracker@127.0.0.1:54329/copilot_tracker pnpm build
+DATABASE_URL=postgres://copilot_tracker:copilot_tracker@localhost:54329/copilot_tracker pnpm build
 ```
 
 Start the web app:
 
 ```sh
-DATABASE_URL=postgres://copilot_tracker:copilot_tracker@127.0.0.1:54329/copilot_tracker pnpm dev:web
+DATABASE_URL=postgres://copilot_tracker:copilot_tracker@localhost:54329/copilot_tracker pnpm dev:web
 ```
 
 For local smoke testing without GitHub OAuth or GitHub bearer-token validation:
 
 ```sh
-DATABASE_URL=postgres://copilot_tracker:copilot_tracker@127.0.0.1:54329/copilot_tracker COPILOT_TRACKER_AUTH_MODE=disabled pnpm dev:web
+DATABASE_URL=postgres://copilot_tracker:copilot_tracker@localhost:54329/copilot_tracker COPILOT_TRACKER_AUTH_MODE=disabled pnpm dev:web
 ```
 
-The web app runs on `http://127.0.0.1:3737`.
+The web app runs on `http://localhost:3737`.
 
 ## GitHub Login
 
 Create a GitHub OAuth app and set:
 
 ```sh
-NEXT_PUBLIC_APP_URL=http://127.0.0.1:3737
-DATABASE_URL=postgres://copilot_tracker:copilot_tracker@127.0.0.1:54329/copilot_tracker
+NEXT_PUBLIC_APP_URL=http://localhost:3737
+DATABASE_URL=postgres://copilot_tracker:copilot_tracker@localhost:54329/copilot_tracker
 GITHUB_CLIENT_ID=...
 GITHUB_CLIENT_SECRET=...
 ADMIN_GITHUB_LOGINS=your-github-login
@@ -102,7 +102,7 @@ CRON_SECRET=...
 Use this callback URL in the GitHub OAuth app:
 
 ```text
-http://127.0.0.1:3737/api/auth/callback/github
+http://localhost:3737/api/auth/callback/github
 ```
 
 `apps/web/.env.example` contains the expected environment variables.
@@ -164,7 +164,7 @@ Then schedule a daily request:
 
 ```sh
 curl -H "Authorization: Bearer $CRON_SECRET" \
-  http://127.0.0.1:3737/api/admin/github-billing/sync
+  http://localhost:3737/api/admin/github-billing/sync
 ```
 
 Admins can also trigger the same sync from the GitHub billing tab in `/admin`.

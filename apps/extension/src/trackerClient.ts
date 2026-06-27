@@ -13,7 +13,7 @@ export interface TrackerConfig {
 export function getTrackerConfig(): TrackerConfig {
 	const config = vscode.workspace.getConfiguration(extensionId);
 	return {
-		serverUrl: config.get<string>('serverUrl', 'http://127.0.0.1:3737'),
+		serverUrl: config.get<string>('serverUrl', 'http://localhost:3737'),
 		readVsCodeChatStorage: config.get<boolean>('readVsCodeChatStorage', true),
 		chatStoragePath: config.get<string>('chatStoragePath', ''),
 		syncIntervalSeconds: Math.max(5, config.get<number>('syncIntervalSeconds', 15)),

@@ -5,7 +5,6 @@ export default defineConfig({
   out: './drizzle',
   dialect: 'postgresql',
   dbCredentials: {
-    url: process.env.DATABASE_URL ?? 'postgres://copilot_tracker:copilot_tracker@127.0.0.1:54329/copilot_tracker',
+    url: process.env.DATABASE_URL ?? 'postgres://copilot_tracker:copilot_tracker@localhost:54329/copilot_tracker',
   },
 });
-
