@@ -10,7 +10,8 @@
     "db:studio": "drizzle-kit studio",
     "dev": "next dev --port 3737",
     "lint": "tsc -p tsconfig.lint.json --noEmit",
-    "start": "next start --port 3737"
+    "start": "next start --port 3737",
+    "typecheck": "tsc -p tsconfig.lint.json --noEmit"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

@@ -1,23 +1,22 @@
 {
   "name": "@copilot-tracker/extension",
   "displayName": "Copilot tracker",
-  "description": "Track your copilot tokens per branch or assign them manually",
   "version": "0.0.1",
-  "engines": {
-    "vscode": "^1.125.0"
-  },
+  "description": "Track your copilot tokens per branch or assign them manually",
   "categories": [
     "Other"
   ],
-  "activationEvents": [
-    "onStartupFinished",
-    "onCommand:copilot-tracker.setTask",
-    "onCommand:copilot-tracker.useBranchTask",
-    "onCommand:copilot-tracker.syncCopilotSessions",
-    "onCommand:copilot-tracker.openDashboard",
-    "onCommand:copilot-tracker.showContext"
-  ],
   "main": "./out/extension.js",
+  "scripts": {
+    "build": "pnpm run compile",
+    "compile": "tsc -p ./",
+    "lint": "eslint src",
+    "pretest": "pnpm run compile && pnpm run lint",
+    "test": "vscode-test",
+    "typecheck": "tsc -p ./ --noEmit",
+    "vscode:prepublish": "pnpm run compile",
+    "watch": "tsc -watch -p ./"
+  },
   "contributes": {
     "commands": [
       {
@@ -73,15 +72,14 @@
       }
     }
   },
-  "scripts": {
-    "build": "pnpm run compile",
-    "vscode:prepublish": "pnpm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "pretest": "pnpm run compile && pnpm run lint",
-    "lint": "eslint src",
-    "test": "vscode-test"
-  },
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:copilot-tracker.setTask",
+    "onCommand:copilot-tracker.useBranchTask",
+    "onCommand:copilot-tracker.syncCopilotSessions",
+    "onCommand:copilot-tracker.openDashboard",
+    "onCommand:copilot-tracker.showContext"
+  ],
   "devDependencies": {
     "@types/mocha": "^10.0.10",
     "@types/node": "~26.0.1",
@@ -91,5 +89,8 @@
     "eslint": "^10.6.0",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.61.1"
+  },
+  "engines": {
+    "vscode": "^1.125.0"
   }
 }
