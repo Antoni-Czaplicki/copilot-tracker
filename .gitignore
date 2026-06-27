@@ -1,0 +1,12 @@
+out
+dist
+node_modules
+.vscode-test/
+*.vsix
+.next
+.data
+.turbo
+*.tsbuildinfo
+.env
+.env.local
+.env.*.local

@@ -1,0 +1,95 @@
+{
+  "name": "@copilot-tracker/extension",
+  "displayName": "Copilot tracker",
+  "description": "Track your copilot tokens per branch or assign them manually",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.125.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:copilot-tracker.setTask",
+    "onCommand:copilot-tracker.useBranchTask",
+    "onCommand:copilot-tracker.syncCopilotSessions",
+    "onCommand:copilot-tracker.openDashboard",
+    "onCommand:copilot-tracker.showContext"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "copilot-tracker.setTask",
+        "title": "Set Current Task",
+        "category": "Copilot Tracker"
+      },
+      {
+        "command": "copilot-tracker.useBranchTask",
+        "title": "Use Branch as Task",
+        "category": "Copilot Tracker"
+      },
+      {
+        "command": "copilot-tracker.syncCopilotSessions",
+        "title": "Sync Copilot Sessions Now",
+        "category": "Copilot Tracker"
+      },
+      {
+        "command": "copilot-tracker.openDashboard",
+        "title": "Open Dashboard",
+        "category": "Copilot Tracker"
+      },
+      {
+        "command": "copilot-tracker.showContext",
+        "title": "Show Current Context",
+        "category": "Copilot Tracker"
+      }
+    ],
+    "configuration": {
+      "title": "Copilot Tracker",
+      "properties": {
+        "copilot-tracker.serverUrl": {
+          "type": "string",
+          "default": "http://127.0.0.1:3737",
+          "description": "Copilot Tracker server URL."
+        },
+        "copilot-tracker.readVsCodeChatStorage": {
+          "type": "boolean",
+          "default": true,
+          "description": "Read VS Code internal chat session metadata from workspaceStorage."
+        },
+        "copilot-tracker.chatStoragePath": {
+          "type": "string",
+          "default": "",
+          "description": "Optional override for VS Code workspaceStorage path. Leave empty to use the platform default."
+        },
+        "copilot-tracker.syncIntervalSeconds": {
+          "type": "number",
+          "default": 15,
+          "minimum": 5,
+          "description": "Fallback polling interval for detecting Copilot chat session file changes."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "pnpm run compile",
+    "vscode:prepublish": "pnpm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "pnpm run compile && pnpm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "~26.0.1",
+    "@types/vscode": "^1.125.0",
+    "@vscode/test-cli": "^0.0.15",
+    "@vscode/test-electron": "^3.0.0",
+    "eslint": "^10.6.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.61.1"
+  }
+}

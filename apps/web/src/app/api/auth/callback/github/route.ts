@@ -1,0 +1,47 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { createUserSession, fetchGitHubUser, oauthStateCookie, sessionCookie } from '@/lib/auth';
+import { appBaseUrl, requireGithubOAuthConfig } from '@/lib/config';
+
+export async function GET(request: NextRequest) {
+  const code = request.nextUrl.searchParams.get('code');
+  const state = request.nextUrl.searchParams.get('state');
+  const expectedState = request.cookies.get(oauthStateCookie())?.value;
+  if (!code || !state || state !== expectedState) {
+    return NextResponse.redirect(new URL('/?auth=failed', appBaseUrl()));
+  }
+
+  const { clientId, clientSecret } = requireGithubOAuthConfig();
+  const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
+    method: 'POST',
+    headers: {
+      accept: 'application/json',
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      client_id: clientId,
+      client_secret: clientSecret,
+      code,
+      redirect_uri: `${appBaseUrl()}/api/auth/callback/github`,
+    }),
+  });
+  const tokenPayload = await tokenResponse.json() as { access_token?: string };
+  if (!tokenPayload.access_token) {
+    return NextResponse.redirect(new URL('/?auth=failed', appBaseUrl()));
+  }
+
+  const githubUser = await fetchGitHubUser(tokenPayload.access_token);
+  if (!githubUser) {
+    return NextResponse.redirect(new URL('/?auth=failed', appBaseUrl()));
+  }
+
+  const sessionId = await createUserSession(githubUser);
+  const response = NextResponse.redirect(new URL('/dashboard', appBaseUrl()));
+  response.cookies.set(sessionCookie(), sessionId, {
+    httpOnly: true,
+    maxAge: 30 * 24 * 60 * 60,
+    path: '/',
+    sameSite: 'lax',
+  });
+  response.cookies.delete(oauthStateCookie());
+  return response;
+}

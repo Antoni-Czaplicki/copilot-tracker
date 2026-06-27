@@ -1,0 +1,25 @@
+{
+  "name": "copilot-tracker-monorepo",
+  "private": true,
+  "version": "0.0.1",
+  "scripts": {
+    "build": "pnpm -r build",
+    "compile": "pnpm --filter @copilot-tracker/extension compile",
+    "db:generate": "pnpm --filter @copilot-tracker/web db:generate",
+    "db:migrate": "pnpm --filter @copilot-tracker/web db:migrate",
+    "db:studio": "pnpm --filter @copilot-tracker/web db:studio",
+    "dev:web": "pnpm --filter @copilot-tracker/web dev",
+    "lint": "pnpm -r lint",
+    "test": "pnpm --filter @copilot-tracker/extension test"
+  },
+  "devDependencies": {
+    "@types/node": "~26.0.1",
+    "eslint": "^10.6.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.61.1"
+  },
+  "overrides": {
+    "diff": "^8.0.4",
+    "serialize-javascript": "^7.0.6"
+  }
+}
