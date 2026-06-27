@@ -46,11 +46,13 @@ export function DashboardOverview({ login, requests }: DashboardOverviewProps) {
   }));
 
   return (
-    <main className="stack">
-      <section className="page-title">
+    <main className="grid gap-4">
+      <section className="mb-4 flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
         <div>
-          <h1>Your Copilot usage</h1>
-          <p>
+          <h1 className="text-[28px] leading-[1.2] font-semibold">
+            Your Copilot usage
+          </h1>
+          <p className="text-muted-foreground mt-1.5 max-w-[720px] text-sm">
             Review token usage, see which tasks it belongs to, and correct
             assignments when the branch guess was wrong.
           </p>
@@ -58,7 +60,7 @@ export function DashboardOverview({ login, requests }: DashboardOverviewProps) {
         <Badge>@{login}</Badge>
       </section>
 
-      <section className="metrics-grid">
+      <section className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Metric label="Requests" value={metrics.requestCount} />
         <Metric label="Input tokens" value={metrics.inputTokens} />
         <Metric label="Output tokens" value={metrics.outputTokens} />
@@ -79,7 +81,7 @@ export function DashboardOverview({ login, requests }: DashboardOverviewProps) {
           {chartData.length > 0 ? (
             <TaskTokenChart data={chartData} />
           ) : (
-            <p className="muted">
+            <p className="text-muted-foreground">
               No tokenized Copilot requests have been captured yet.
             </p>
           )}
@@ -93,7 +95,7 @@ export function DashboardOverview({ login, requests }: DashboardOverviewProps) {
             Grouped by selected task, repository, and branch.
           </CardDescription>
         </CardHeader>
-        <CardContent className="table-wrap">
+        <CardContent className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -132,7 +134,7 @@ export function DashboardOverview({ login, requests }: DashboardOverviewProps) {
             Task reassignment updates future summaries immediately.
           </CardDescription>
         </CardHeader>
-        <CardContent className="table-wrap">
+        <CardContent className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -176,8 +178,8 @@ function Metric({ label, value }: { label: string; value: number }) {
   return (
     <Card>
       <CardContent>
-        <div className="metric-label">{label}</div>
-        <div className="metric-value">{formatNumber(value)}</div>
+        <div className="text-muted-foreground mb-1.5 text-xs">{label}</div>
+        <div className="text-2xl font-bold">{formatNumber(value)}</div>
       </CardContent>
     </Card>
   );

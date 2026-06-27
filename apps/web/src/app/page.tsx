@@ -32,7 +32,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const authError = parameters?.auth;
 
   return (
-    <main className="stack">
+    <main className="grid gap-4">
       {authError === "misconfigured" ? (
         <Card>
           <CardHeader>
@@ -45,10 +45,12 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         </Card>
       ) : null}
 
-      <section className="page-title">
+      <section className="mb-4 flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
         <div>
-          <h1>Assign Copilot usage to the work it actually supported.</h1>
-          <p>
+          <h1 className="text-[28px] leading-[1.2] font-semibold">
+            Assign Copilot usage to the work it actually supported.
+          </h1>
+          <p className="text-muted-foreground mt-1.5 max-w-[720px] text-sm">
             The VS Code extension captures Copilot chat metadata, token counts
             when VS Code persists them, workspace context, branch, and task
             assignment. This web app turns that stream into team-visible usage.
@@ -57,29 +59,33 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         <LinkButton href="/api/auth/github">Log in with GitHub</LinkButton>
       </section>
 
-      <section className="metrics-grid">
+      <section className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardContent>
-            <div className="metric-label">Default task source</div>
-            <div className="metric-value">Branch</div>
+            <div className="text-muted-foreground mb-1.5 text-xs">
+              Default task source
+            </div>
+            <div className="text-2xl font-bold">Branch</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent>
-            <div className="metric-label">Privacy baseline</div>
-            <div className="metric-value">No prompts</div>
+            <div className="text-muted-foreground mb-1.5 text-xs">
+              Privacy baseline
+            </div>
+            <div className="text-2xl font-bold">No prompts</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent>
-            <div className="metric-label">Auth</div>
-            <div className="metric-value">GitHub</div>
+            <div className="text-muted-foreground mb-1.5 text-xs">Auth</div>
+            <div className="text-2xl font-bold">GitHub</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent>
-            <div className="metric-label">Views</div>
-            <div className="metric-value">Team + Admin</div>
+            <div className="text-muted-foreground mb-1.5 text-xs">Views</div>
+            <div className="text-2xl font-bold">Team + Admin</div>
           </CardContent>
         </Card>
       </section>
@@ -93,7 +99,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="muted">
+          <p className="text-muted-foreground">
             On each sync, the extension reads the current Git branch and uses
             the first number as the Azure DevOps work item id. Branches like{" "}
             <strong>124</strong>, <strong>124v2</strong>, and{" "}

@@ -32,11 +32,13 @@ export default async function LeaderboardPage() {
   const rows = publicLeaderboard(database);
 
   return (
-    <main className="stack">
-      <section className="page-title">
+    <main className="grid gap-4">
+      <section className="mb-4 flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
         <div>
-          <h1>Leaderboard</h1>
-          <p>
+          <h1 className="text-[28px] leading-[1.2] font-semibold">
+            Leaderboard
+          </h1>
+          <p className="text-muted-foreground mt-1.5 max-w-[720px] text-sm">
             Team-level visibility into Copilot token usage. Detailed request
             history remains in personal and admin views.
           </p>
@@ -51,7 +53,7 @@ export default async function LeaderboardPage() {
             Sorted by total tokens captured from VS Code chat session metadata.
           </CardDescription>
         </CardHeader>
-        <CardContent className="table-wrap">
+        <CardContent className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>

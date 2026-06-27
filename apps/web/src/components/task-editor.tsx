@@ -32,8 +32,9 @@ export function TaskEditor({ requestRecordId, initialTask }: TaskEditorProps) {
   }
 
   return (
-    <form className="task-editor" onSubmit={submit}>
+    <form className="flex min-w-[260px] items-center gap-2" onSubmit={submit}>
       <Input
+        className="max-w-[180px]"
         value={task}
         onChange={(event) => {
           setTask(event.target.value);
@@ -42,8 +43,14 @@ export function TaskEditor({ requestRecordId, initialTask }: TaskEditorProps) {
       <Button disabled={state === "saving"} type="submit" variant="secondary">
         {state === "saving" ? "Saving" : "Save"}
       </Button>
-      {state === "saved" ? <span className="form-success">Saved</span> : null}
-      {state === "error" ? <span className="form-error">Failed</span> : null}
+      {state === "saved" ? (
+        <span className="text-xs font-bold text-[oklch(0.527_0.154_150.069)]">
+          Saved
+        </span>
+      ) : null}
+      {state === "error" ? (
+        <span className="text-destructive text-xs font-bold">Failed</span>
+      ) : null}
     </form>
   );
 }

@@ -36,20 +36,27 @@ export default async function RootLayout({
       className={cn("font-mono", jetbrainsMono.variable)}
     >
       <head />
-      <body>
+      <body className="bg-background text-foreground min-h-dvh">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <div className="shell">
-            <header className="topbar">
-              <Link className="brand" href="/">
-                <strong>Copilot Tracker</strong>
-                <span>Usage attribution for busy engineering teams</span>
+          <div className="mx-auto max-w-[1180px] p-4 md:p-6">
+            <header className="mb-6 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
+              <Link
+                className="text-foreground flex flex-col gap-0.5 no-underline"
+                href="/"
+              >
+                <strong className="text-lg font-semibold">
+                  Copilot Tracker
+                </strong>
+                <span className="text-muted-foreground text-[13px]">
+                  Usage attribution for busy engineering teams
+                </span>
               </Link>
-              <nav className="nav">
+              <nav className="flex flex-wrap items-center gap-2">
                 {user ? (
                   <LinkButton href="/leaderboard" variant="ghost">
                     Leaderboard

@@ -75,11 +75,13 @@ export default async function AdminPage({
   const cost = estimateRequestsCost(database.chatRequests);
 
   return (
-    <main className="stack">
-      <section className="page-title">
+    <main className="grid gap-4">
+      <section className="mb-4 flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
         <div>
-          <h1>Admin overview</h1>
-          <p>
+          <h1 className="text-[28px] leading-[1.2] font-semibold">
+            Admin overview
+          </h1>
+          <p className="text-muted-foreground mt-1.5 max-w-[720px] text-sm">
             Full team usage, task attribution, model cost estimates, GitHub
             billing sync, and CSV exports.
           </p>
@@ -87,7 +89,7 @@ export default async function AdminPage({
         <Badge>Admin</Badge>
       </section>
 
-      <section className="metrics-grid">
+      <section className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Metric label="Captured requests" value={metrics.requestCount} />
         <Metric label="Total tokens" value={metrics.totalTokens} />
         <Metric
@@ -100,7 +102,7 @@ export default async function AdminPage({
         />
       </section>
 
-      <section className="inline-actions">
+      <section className="flex flex-wrap items-center gap-2">
         {views.map((entry) => (
           <LinkButton
             key={entry.id}
@@ -142,7 +144,7 @@ function Overview({
           Public leaderboard plus admin-visible totals.
         </CardDescription>
       </CardHeader>
-      <CardContent className="table-wrap">
+      <CardContent className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -189,7 +191,7 @@ function Tasks({
           cost.
         </CardDescription>
       </CardHeader>
-      <CardContent className="table-wrap">
+      <CardContent className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -249,7 +251,7 @@ function DeveloperTasks({
           Shows which developers generated usage against each assigned task.
         </CardDescription>
       </CardHeader>
-      <CardContent className="table-wrap">
+      <CardContent className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -295,7 +297,7 @@ function Models({
           Token usage grouped by captured Copilot model id.
         </CardDescription>
       </CardHeader>
-      <CardContent className="table-wrap">
+      <CardContent className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -362,7 +364,7 @@ function Requests({
           only.
         </CardDescription>
       </CardHeader>
-      <CardContent className="table-wrap">
+      <CardContent className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -423,13 +425,13 @@ function GithubBilling({
           against the sync API.
         </CardDescription>
       </CardHeader>
-      <CardContent className="stack">
-        <section className="inline-actions">
+      <CardContent className="grid gap-4">
+        <section className="flex flex-wrap items-center gap-2">
           <LinkButton href="/api/admin/github-billing/sync" variant="secondary">
             Sync now
           </LinkButton>
         </section>
-        <div className="table-wrap">
+        <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -472,8 +474,8 @@ function Metric({ label, value }: { label: string; value: number | string }) {
   return (
     <Card>
       <CardContent>
-        <div className="metric-label">{label}</div>
-        <div className="metric-value">
+        <div className="text-muted-foreground mb-1.5 text-xs">{label}</div>
+        <div className="text-2xl font-bold">
           {typeof value === "number" ? formatNumber(value) : value}
         </div>
       </CardContent>
