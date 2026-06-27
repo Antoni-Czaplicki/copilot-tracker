@@ -1,0 +1,15 @@
+.git
+**/.next
+**/.turbo
+**/.vscode-test
+**/node_modules
+**/out
+**/dist
+*.tsbuildinfo
+*.vsix
+.env
+.env.local
+.env.*.local
+**/.env
+**/.env.local
+**/.env.*.local
