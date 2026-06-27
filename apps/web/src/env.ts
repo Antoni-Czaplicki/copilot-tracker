@@ -1,7 +1,7 @@
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
-const emptyStringAsUndefined = z.literal("").transform(() => undefined);
+const emptyStringAsUndefined = z.literal("").transform(() => void 0);
 const optionalString = z.string().min(1).optional().or(emptyStringAsUndefined);
 
 export const env = createEnv({
@@ -9,8 +9,8 @@ export const env = createEnv({
     ADMIN_GITHUB_LOGINS: optionalString,
     COPILOT_TRACKER_AUTH_MODE: z.enum(["github", "disabled"]).default("github"),
     CRON_SECRET: optionalString,
-    DATABASE_URL: z.string().url(),
-    GITHUB_API_URL: z.string().url().default("https://api.github.com"),
+    DATABASE_URL: z.url(),
+    GITHUB_API_URL: z.url().default("https://api.github.com"),
     GITHUB_CLIENT_ID: optionalString,
     GITHUB_CLIENT_SECRET: optionalString,
     GITHUB_COPILOT_BILLING_SCOPE: optionalString,
@@ -21,7 +21,7 @@ export const env = createEnv({
     GITHUB_COPILOT_BILLING_TOKEN: optionalString,
   },
   client: {
-    NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3737"),
+    NEXT_PUBLIC_APP_URL: z.url().default("http://localhost:3737"),
   },
   runtimeEnv: {
     ADMIN_GITHUB_LOGINS: process.env.ADMIN_GITHUB_LOGINS,

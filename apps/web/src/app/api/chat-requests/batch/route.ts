@@ -1,5 +1,6 @@
-import { CopilotChatRequest } from "@copilot-tracker/shared";
-import { NextRequest, NextResponse } from "next/server";
+import type { CopilotChatRequest } from "@copilot-tracker/shared";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 import { authenticateIngestRequest } from "@/lib/auth";
 import { upsertChatRequests } from "@/lib/store";

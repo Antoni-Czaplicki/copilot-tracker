@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 import { sessionCookie } from "@/lib/auth";
 import { appBaseUrl } from "@/lib/config";

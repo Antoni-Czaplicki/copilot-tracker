@@ -1,4 +1,4 @@
-import {
+import type {
   CopilotChatRequest,
   TokenSource,
   TrackerEvent,
@@ -85,8 +85,10 @@ export async function readDatabase(): Promise<TrackerDatabase> {
   return {
     users: storedUsers,
     sessions: storedSessions,
-    events: storedEvents.map(toStoredEvent),
-    chatRequests: storedChatRequests.map(toStoredChatRequest),
+    events: storedEvents.map((event) => toStoredEvent(event)),
+    chatRequests: storedChatRequests.map((request) =>
+      toStoredChatRequest(request),
+    ),
     githubCopilotBillingUsage: storedGithubCopilotBillingUsage,
   };
 }

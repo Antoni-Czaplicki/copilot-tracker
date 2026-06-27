@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import type { SyntheticEvent } from "react";
+import { useState } from "react";
 
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -16,7 +17,7 @@ export function TaskEditor({ requestRecordId, initialTask }: TaskEditorProps) {
     "idle",
   );
 
-  async function submit(event: FormEvent) {
+  async function submit(event: SyntheticEvent<HTMLFormElement>) {
     event.preventDefault();
     setState("saving");
     const response = await fetch(
@@ -32,7 +33,12 @@ export function TaskEditor({ requestRecordId, initialTask }: TaskEditorProps) {
 
   return (
     <form className="task-editor" onSubmit={submit}>
-      <Input value={task} onChange={(event) => setTask(event.target.value)} />
+      <Input
+        value={task}
+        onChange={(event) => {
+          setTask(event.target.value);
+        }}
+      />
       <Button disabled={state === "saving"} type="submit" variant="secondary">
         {state === "saving" ? "Saving" : "Save"}
       </Button>

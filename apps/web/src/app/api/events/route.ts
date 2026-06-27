@@ -1,5 +1,6 @@
-import { TrackerEvent } from "@copilot-tracker/shared";
-import { NextRequest, NextResponse } from "next/server";
+import type { TrackerEvent } from "@copilot-tracker/shared";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 import { authenticateIngestRequest } from "@/lib/auth";
 import { insertTrackerEvent } from "@/lib/store";

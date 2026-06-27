@@ -40,7 +40,7 @@ type AdminView =
   | "requests"
   | "github-billing";
 
-const views: Array<{ id: AdminView; label: string; exportType: string }> = [
+const views: { id: AdminView; label: string; exportType: string }[] = [
   { id: "overview", label: "Overview", exportType: "developers" },
   { id: "tasks", label: "Tasks", exportType: "tasks" },
   {

@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 import { currentUser, isAdmin } from "@/lib/auth";
 import { updateChatRequestTask } from "@/lib/store";

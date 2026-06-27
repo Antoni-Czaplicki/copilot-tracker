@@ -1,6 +1,6 @@
-import { CopilotChatRequest } from "@copilot-tracker/shared";
+import type { CopilotChatRequest } from "@copilot-tracker/shared";
 
-import { TrackerDatabase } from "./store";
+import type { TrackerDatabase } from "./store";
 
 export interface SummaryMetrics {
   requestCount: number;
@@ -66,12 +66,10 @@ export function summarizeRequests(
 export function publicLeaderboard(database: TrackerDatabase): LeaderboardRow[] {
   const grouped = new Map<
     string,
-    Array<
-      CopilotChatRequest & {
-        githubLogin: string | null;
-        githubId: number | null;
-      }
-    >
+    (CopilotChatRequest & {
+      githubLogin: string | null;
+      githubId: number | null;
+    })[]
   >();
   for (const request of database.chatRequests) {
     const login = request.githubLogin ?? "unknown";
@@ -116,21 +114,17 @@ export function taskSummaries(
 }
 
 export function developerTaskSummaries(
-  requests: Array<
-    CopilotChatRequest & {
-      githubLogin?: string | null;
-      githubId?: number | null;
-    }
-  >,
+  requests: (CopilotChatRequest & {
+    githubLogin?: string | null;
+    githubId?: number | null;
+  })[],
 ): DeveloperTaskSummaryRow[] {
   const grouped = new Map<
     string,
-    Array<
-      CopilotChatRequest & {
-        githubLogin?: string | null;
-        githubId?: number | null;
-      }
-    >
+    (CopilotChatRequest & {
+      githubLogin?: string | null;
+      githubId?: number | null;
+    })[]
   >();
   for (const request of requests) {
     const key = [

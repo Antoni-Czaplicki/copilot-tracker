@@ -1,8 +1,9 @@
 import { cookies } from "next/headers";
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 
 import { adminGithubLogins, authMode, githubApiUrl } from "./config";
-import { StoredUser, createSession, readDatabase, upsertUser } from "./store";
+import type { StoredUser } from "./store";
+import { createSession, readDatabase, upsertUser } from "./store";
 
 export interface GitHubUser {
   id: number;

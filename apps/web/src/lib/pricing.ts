@@ -1,4 +1,4 @@
-import { CopilotChatRequest } from "@copilot-tracker/shared";
+import type { CopilotChatRequest } from "@copilot-tracker/shared";
 
 interface ModelPrice {
   aliases: string[];

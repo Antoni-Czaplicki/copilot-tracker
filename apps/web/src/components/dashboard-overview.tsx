@@ -1,4 +1,4 @@
-import { CopilotChatRequest } from "@copilot-tracker/shared";
+import type { CopilotChatRequest } from "@copilot-tracker/shared";
 
 import { TaskEditor } from "@/components/task-editor";
 import { TaskTokenChart } from "@/components/task-token-chart";

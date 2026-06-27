@@ -89,11 +89,11 @@ export const chatRequests = pgTable(
     tokenSource: text("token_source").notNull(),
     promptTokenDetails: jsonb("prompt_token_details")
       .$type<
-        Array<{
+        {
           category: string | null;
           label: string | null;
           percentageOfPrompt: number | null;
-        }>
+        }[]
       >()
       .notNull()
       .default([]),

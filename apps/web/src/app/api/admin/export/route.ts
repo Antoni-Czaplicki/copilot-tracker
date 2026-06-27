@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 import {
   developerTaskSummaries,
@@ -34,7 +35,7 @@ function exportCsv(
   database: Awaited<ReturnType<typeof readDatabase>>,
 ) {
   switch (type) {
-    case "developers":
+    case "developers": {
       return toCsv(
         [
           "rank",
@@ -57,7 +58,8 @@ function exportCsv(
           row.averageTokensPerRequest,
         ]),
       );
-    case "tasks":
+    }
+    case "tasks": {
       return toCsv(
         [
           "task",
@@ -91,7 +93,8 @@ function exportCsv(
           ];
         }),
       );
-    case "developer-tasks":
+    }
+    case "developer-tasks": {
       return toCsv(
         [
           "githubLogin",
@@ -112,7 +115,8 @@ function exportCsv(
           row.totalTokens,
         ]),
       );
-    case "models":
+    }
+    case "models": {
       return toCsv(
         ["model", "requests", "inputTokens", "outputTokens", "totalTokens"],
         modelSummaries(database.chatRequests).map((row) => [
@@ -123,7 +127,8 @@ function exportCsv(
           row.totalTokens,
         ]),
       );
-    case "github-billing":
+    }
+    case "github-billing": {
       return toCsv(
         [
           "scopeType",
@@ -152,7 +157,8 @@ function exportCsv(
           row.fetchedAt,
         ]),
       );
-    default:
+    }
+    default: {
       return toCsv(
         [
           "requestRecordId",
@@ -179,13 +185,14 @@ function exportCsv(
           row.capturedAt,
         ]),
       );
+    }
   }
 }
 
 function toCsv(headers: string[], rows: unknown[][]) {
   return [
-    headers.map(csvCell).join(","),
-    ...rows.map((row) => row.map(csvCell).join(",")),
+    headers.map((header) => csvCell(header)).join(","),
+    ...rows.map((row) => row.map((value) => csvCell(value)).join(",")),
   ].join("\n");
 }
 

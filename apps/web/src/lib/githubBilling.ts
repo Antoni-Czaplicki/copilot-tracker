@@ -1,8 +1,6 @@
 import { githubApiUrl, githubCopilotBillingConfig } from "./config";
-import {
-  StoredGithubCopilotBillingUsage,
-  upsertGithubCopilotBillingUsage,
-} from "./store";
+import type { StoredGithubCopilotBillingUsage } from "./store";
+import { upsertGithubCopilotBillingUsage } from "./store";
 
 interface GitHubAiCreditUsageResponse {
   timePeriod?: {
@@ -10,7 +8,7 @@ interface GitHubAiCreditUsageResponse {
     month?: number;
     day?: number;
   };
-  usageItems?: Array<Record<string, unknown>>;
+  usageItems?: Record<string, unknown>[];
 }
 
 export async function syncGithubCopilotBillingUsage(date = yesterdayUtcDate()) {
