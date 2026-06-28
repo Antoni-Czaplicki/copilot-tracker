@@ -72,6 +72,15 @@ suite("Extension Test Suite", () => {
                 completionTokens: 34,
                 response: [{ generatedTitle: "Synthetic title" }],
               },
+              {
+                requestId: "request-2",
+                responseId: "response-2",
+                timestamp: 1_700_000_003_000,
+                modelId: "gpt-test",
+                promptTokens: 2,
+                completionTokens: 3,
+                response: [{ generatedTitle: "Second synthetic title" }],
+              },
             ],
           },
         })}\n${JSON.stringify({
@@ -91,6 +100,23 @@ suite("Extension Test Suite", () => {
               },
               modelState: {
                 completedAt: 1_700_000_002_000,
+              },
+            },
+          ],
+        })}\n${JSON.stringify({
+          kind: 2,
+          v: [
+            {
+              id: "chunk-1",
+              kind: "text",
+              value: "This is a response chunk, not a request.",
+            },
+            {
+              id: "chunk-2",
+              kind: "toolInvocationSerialized",
+              value: {
+                invocationMessage: "Running command",
+                isComplete: true,
               },
             },
           ],
@@ -115,7 +141,7 @@ suite("Extension Test Suite", () => {
       };
 
       const requests = await readCopilotChatRequests(workspaceContext, config);
-      assert.strictEqual(requests.length, 1);
+      assert.strictEqual(requests.length, 2);
       assert.strictEqual(requests[0]?.requestRecordId, "request-1");
       assert.strictEqual(requests[0]?.sessionId, "session-1");
       assert.strictEqual(requests[0]?.sessionTitle, "Synthetic title");
@@ -124,12 +150,33 @@ suite("Extension Test Suite", () => {
       assert.strictEqual(requests[0]?.totalTokens, 55);
       assert.strictEqual(requests[0]?.resolvedModel, "gpt-test-resolved");
       assert.strictEqual(requests[0]?.selectedTask, "123");
+      assert.strictEqual(requests[1]?.requestRecordId, "request-2");
+      assert.strictEqual(requests[1]?.sessionTitle, "Second synthetic title");
+      assert.strictEqual(requests[1]?.totalTokens, 5);
+      assert.strictEqual(requests[1]?.selectedTask, "123");
+
+      const reassignedRequests = await readCopilotChatRequests(
+        workspaceContext,
+        config,
+        (request) =>
+          request.requestId === "request-2"
+            ? {
+                branch: "feature/124-login",
+                defaultTask: "124",
+                selectedTask: "124",
+              }
+            : null,
+      );
+      assert.strictEqual(reassignedRequests.length, 2);
+      assert.strictEqual(reassignedRequests[0]?.selectedTask, "123");
+      assert.strictEqual(reassignedRequests[1]?.selectedTask, "124");
+      assert.strictEqual(reassignedRequests[1]?.branch, "feature/124-login");
 
       const directRequests = await readCopilotChatRequests(workspaceContext, {
         ...config,
         chatStoragePath: chatSessionsPath,
       });
-      assert.strictEqual(directRequests.length, 1);
+      assert.strictEqual(directRequests.length, 2);
       assert.strictEqual(directRequests[0]?.requestRecordId, "request-1");
     } finally {
       await rm(storageRoot, { recursive: true, force: true });

@@ -2,6 +2,7 @@ import * as os from "node:os";
 import * as vscode from "vscode";
 
 import {
+  type RequestTaskResolver,
   createChatSessionWatcher,
   getChatSessionSignature,
   getDefaultWorkspaceStorageRoot,
@@ -21,6 +22,17 @@ import { buildWorkspaceContext, setSelectedTask } from "./workspaceContext";
 
 const extensionId = "copilot-tracker";
 const lastBranchPromptKey = "lastBranchPrompt";
+const taskHistoryKey = "taskHistory";
+const maxTaskHistoryEntries = 200;
+
+interface TaskHistoryEntry {
+  workspaceId: string;
+  timestamp: string;
+  branch: string | null;
+  defaultTask: string | null;
+  selectedTask: string | null;
+  source: string;
+}
 
 let statusItem: vscode.StatusBarItem;
 let currentWorkspaceContext: WorkspaceContext | undefined;
@@ -81,8 +93,7 @@ export function activate(context: vscode.ExtensionContext) {
     ),
   );
 
-  void refreshContext(context, client, "extension-started");
-  void syncCopilotSessions(context, client);
+  void initializeExtension(context, client);
 
   const storageRoot =
     getTrackerConfig().chatStoragePath || getDefaultWorkspaceStorageRoot();
@@ -124,6 +135,14 @@ export function activate(context: vscode.ExtensionContext) {
 
 export function deactivate() {
   logInfo("Extension deactivated");
+}
+
+async function initializeExtension(
+  context: vscode.ExtensionContext,
+  client: TrackerClient,
+) {
+  await refreshContext(context, client, "extension-started");
+  await syncCopilotSessions(context, client);
 }
 
 async function setTask(
@@ -201,6 +220,12 @@ async function refreshContext(
   const next = await buildWorkspaceContext(context);
   currentWorkspaceContext = next;
   updateStatusItem(next);
+  await recordTaskHistoryIfNeeded(
+    context,
+    previous,
+    next,
+    getTaskHistorySource(eventType, payload),
+  );
 
   if (eventType) {
     logInfo("Workspace context refreshed", {
@@ -272,6 +297,152 @@ async function maybePromptForBranchTask(
   } else {
     logInfo("Branch task switch dismissed", { choice });
   }
+}
+
+async function recordTaskHistoryIfNeeded(
+  context: vscode.ExtensionContext,
+  previous: WorkspaceContext | undefined,
+  next: WorkspaceContext,
+  source: string,
+) {
+  if (!next.selectedTask && !next.defaultTask) {
+    return;
+  }
+
+  if (
+    previous &&
+    previous.workspaceId === next.workspaceId &&
+    previous.branch === next.branch &&
+    previous.defaultTask === next.defaultTask &&
+    previous.selectedTask === next.selectedTask
+  ) {
+    return;
+  }
+
+  const history = readTaskHistory(context);
+  const latest = history.at(-1);
+  if (
+    latest &&
+    latest.workspaceId === next.workspaceId &&
+    latest.branch === next.branch &&
+    latest.defaultTask === next.defaultTask &&
+    latest.selectedTask === next.selectedTask
+  ) {
+    return;
+  }
+
+  const entry: TaskHistoryEntry = {
+    workspaceId: next.workspaceId,
+    timestamp: new Date().toISOString(),
+    branch: next.branch,
+    defaultTask: next.defaultTask,
+    selectedTask: next.selectedTask,
+    source,
+  };
+
+  await context.workspaceState.update(
+    taskHistoryKey,
+    [...history, entry].slice(-maxTaskHistoryEntries),
+  );
+  logInfo("Task history recorded", {
+    source,
+    branch: entry.branch,
+    defaultTask: entry.defaultTask,
+    selectedTask: entry.selectedTask,
+    timestamp: entry.timestamp,
+  });
+}
+
+function createTaskResolver(
+  context: vscode.ExtensionContext,
+  fallback: WorkspaceContext,
+): RequestTaskResolver {
+  const history = readTaskHistory(context).filter(
+    (entry) => entry.workspaceId === fallback.workspaceId,
+  );
+
+  return (request) => {
+    const requestTime = timestampOrZero(
+      request.requestStartedAt ?? request.requestCompletedAt,
+    );
+    if (requestTime === 0) {
+      return null;
+    }
+
+    let match: TaskHistoryEntry | undefined;
+    for (const entry of history) {
+      const entryTime = timestampOrZero(entry.timestamp);
+      if (entryTime === 0) {
+        continue;
+      }
+      if (entryTime > requestTime) {
+        break;
+      }
+      match = entry;
+    }
+
+    if (!match) {
+      return null;
+    }
+
+    return {
+      branch: match.branch ?? fallback.branch,
+      defaultTask: match.defaultTask ?? fallback.defaultTask,
+      selectedTask:
+        match.selectedTask ?? match.defaultTask ?? fallback.selectedTask,
+    };
+  };
+}
+
+function readTaskHistory(context: vscode.ExtensionContext): TaskHistoryEntry[] {
+  const value = context.workspaceState.get<unknown>(taskHistoryKey);
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .filter(isTaskHistoryEntry)
+    .sort(
+      (a, b) => timestampOrZero(a.timestamp) - timestampOrZero(b.timestamp),
+    );
+}
+
+function isTaskHistoryEntry(value: unknown): value is TaskHistoryEntry {
+  return (
+    isRecord(value) &&
+    typeof value.workspaceId === "string" &&
+    typeof value.timestamp === "string" &&
+    isNullableString(value.branch) &&
+    isNullableString(value.defaultTask) &&
+    isNullableString(value.selectedTask) &&
+    typeof value.source === "string"
+  );
+}
+
+function getTaskHistorySource(
+  eventType: TrackerEventType | undefined,
+  payload: Record<string, unknown> | undefined,
+) {
+  return typeof payload?.source === "string"
+    ? payload.source
+    : (eventType ?? "workspace-refreshed");
+}
+
+function timestampOrZero(value: string | null | undefined) {
+  if (!value) {
+    return 0;
+  }
+
+  const timestamp = Date.parse(value);
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+}
+
+function isNullableString(value: unknown): value is string | null {
+  return value === null || typeof value === "string";
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function updateStatusItem(snapshot: WorkspaceContext) {
@@ -365,7 +536,11 @@ async function syncCopilotSessions(
       chatStoragePath:
         config.chatStoragePath || getDefaultWorkspaceStorageRoot(),
     });
-    const requests = await readCopilotChatRequests(workspaceContext, config);
+    const requests = await readCopilotChatRequests(
+      workspaceContext,
+      config,
+      createTaskResolver(context, workspaceContext),
+    );
     logInfo("Session sync read completed", {
       requestCount: requests.length,
       tokenCount: requests.reduce(

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import {
   developerTaskSummaries,
+  filterMeaningfulChatRequests,
   modelSummaries,
   publicLeaderboard,
   taskSummaries,
@@ -34,6 +35,7 @@ function exportCsv(
   type: string,
   database: Awaited<ReturnType<typeof readDatabase>>,
 ) {
+  const chatRequests = filterMeaningfulChatRequests(database.chatRequests);
   switch (type) {
     case "developers": {
       return toCsv(
@@ -72,8 +74,8 @@ function exportCsv(
           "estimatedUsd",
           "estimatedAiCredits",
         ],
-        taskSummaries(database.chatRequests).map((row) => {
-          const matching = database.chatRequests.filter(
+        taskSummaries(chatRequests).map((row) => {
+          const matching = chatRequests.filter(
             (request) =>
               (request.selectedTask ?? "No task") === row.task &&
               (request.repositoryRoot ?? null) === row.repositoryRoot &&
@@ -105,7 +107,7 @@ function exportCsv(
           "outputTokens",
           "totalTokens",
         ],
-        developerTaskSummaries(database.chatRequests).map((row) => [
+        developerTaskSummaries(chatRequests).map((row) => [
           row.githubLogin,
           row.githubId,
           row.task,
@@ -119,7 +121,7 @@ function exportCsv(
     case "models": {
       return toCsv(
         ["model", "requests", "inputTokens", "outputTokens", "totalTokens"],
-        modelSummaries(database.chatRequests).map((row) => [
+        modelSummaries(chatRequests).map((row) => [
           row.model,
           row.requestCount,
           row.inputTokens,
@@ -172,7 +174,7 @@ function exportCsv(
           "totalTokens",
           "capturedAt",
         ],
-        database.chatRequests.map((row) => [
+        chatRequests.map((row) => [
           row.requestRecordId,
           row.githubLogin,
           row.sessionTitle,

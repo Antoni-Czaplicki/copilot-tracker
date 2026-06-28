@@ -1,3 +1,4 @@
+import type { CopilotChatRequest } from "@copilot-tracker/shared";
 import { redirect } from "next/navigation";
 
 import { TaskEditor } from "@/components/task-editor";
@@ -20,9 +21,11 @@ import {
 } from "@/components/ui/table";
 import {
   developerTaskSummaries,
+  filterMeaningfulChatRequests,
   formatDateTime,
   formatNumber,
   getRepositoryName,
+  getRequestActivityTimestamp,
   modelSummaries,
   publicLeaderboard,
   summarizeRequests,
@@ -73,8 +76,12 @@ export default async function AdminPage({
   const view = normalizeView(params.view);
   const currentView = views.find((entry) => entry.id === view) ?? views[0];
   const database = await readDatabase();
-  const metrics = summarizeRequests(database.chatRequests);
-  const cost = estimateRequestsCost(database.chatRequests);
+  const visibleDatabase = {
+    ...database,
+    chatRequests: filterMeaningfulChatRequests(database.chatRequests),
+  };
+  const metrics = summarizeRequests(visibleDatabase.chatRequests);
+  const cost = estimateRequestsCost(visibleDatabase.chatRequests);
 
   return (
     <main className="grid gap-4">
@@ -122,11 +129,13 @@ export default async function AdminPage({
         </LinkButton>
       </section>
 
-      {view === "overview" && <Overview database={database} />}
-      {view === "tasks" && <Tasks database={database} />}
-      {view === "developer-tasks" && <DeveloperTasks database={database} />}
-      {view === "models" && <Models database={database} />}
-      {view === "requests" && <Requests database={database} />}
+      {view === "overview" && <Overview database={visibleDatabase} />}
+      {view === "tasks" && <Tasks database={visibleDatabase} />}
+      {view === "developer-tasks" && (
+        <DeveloperTasks database={visibleDatabase} />
+      )}
+      {view === "models" && <Models database={visibleDatabase} />}
+      {view === "requests" && <Requests database={visibleDatabase} />}
       {view === "github-billing" && <GithubBilling database={database} />}
     </main>
   );
@@ -155,6 +164,7 @@ function Overview({
               <TableHead>Missing</TableHead>
               <TableHead>Total tokens</TableHead>
               <TableHead>Average</TableHead>
+              <TableHead>Cost</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -169,6 +179,7 @@ function Overview({
                 <TableCell>
                   {formatNumber(row.averageTokensPerRequest)}
                 </TableCell>
+                <TableCell>{formatCurrency(row.estimatedUsd)}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -355,9 +366,7 @@ function Requests({
 }) {
   const recentRequests = [...database.chatRequests]
     .sort(
-      (a, b) =>
-        Date.parse(b.requestStartedAt ?? b.capturedAt) -
-        Date.parse(a.requestStartedAt ?? a.capturedAt),
+      (a, b) => getRequestActivityTimestamp(b) - getRequestActivityTimestamp(a),
     )
     .slice(0, 100);
 
@@ -380,6 +389,7 @@ function Requests({
               <TableHead>Branch</TableHead>
               <TableHead>Model</TableHead>
               <TableHead>Tokens</TableHead>
+              <TableHead>Cost</TableHead>
               <TableHead>Task</TableHead>
             </TableRow>
           </TableHeader>
@@ -398,6 +408,7 @@ function Requests({
                     ? "missing"
                     : formatNumber(request.totalTokens)}
                 </TableCell>
+                <TableCell>{formatRequestCost(request)}</TableCell>
                 <TableCell>
                   <TaskEditor
                     initialTask={
@@ -413,6 +424,19 @@ function Requests({
       </CardContent>
     </Card>
   );
+}
+
+function formatRequestCost(request: CopilotChatRequest) {
+  if (request.totalTokens === null) {
+    return "missing";
+  }
+
+  const cost = estimateRequestsCost([request]);
+  if (cost.pricedRequestCount === 0) {
+    return "unpriced";
+  }
+
+  return formatCurrency(cost.estimatedUsd);
 }
 
 function GithubBilling({

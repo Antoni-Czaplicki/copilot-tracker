@@ -37,9 +37,32 @@ export interface ModelSummaryRow extends SummaryMetrics {
   model: string;
 }
 
+export function isMeaningfulChatRequest(request: CopilotChatRequest): boolean {
+  const hasRequestMetadata = [
+    request.requestId,
+    request.responseId,
+    request.modelId,
+    request.resolvedModel,
+    request.modelName,
+  ].some((value) => value !== null && value.length > 0);
+  const hasTokenMetadata =
+    request.inputTokens !== null ||
+    request.outputTokens !== null ||
+    request.totalTokens !== null;
+
+  return hasRequestMetadata || hasTokenMetadata;
+}
+
+export function filterMeaningfulChatRequests<T extends CopilotChatRequest>(
+  requests: T[],
+): T[] {
+  return requests.filter((request) => isMeaningfulChatRequest(request));
+}
+
 export function summarizeRequests(
-  requests: CopilotChatRequest[],
+  sourceRequests: CopilotChatRequest[],
 ): SummaryMetrics {
+  const requests = filterMeaningfulChatRequests(sourceRequests);
   const requestCount = requests.length;
   const missingTokenCount = requests.filter(
     (request) => request.totalTokens === null,
@@ -78,7 +101,7 @@ export function publicLeaderboard(database: TrackerDatabase): LeaderboardRow[] {
       githubId: number | null;
     })[]
   >();
-  for (const request of database.chatRequests) {
+  for (const request of filterMeaningfulChatRequests(database.chatRequests)) {
     const login = request.githubLogin ?? "unknown";
     grouped.set(login, [...(grouped.get(login) ?? []), request]);
   }
@@ -95,9 +118,10 @@ export function publicLeaderboard(database: TrackerDatabase): LeaderboardRow[] {
 }
 
 export function taskSummaries(
-  requests: CopilotChatRequest[],
+  sourceRequests: CopilotChatRequest[],
 ): TaskSummaryRow[] {
   const grouped = new Map<string, CopilotChatRequest[]>();
+  const requests = filterMeaningfulChatRequests(sourceRequests);
   for (const request of requests) {
     const key = [
       request.selectedTask ?? "No task",
@@ -123,11 +147,12 @@ export function taskSummaries(
 }
 
 export function developerTaskSummaries(
-  requests: (CopilotChatRequest & {
+  sourceRequests: (CopilotChatRequest & {
     githubLogin?: string | null;
     githubId?: number | null;
   })[],
 ): DeveloperTaskSummaryRow[] {
+  const requests = filterMeaningfulChatRequests(sourceRequests);
   const grouped = new Map<
     string,
     (CopilotChatRequest & {
@@ -158,9 +183,10 @@ export function developerTaskSummaries(
 }
 
 export function modelSummaries(
-  requests: CopilotChatRequest[],
+  sourceRequests: CopilotChatRequest[],
 ): ModelSummaryRow[] {
   const grouped = new Map<string, CopilotChatRequest[]>();
+  const requests = filterMeaningfulChatRequests(sourceRequests);
   for (const request of requests) {
     const model =
       request.modelId ??
@@ -196,6 +222,19 @@ export function formatDateTime(value: string | null) {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(date);
+}
+
+export function getRequestActivityTimestamp(
+  request: Pick<
+    CopilotChatRequest,
+    "requestCompletedAt" | "requestStartedAt" | "capturedAt"
+  >,
+) {
+  return timestampOrZero(
+    request.requestCompletedAt ??
+      request.requestStartedAt ??
+      request.capturedAt,
+  );
 }
 
 export function getRepositoryName(
@@ -235,8 +274,8 @@ function basename(value: string | null | undefined): string | null {
 function getLastRequestAt(requests: CopilotChatRequest[]) {
   const timestamp = requests.reduce((latest, request) => {
     const candidate = Date.parse(
-      request.requestStartedAt ??
-        request.requestCompletedAt ??
+      request.requestCompletedAt ??
+        request.requestStartedAt ??
         request.capturedAt,
     );
     return Number.isNaN(candidate) ? latest : Math.max(latest, candidate);

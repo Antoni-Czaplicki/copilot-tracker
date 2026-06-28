@@ -20,13 +20,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  filterMeaningfulChatRequests,
   formatDateTime,
   formatNumber,
   getRepositoryName,
+  getRequestActivityTimestamp,
   summarizeRequests,
   taskSummaries,
 } from "@/lib/analytics";
-import { formatCurrency } from "@/lib/pricing";
+import { estimateRequestsCost, formatCurrency } from "@/lib/pricing";
 
 interface DashboardOverviewProps {
   login: string;
@@ -43,19 +45,18 @@ export function DashboardOverview({
   taskPage = 1,
   taskPageBasePath = "/dashboard",
 }: DashboardOverviewProps) {
-  const metrics = summarizeRequests(requests);
-  const summaries = taskSummaries(requests);
+  const visibleRequests = filterMeaningfulChatRequests(requests);
+  const metrics = summarizeRequests(visibleRequests);
+  const summaries = taskSummaries(visibleRequests);
   const taskPageCount = Math.max(1, Math.ceil(summaries.length / taskPageSize));
   const currentTaskPage = Math.min(Math.max(taskPage, 1), taskPageCount);
   const paginatedSummaries = summaries.slice(
     (currentTaskPage - 1) * taskPageSize,
     currentTaskPage * taskPageSize,
   );
-  const recentRequests = [...requests]
+  const recentRequests = [...visibleRequests]
     .sort(
-      (a, b) =>
-        Date.parse(b.requestStartedAt ?? b.capturedAt) -
-        Date.parse(a.requestStartedAt ?? a.capturedAt),
+      (a, b) => getRequestActivityTimestamp(b) - getRequestActivityTimestamp(a),
     )
     .slice(0, 20);
   const chartData = summaries.slice(0, 8).map((summary) => ({
@@ -195,6 +196,7 @@ export function DashboardOverview({
                 <TableHead>Model</TableHead>
                 <TableHead>Tokens</TableHead>
                 <TableHead>Cost</TableHead>
+                <TableHead>Time</TableHead>
                 <TableHead>Task</TableHead>
               </TableRow>
             </TableHeader>
@@ -211,8 +213,13 @@ export function DashboardOverview({
                       ? "missing"
                       : formatNumber(request.totalTokens)}
                   </TableCell>
+                  <TableCell>{formatRequestCost(request)}</TableCell>
                   <TableCell>
-                    {formatCurrency(summarizeRequests([request]).estimatedUsd)}
+                    {formatDateTime(
+                      request.requestCompletedAt ??
+                        request.requestStartedAt ??
+                        request.capturedAt,
+                    )}
                   </TableCell>
                   <TableCell>
                     <TaskEditor
@@ -243,6 +250,19 @@ function Metric({ label, value }: { label: string; value: number | string }) {
       </CardContent>
     </Card>
   );
+}
+
+function formatRequestCost(request: CopilotChatRequest) {
+  if (request.totalTokens === null) {
+    return "missing";
+  }
+
+  const cost = estimateRequestsCost([request]);
+  if (cost.pricedRequestCount === 0) {
+    return "unpriced";
+  }
+
+  return formatCurrency(cost.estimatedUsd);
 }
 
 function taskPageHref(basePath: string, page: number) {

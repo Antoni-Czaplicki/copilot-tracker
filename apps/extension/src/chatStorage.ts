@@ -57,6 +57,23 @@ interface ParsedRequest {
   stopReasons: string[];
 }
 
+interface RequestTaskResolution {
+  selectedTask?: string | null;
+  defaultTask?: string | null;
+  branch?: string | null;
+}
+
+export type RequestTaskResolver = (
+  request: Pick<
+    ParsedRequest,
+    | "requestId"
+    | "responseId"
+    | "sessionId"
+    | "requestStartedAt"
+    | "requestCompletedAt"
+  >,
+) => RequestTaskResolution | null | undefined;
+
 export function getDefaultWorkspaceStorageRoot(): string {
   switch (process.platform) {
     case "darwin":
@@ -112,6 +129,7 @@ export async function getChatSessionSignature(
 export async function readCopilotChatRequests(
   workspaceContext: WorkspaceContext,
   config: TrackerConfig,
+  resolveTaskForRequest?: RequestTaskResolver,
 ): Promise<CopilotChatRequest[]> {
   const storageRoot =
     config.chatStoragePath || getDefaultWorkspaceStorageRoot();
@@ -155,6 +173,10 @@ export async function readCopilotChatRequests(
       requestCount: parsedRequests.length,
     });
     for (const request of parsedRequests) {
+      const requestWorkspaceContext = {
+        ...workspaceContext,
+        ...(resolveTaskForRequest?.(request) ?? {}),
+      };
       const inputTokens = request.inputTokens;
       const outputTokens = request.outputTokens;
       const totalTokens =
@@ -167,8 +189,11 @@ export async function readCopilotChatRequests(
           : "vscode-chat-session";
 
       requests.push({
-        ...workspaceContext,
-        requestRecordId: createRequestRecordId(workspaceContext, request),
+        ...requestWorkspaceContext,
+        requestRecordId: createRequestRecordId(
+          requestWorkspaceContext,
+          request,
+        ),
         requestId: request.requestId,
         responseId: request.responseId,
         sessionId: request.sessionId,
@@ -213,7 +238,7 @@ export async function readCopilotChatRequests(
       (request) => request.totalTokens === null,
     ).length,
   });
-  return dedupedRequests;
+  return dedupedRequests.sort(compareRequestsChronologically);
 }
 
 function dedupeChatRequests(
@@ -496,6 +521,7 @@ async function parseChatSessionFile(
   let sessionCreatedAt: string | null = null;
   let selectedModel: ModelMetadata = {};
   const requests: ParsedRequest[] = [];
+  let ignoredRecordCount = 0;
 
   for (const record of records) {
     const kind = readNumber(record, ["kind"]);
@@ -509,7 +535,7 @@ async function parseChatSessionFile(
         readModelMetadata(
           readUnknown(value, ["inputState", "selectedModel", "metadata"]),
         ) ?? selectedModel;
-      pushRequestRecords(
+      ignoredRecordCount += pushRequestRecords(
         readUnknown(value, ["requests"]),
         requests,
         sessionId,
@@ -525,7 +551,7 @@ async function parseChatSessionFile(
     }
 
     if (kind === 2) {
-      pushRequestRecords(
+      ignoredRecordCount += pushRequestRecords(
         value,
         requests,
         sessionId,
@@ -534,6 +560,15 @@ async function parseChatSessionFile(
         selectedModel,
       );
     }
+  }
+
+  if (ignoredRecordCount > 0) {
+    logDebug("Ignored non-request chat storage records", {
+      file,
+      sessionId,
+      ignoredRecordCount,
+      requestCount: requests.length,
+    });
   }
 
   return requests;
@@ -547,12 +582,16 @@ function pushRequestRecords(
   sessionTitle: string | null,
   selectedModel: ModelMetadata,
 ) {
-  if (!Array.isArray(value)) {
-    return;
+  if (value === undefined || value === null) {
+    return 0;
   }
 
-  for (const request of value) {
-    if (!isRecord(request)) {
+  const records = Array.isArray(value) ? value : [value];
+  let ignoredRecordCount = 0;
+
+  for (const request of records) {
+    if (!isChatRequestRecord(request)) {
+      ignoredRecordCount += 1;
       continue;
     }
     requests.push(
@@ -565,6 +604,33 @@ function pushRequestRecords(
       ),
     );
   }
+
+  return ignoredRecordCount;
+}
+
+function isChatRequestRecord(value: unknown): value is Record<string, unknown> {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  const hasIdentity =
+    Boolean(readString(value, ["requestId"])) ||
+    Boolean(readString(value, ["responseId"])) ||
+    Boolean(readString(value, ["result", "metadata", "responseId"])) ||
+    readUnknown(value, ["timestamp"]) !== undefined;
+  const hasTokenShape =
+    readNumber(value, ["promptTokens"]) !== null ||
+    readNumber(value, ["completionTokens"]) !== null ||
+    readNumber(value, ["result", "metadata", "promptTokens"]) !== null ||
+    readNumber(value, ["result", "metadata", "outputTokens"]) !== null ||
+    Array.isArray(readUnknown(value, ["promptTokenDetails"]));
+  const hasRequestShape =
+    Boolean(readString(value, ["modelId"])) ||
+    isRecord(readUnknown(value, ["message"])) ||
+    Array.isArray(readUnknown(value, ["response"])) ||
+    hasTokenShape;
+
+  return hasIdentity && hasRequestShape;
 }
 
 function parseRequestRecord(
@@ -679,6 +745,10 @@ function createRequestRecordId(
     return request.requestId;
   }
 
+  if (request.responseId) {
+    return `response:${request.responseId}`;
+  }
+
   return createHash("sha256")
     .update(
       [
@@ -686,10 +756,25 @@ function createRequestRecordId(
         request.sessionId,
         request.requestStartedAt ?? "",
         request.modelId ?? "",
-        workspaceContext.selectedTask ?? "",
       ].join("|"),
     )
     .digest("hex");
+}
+
+function compareRequestsChronologically(
+  a: CopilotChatRequest,
+  b: CopilotChatRequest,
+) {
+  return requestTimestamp(a) - requestTimestamp(b);
+}
+
+function requestTimestamp(request: CopilotChatRequest) {
+  const timestamp = Date.parse(
+    request.requestStartedAt ??
+      request.requestCompletedAt ??
+      request.capturedAt,
+  );
+  return Number.isNaN(timestamp) ? 0 : timestamp;
 }
 
 function safeJsonParse(value: string): unknown | null {

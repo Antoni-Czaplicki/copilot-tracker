@@ -199,7 +199,12 @@ export async function upsertChatRequests(
         repositoryRemoteUrl: sql`excluded.repository_remote_url`,
         branch: sql`excluded.branch`,
         defaultTask: sql`excluded.default_task`,
-        selectedTask: sql`excluded.selected_task`,
+        selectedTask: sql`case
+          when ${chatRequests.selectedTask} is null
+            or ${chatRequests.selectedTask} = ${chatRequests.defaultTask}
+          then excluded.selected_task
+          else ${chatRequests.selectedTask}
+        end`,
         githubLogin: user.login,
         githubId: user.githubId,
       },

@@ -8,6 +8,11 @@ interface ModelPrice {
 
 const modelPrices: ModelPrice[] = [
   {
+    aliases: ["gpt-5 nano", "gpt-5-nano"],
+    inputUsdPerMillion: 0.05,
+    outputUsdPerMillion: 0.4,
+  },
+  {
     aliases: ["gpt-5 mini", "gpt-5-mini"],
     inputUsdPerMillion: 0.25,
     outputUsdPerMillion: 2,
