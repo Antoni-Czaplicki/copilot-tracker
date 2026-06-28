@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/table";
 import { formatNumber, publicLeaderboard } from "@/lib/analytics";
 import { currentUser } from "@/lib/auth";
+import { formatCurrency } from "@/lib/pricing";
 import { readDatabase } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
@@ -63,6 +64,7 @@ export default async function LeaderboardPage() {
                 <TableHead>Input</TableHead>
                 <TableHead>Output</TableHead>
                 <TableHead>Total</TableHead>
+                <TableHead>Estimated cost</TableHead>
                 <TableHead>Avg/request</TableHead>
               </TableRow>
             </TableHeader>
@@ -77,6 +79,7 @@ export default async function LeaderboardPage() {
                   <TableCell>{formatNumber(row.inputTokens)}</TableCell>
                   <TableCell>{formatNumber(row.outputTokens)}</TableCell>
                   <TableCell>{formatNumber(row.totalTokens)}</TableCell>
+                  <TableCell>{formatCurrency(row.estimatedUsd)}</TableCell>
                   <TableCell>
                     {formatNumber(row.averageTokensPerRequest)}
                   </TableCell>

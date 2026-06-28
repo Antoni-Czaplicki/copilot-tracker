@@ -78,6 +78,11 @@ const modelPrices: ModelPrice[] = [
     outputUsdPerMillion: 25,
   },
   {
+    aliases: ["gemini 2.5 flash", "gemini-2.5-flash"],
+    inputUsdPerMillion: 0.3,
+    outputUsdPerMillion: 2.5,
+  },
+  {
     aliases: ["gemini 2.5 pro", "gemini-2.5-pro"],
     inputUsdPerMillion: 1.25,
     outputUsdPerMillion: 10,

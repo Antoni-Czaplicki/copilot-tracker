@@ -43,6 +43,11 @@
         "command": "copilot-tracker.showContext",
         "title": "Show Current Context",
         "category": "Copilot Tracker"
+      },
+      {
+        "command": "copilot-tracker.showLogs",
+        "title": "Show Logs",
+        "category": "Copilot Tracker"
       }
     ],
     "configuration": {
@@ -78,7 +83,8 @@
     "onCommand:copilot-tracker.useBranchTask",
     "onCommand:copilot-tracker.syncCopilotSessions",
     "onCommand:copilot-tracker.openDashboard",
-    "onCommand:copilot-tracker.showContext"
+    "onCommand:copilot-tracker.showContext",
+    "onCommand:copilot-tracker.showLogs"
   ],
   "devDependencies": {
     "@types/mocha": "^10.0.10",

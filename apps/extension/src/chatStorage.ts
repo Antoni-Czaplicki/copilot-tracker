@@ -7,6 +7,7 @@ import * as path from "node:path";
 import { promisify } from "node:util";
 import * as vscode from "vscode";
 
+import { logDebug, logInfo, logWarn } from "./logger";
 import { TrackerConfig } from "./trackerClient";
 import {
   CopilotChatRequest,
@@ -100,7 +101,12 @@ export async function getChatSessionSignature(
     }
   }
 
-  return hash.digest("hex");
+  const signature = hash.digest("hex");
+  logDebug("Computed chat storage signature", {
+    storageRoot,
+    fileCount: files.length,
+  });
+  return signature;
 }
 
 export async function readCopilotChatRequests(
@@ -109,13 +115,30 @@ export async function readCopilotChatRequests(
 ): Promise<CopilotChatRequest[]> {
   const storageRoot =
     config.chatStoragePath || getDefaultWorkspaceStorageRoot();
+  logInfo("Reading Copilot chat requests", {
+    storageRoot,
+    workspacePath: workspaceContext.workspacePath,
+    repositoryRoot: workspaceContext.repositoryRoot,
+  });
   const storage = await findWorkspaceStorage(storageRoot, workspaceContext);
   if (!storage) {
+    logWarn("No matching VS Code workspace storage directory found", {
+      storageRoot,
+      workspacePath: workspaceContext.workspacePath,
+      repositoryRoot: workspaceContext.repositoryRoot,
+    });
     return [];
   }
 
   const index = await readSessionIndex(storage.stateDbPath);
   const files = await findChatSessionFiles(storage.chatSessionsPath);
+  logInfo("Matched VS Code workspace storage", {
+    storagePath: storage.storagePath,
+    chatSessionsPath: storage.chatSessionsPath,
+    stateDbPath: storage.stateDbPath,
+    indexedSessionCount: index.size,
+    chatFileCount: files.length,
+  });
   const requests: CopilotChatRequest[] = [];
 
   for (const file of files) {
@@ -126,6 +149,11 @@ export async function readCopilotChatRequests(
       sessionId,
       sessionIndexEntry?.title ?? null,
     );
+    logDebug("Parsed chat session file", {
+      file,
+      sessionId,
+      requestCount: parsedRequests.length,
+    });
     for (const request of parsedRequests) {
       const inputTokens = request.inputTokens;
       const outputTokens = request.outputTokens;
@@ -165,7 +193,101 @@ export async function readCopilotChatRequests(
     }
   }
 
-  return requests;
+  const dedupedRequests = dedupeChatRequests(requests);
+  const duplicateCount = requests.length - dedupedRequests.length;
+  if (duplicateCount > 0) {
+    logInfo("Collapsed duplicate Copilot chat request records", {
+      duplicateCount,
+      requestCountBefore: requests.length,
+      requestCountAfter: dedupedRequests.length,
+    });
+  }
+
+  logInfo("Finished reading Copilot chat requests", {
+    requestCount: dedupedRequests.length,
+    tokenCount: dedupedRequests.reduce(
+      (total, request) => total + (request.totalTokens ?? 0),
+      0,
+    ),
+    missingTokenCount: dedupedRequests.filter(
+      (request) => request.totalTokens === null,
+    ).length,
+  });
+  return dedupedRequests;
+}
+
+function dedupeChatRequests(
+  requests: CopilotChatRequest[],
+): CopilotChatRequest[] {
+  const byRecordId = new Map<string, CopilotChatRequest>();
+  for (const request of requests) {
+    const previous = byRecordId.get(request.requestRecordId);
+    byRecordId.set(
+      request.requestRecordId,
+      previous ? chooseRicherRequest(previous, request) : request,
+    );
+  }
+
+  return [...byRecordId.values()];
+}
+
+function chooseRicherRequest(
+  current: CopilotChatRequest,
+  next: CopilotChatRequest,
+): CopilotChatRequest {
+  if (requestCompletenessScore(next) > requestCompletenessScore(current)) {
+    return mergeRequests(next, current);
+  }
+
+  return mergeRequests(current, next);
+}
+
+function mergeRequests(
+  preferred: CopilotChatRequest,
+  fallback: CopilotChatRequest,
+): CopilotChatRequest {
+  return {
+    ...preferred,
+    requestId: preferred.requestId ?? fallback.requestId,
+    responseId: preferred.responseId ?? fallback.responseId,
+    sessionTitle: preferred.sessionTitle ?? fallback.sessionTitle,
+    sessionCreatedAt: preferred.sessionCreatedAt ?? fallback.sessionCreatedAt,
+    requestStartedAt: preferred.requestStartedAt ?? fallback.requestStartedAt,
+    requestCompletedAt:
+      preferred.requestCompletedAt ?? fallback.requestCompletedAt,
+    modelId: preferred.modelId ?? fallback.modelId,
+    resolvedModel: preferred.resolvedModel ?? fallback.resolvedModel,
+    modelName: preferred.modelName ?? fallback.modelName,
+    modelVendor: preferred.modelVendor ?? fallback.modelVendor,
+    modelFamily: preferred.modelFamily ?? fallback.modelFamily,
+    inputTokens: preferred.inputTokens ?? fallback.inputTokens,
+    outputTokens: preferred.outputTokens ?? fallback.outputTokens,
+    totalTokens: preferred.totalTokens ?? fallback.totalTokens,
+    promptTokenDetails:
+      preferred.promptTokenDetails.length > 0
+        ? preferred.promptTokenDetails
+        : fallback.promptTokenDetails,
+    stopReasons:
+      preferred.stopReasons.length > 0
+        ? preferred.stopReasons
+        : fallback.stopReasons,
+  };
+}
+
+function requestCompletenessScore(request: CopilotChatRequest) {
+  return [
+    request.totalTokens === null ? 0 : 100,
+    request.inputTokens === null ? 0 : 20,
+    request.outputTokens === null ? 0 : 20,
+    request.requestCompletedAt ? 10 : 0,
+    request.modelId ? 5 : 0,
+    request.promptTokenDetails.length,
+    Date.parse(
+      request.requestCompletedAt ??
+        request.requestStartedAt ??
+        request.capturedAt,
+    ) / 1_000_000_000_000,
+  ].reduce((total, value) => total + (Number.isFinite(value) ? value : 0), 0);
 }
 
 export function createChatSessionWatcher(
@@ -173,11 +295,13 @@ export function createChatSessionWatcher(
   onChanged: () => void,
 ): vscode.Disposable[] {
   const rootUri = vscode.Uri.file(storageRoot);
+  const [jsonlPattern, jsonPattern] =
+    getChatSessionWatcherPatterns(storageRoot);
   const jsonlWatcher = vscode.workspace.createFileSystemWatcher(
-    new vscode.RelativePattern(rootUri, "**/chatSessions/*.jsonl"),
+    new vscode.RelativePattern(rootUri, jsonlPattern),
   );
   const jsonWatcher = vscode.workspace.createFileSystemWatcher(
-    new vscode.RelativePattern(rootUri, "**/chatSessions/*.json"),
+    new vscode.RelativePattern(rootUri, jsonPattern),
   );
 
   return [
@@ -192,12 +316,29 @@ export function createChatSessionWatcher(
   ];
 }
 
+export function getChatSessionWatcherPatterns(
+  storageRoot: string,
+): [string, string] {
+  if (path.basename(storageRoot) === "chatSessions") {
+    return ["*.jsonl", "*.json"];
+  }
+
+  return ["**/chatSessions/*.jsonl", "**/chatSessions/*.json"];
+}
+
 async function findWorkspaceStorage(
   storageRoot: string,
   workspaceContext: WorkspaceContext,
 ): Promise<WorkspaceStorageMatch | null> {
   if (!existsSync(storageRoot)) {
+    logWarn("Configured VS Code storage root does not exist", { storageRoot });
     return null;
+  }
+
+  const directMatch = await getDirectStorageMatch(storageRoot);
+  if (directMatch) {
+    logInfo("Using direct VS Code workspace storage match", directMatch);
+    return directMatch;
   }
 
   const candidates = await readdir(storageRoot, { withFileTypes: true });
@@ -222,6 +363,10 @@ async function findWorkspaceStorage(
             workspaceJson.includes(encodeURI(needle)),
         )
       ) {
+        logInfo("Found VS Code workspace storage candidate", {
+          storagePath,
+          workspaceJsonPath,
+        });
         return {
           storagePath,
           chatSessionsPath: path.join(storagePath, "chatSessions"),
@@ -231,6 +376,36 @@ async function findWorkspaceStorage(
     } catch {
       // Not a workspace storage directory.
     }
+  }
+
+  logWarn("Scanned VS Code storage root without finding workspace match", {
+    storageRoot,
+    candidateCount: candidates.length,
+    needles,
+  });
+  return null;
+}
+
+async function getDirectStorageMatch(
+  storageRoot: string,
+): Promise<WorkspaceStorageMatch | null> {
+  const storageRootName = path.basename(storageRoot);
+  if (storageRootName === "chatSessions") {
+    const storagePath = path.dirname(storageRoot);
+    return {
+      storagePath,
+      chatSessionsPath: storageRoot,
+      stateDbPath: path.join(storagePath, "state.vscdb"),
+    };
+  }
+
+  const chatSessionsPath = path.join(storageRoot, "chatSessions");
+  if (existsSync(chatSessionsPath)) {
+    return {
+      storagePath: storageRoot,
+      chatSessionsPath,
+      stateDbPath: path.join(storageRoot, "state.vscdb"),
+    };
   }
 
   return null;
@@ -294,6 +469,10 @@ async function readSessionIndex(
       "Copilot Tracker could not read VS Code chat session index",
       error,
     );
+    logWarn("Could not read VS Code chat session index", {
+      stateDbPath,
+      error: error instanceof Error ? error.message : String(error),
+    });
   }
 
   return entries;
@@ -330,6 +509,14 @@ async function parseChatSessionFile(
         readModelMetadata(
           readUnknown(value, ["inputState", "selectedModel", "metadata"]),
         ) ?? selectedModel;
+      pushRequestRecords(
+        readUnknown(value, ["requests"]),
+        requests,
+        sessionId,
+        sessionCreatedAt,
+        sessionTitle,
+        selectedModel,
+      );
     }
 
     if (kind === 1 && isRecord(value)) {
@@ -337,25 +524,47 @@ async function parseChatSessionFile(
         readModelMetadata(readUnknown(value, ["metadata"])) ?? selectedModel;
     }
 
-    if (kind === 2 && Array.isArray(value)) {
-      for (const request of value) {
-        if (!isRecord(request)) {
-          continue;
-        }
-        requests.push(
-          parseRequestRecord(
-            request,
-            sessionId,
-            sessionCreatedAt,
-            sessionTitle,
-            selectedModel,
-          ),
-        );
-      }
+    if (kind === 2) {
+      pushRequestRecords(
+        value,
+        requests,
+        sessionId,
+        sessionCreatedAt,
+        sessionTitle,
+        selectedModel,
+      );
     }
   }
 
   return requests;
+}
+
+function pushRequestRecords(
+  value: unknown,
+  requests: ParsedRequest[],
+  sessionId: string,
+  sessionCreatedAt: string | null,
+  sessionTitle: string | null,
+  selectedModel: ModelMetadata,
+) {
+  if (!Array.isArray(value)) {
+    return;
+  }
+
+  for (const request of value) {
+    if (!isRecord(request)) {
+      continue;
+    }
+    requests.push(
+      parseRequestRecord(
+        request,
+        sessionId,
+        sessionCreatedAt,
+        sessionTitle,
+        selectedModel,
+      ),
+    );
+  }
 }
 
 function parseRequestRecord(

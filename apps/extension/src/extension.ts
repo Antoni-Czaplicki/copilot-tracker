@@ -8,6 +8,13 @@ import {
   readCopilotChatRequests,
 } from "./chatStorage";
 import { getGitHubToken } from "./githubAuth";
+import {
+  initializeLogger,
+  logError,
+  logInfo,
+  logWarn,
+  showLogs,
+} from "./logger";
 import { TrackerClient, getTrackerConfig } from "./trackerClient";
 import { TrackerEvent, TrackerEventType, WorkspaceContext } from "./types";
 import { buildWorkspaceContext, setSelectedTask } from "./workspaceContext";
@@ -22,6 +29,16 @@ let syncTimer: ReturnType<typeof setTimeout> | undefined;
 let lastSyncStats = { requestCount: 0, tokenCount: 0, missingTokenCount: 0 };
 
 export function activate(context: vscode.ExtensionContext) {
+  const outputChannel = initializeLogger();
+  context.subscriptions.push(outputChannel);
+  logInfo("Extension activated", {
+    extensionVersion: context.extension.packageJSON.version,
+    vscodeVersion: vscode.version,
+    workspaceFolders: vscode.workspace.workspaceFolders?.map(
+      (folder) => folder.uri.fsPath,
+    ),
+  });
+
   const client = new TrackerClient(getGitHubToken);
 
   statusItem = vscode.window.createStatusBarItem(
@@ -58,12 +75,18 @@ export function activate(context: vscode.ExtensionContext) {
       showContext(context),
     ),
   );
+  context.subscriptions.push(
+    vscode.commands.registerCommand(`${extensionId}.showLogs`, () =>
+      showLogs(),
+    ),
+  );
 
   void refreshContext(context, client, "extension-started");
   void syncCopilotSessions(context, client);
 
   const storageRoot =
     getTrackerConfig().chatStoragePath || getDefaultWorkspaceStorageRoot();
+  logInfo("Creating chat storage watchers", { storageRoot });
   const watchers = createChatSessionWatcher(storageRoot, () =>
     scheduleSync(context, client, 350),
   );
@@ -83,6 +106,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.workspace.onDidChangeWorkspaceFolders(() => {
+      logInfo("Workspace folders changed");
       void refreshContext(context, client, "extension-started");
       scheduleSync(context, client, 350);
     }),
@@ -90,6 +114,7 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration((event) => {
       if (event.affectsConfiguration(extensionId)) {
+        logInfo("Copilot Tracker configuration changed", getTrackerConfig());
         scheduleSync(context, client, 350);
       }
     }),
@@ -97,7 +122,9 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push({ dispose: () => clearPendingSync() });
 }
 
-export function deactivate() {}
+export function deactivate() {
+  logInfo("Extension deactivated");
+}
 
 async function setTask(
   context: vscode.ExtensionContext,
@@ -118,6 +145,7 @@ async function setTask(
   }
 
   await setSelectedTask(context, task.trim());
+  logInfo("Manual task selected", { task: task.trim() });
   await refreshContext(context, client, "task-changed", {
     source: "manual-input",
   });
@@ -129,6 +157,7 @@ async function useBranchTask(
   client: TrackerClient,
 ) {
   await setSelectedTask(context, undefined);
+  logInfo("Reverted to branch-derived task");
   await refreshContext(context, client, "task-changed", {
     source: "branch-default",
   });
@@ -140,6 +169,7 @@ async function showContext(context: vscode.ExtensionContext) {
   const config = getTrackerConfig();
   const details = [
     `Workspace: ${snapshot.workspaceName ?? "none"}`,
+    `Repository name: ${getRepositoryDisplayName(snapshot)}`,
     `Repository: ${snapshot.repositoryRoot ?? "none"}`,
     `Remote: ${snapshot.repositoryRemoteUrl ?? "none"}`,
     `Branch: ${snapshot.branch ?? "none"}`,
@@ -157,6 +187,7 @@ async function showContext(context: vscode.ExtensionContext) {
 
 async function openDashboard() {
   const url = new URL("/dashboard", getTrackerConfig().serverUrl);
+  logInfo("Opening dashboard", { url: url.toString() });
   await vscode.env.openExternal(vscode.Uri.parse(url.toString()));
 }
 
@@ -171,7 +202,26 @@ async function refreshContext(
   currentWorkspaceContext = next;
   updateStatusItem(next);
 
+  if (eventType) {
+    logInfo("Workspace context refreshed", {
+      eventType,
+      workspaceName: next.workspaceName,
+      repositoryName: getRepositoryDisplayName(next),
+      repositoryRoot: next.repositoryRoot,
+      repositoryRemoteUrl: next.repositoryRemoteUrl,
+      branch: next.branch,
+      defaultTask: next.defaultTask,
+      selectedTask: next.selectedTask,
+    });
+  }
+
   if (previous && previous.branch !== next.branch) {
+    logInfo("Branch changed", {
+      previousBranch: previous.branch,
+      nextBranch: next.branch,
+      nextDefaultTask: next.defaultTask,
+      nextSelectedTask: next.selectedTask,
+    });
     await maybePromptForBranchTask(context, client, previous, next);
     await sendEvent(context, client, "branch-changed", {
       previousBranch: previous.branch,
@@ -200,6 +250,12 @@ async function maybePromptForBranchTask(
   }
 
   await context.workspaceState.update(lastBranchPromptKey, promptKey);
+  logInfo("Prompting for branch task switch", {
+    previousBranch: previous.branch,
+    nextBranch: next.branch,
+    defaultTask: next.defaultTask,
+    selectedTask: next.selectedTask,
+  });
   const choice = await vscode.window.showInformationMessage(
     `Branch changed to ${next.branch}. Assign Copilot usage to ${next.defaultTask}?`,
     "Switch task",
@@ -207,11 +263,14 @@ async function maybePromptForBranchTask(
   );
 
   if (choice === "Switch task") {
+    logInfo("Branch task switch accepted", { task: next.defaultTask });
     await setSelectedTask(context, undefined);
     await refreshContext(context, client, "task-changed", {
       source: "branch-change-prompt",
     });
     await syncCopilotSessions(context, client);
+  } else {
+    logInfo("Branch task switch dismissed", { choice });
   }
 }
 
@@ -237,6 +296,7 @@ function scheduleSync(
   delayMs: number,
 ) {
   clearPendingSync();
+  logInfo("Sync scheduled", { delayMs });
   syncTimer = setTimeout(() => {
     syncTimer = undefined;
     void syncCopilotSessions(context, client);
@@ -260,19 +320,22 @@ async function pollForChatStorageChanges(
   }
 
   try {
-    const signature = await getChatSessionSignature(
-      config.chatStoragePath || getDefaultWorkspaceStorageRoot(),
-    );
+    const storageRoot =
+      config.chatStoragePath || getDefaultWorkspaceStorageRoot();
+    const signature = await getChatSessionSignature(storageRoot);
     if (lastChatSignature === undefined) {
       lastChatSignature = signature;
+      logInfo("Initial chat storage signature captured", { storageRoot });
       return;
     }
     if (signature !== lastChatSignature) {
       lastChatSignature = signature;
+      logInfo("Chat storage change detected", { storageRoot });
       scheduleSync(context, client, 250);
     }
   } catch (error) {
     console.warn("Copilot Tracker could not poll chat storage changes", error);
+    logError("Could not poll chat storage changes", error);
   }
 }
 
@@ -282,6 +345,7 @@ async function syncCopilotSessions(
 ) {
   const config = getTrackerConfig();
   if (!config.readVsCodeChatStorage) {
+    logInfo("Skipping session sync because chat storage reading is disabled");
     return;
   }
 
@@ -291,7 +355,27 @@ async function syncCopilotSessions(
   try {
     const workspaceContext =
       currentWorkspaceContext ?? (await buildWorkspaceContext(context));
+    logInfo("Session sync started", {
+      workspaceName: workspaceContext.workspaceName,
+      repositoryName: getRepositoryDisplayName(workspaceContext),
+      repositoryRoot: workspaceContext.repositoryRoot,
+      branch: workspaceContext.branch,
+      selectedTask: workspaceContext.selectedTask,
+      serverUrl: config.serverUrl,
+      chatStoragePath:
+        config.chatStoragePath || getDefaultWorkspaceStorageRoot(),
+    });
     const requests = await readCopilotChatRequests(workspaceContext, config);
+    logInfo("Session sync read completed", {
+      requestCount: requests.length,
+      tokenCount: requests.reduce(
+        (total, request) => total + (request.totalTokens ?? 0),
+        0,
+      ),
+      missingTokenCount: requests.filter(
+        (request) => request.totalTokens === null,
+      ).length,
+    });
     await client.sendChatRequests(requests);
     lastSyncStats = {
       requestCount: requests.length,
@@ -304,13 +388,33 @@ async function syncCopilotSessions(
       ).length,
     };
     updateStatusItem(workspaceContext);
+    logInfo("Session sync finished", lastSyncStats);
     await sendEvent(context, client, "session-sync-finished", lastSyncStats);
   } catch (error) {
     console.warn("Copilot Tracker session sync failed", error);
+    logError("Session sync failed", error);
     await sendEvent(context, client, "session-sync-failed", {
       message: error instanceof Error ? error.message : String(error),
     });
   }
+}
+
+function getRepositoryDisplayName(workspaceContext: WorkspaceContext) {
+  return (
+    basename(workspaceContext.repositoryRoot) ??
+    workspaceContext.workspaceName ??
+    basename(workspaceContext.workspacePath) ??
+    "unknown"
+  );
+}
+
+function basename(value: string | null) {
+  if (!value) {
+    return null;
+  }
+
+  const normalized = value.replace(/\\/g, "/").replace(/\/+$/g, "");
+  return normalized.split("/").filter(Boolean).at(-1) ?? null;
 }
 
 async function sendEvent(
@@ -334,7 +438,12 @@ async function sendEvent(
 
   try {
     await client.sendEvent(event);
+    logInfo("Event sent", { eventType });
   } catch (error) {
     console.warn("Copilot Tracker failed to send event", error);
+    logWarn("Failed to send event", {
+      eventType,
+      error: error instanceof Error ? error.message : String(error),
+    });
   }
 }

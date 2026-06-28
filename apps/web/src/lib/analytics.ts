@@ -1,5 +1,6 @@
 import type { CopilotChatRequest } from "@copilot-tracker/shared";
 
+import { estimateRequestsCost } from "./pricing";
 import type { TrackerDatabase } from "./store";
 
 export interface SummaryMetrics {
@@ -9,6 +10,8 @@ export interface SummaryMetrics {
   outputTokens: number;
   totalTokens: number;
   averageTokensPerRequest: number;
+  estimatedUsd: number;
+  lastRequestAt: string | null;
 }
 
 export interface LeaderboardRow extends SummaryMetrics {
@@ -19,6 +22,7 @@ export interface LeaderboardRow extends SummaryMetrics {
 
 export interface TaskSummaryRow extends SummaryMetrics {
   task: string;
+  repositoryName: string;
   repositoryRoot: string | null;
   branch: string | null;
 }
@@ -52,6 +56,7 @@ export function summarizeRequests(
     (total, request) => total + (request.totalTokens ?? 0),
     0,
   );
+  const cost = estimateRequestsCost(requests);
   return {
     requestCount,
     missingTokenCount,
@@ -60,6 +65,8 @@ export function summarizeRequests(
     totalTokens,
     averageTokensPerRequest:
       requestCount === 0 ? 0 : Math.round(totalTokens / requestCount),
+    estimatedUsd: cost.estimatedUsd,
+    lastRequestAt: getLastRequestAt(requests),
   };
 }
 
@@ -103,14 +110,16 @@ export function taskSummaries(
   return [...grouped.entries()]
     .map(([key, groupedRequests]) => {
       const [task, repositoryRoot, branch] = key.split("\u0000");
+      const firstRequest = groupedRequests[0];
       return {
         task,
+        repositoryName: getRepositoryName(firstRequest),
         repositoryRoot: repositoryRoot || null,
         branch: branch || null,
         ...summarizeRequests(groupedRequests),
       };
     })
-    .sort((a, b) => b.totalTokens - a.totalTokens);
+    .sort(compareByLastRequest);
 }
 
 export function developerTaskSummaries(
@@ -171,4 +180,89 @@ export function modelSummaries(
 
 export function formatNumber(value: number) {
   return new Intl.NumberFormat("en-US").format(value);
+}
+
+export function formatDateTime(value: string | null) {
+  if (!value) {
+    return "unknown";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "unknown";
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
+}
+
+export function getRepositoryName(
+  request:
+    | Pick<
+        CopilotChatRequest,
+        "repositoryRoot" | "workspaceName" | "workspacePath"
+      >
+    | null
+    | undefined,
+): string {
+  return (
+    basename(request?.repositoryRoot) ??
+    request?.workspaceName ??
+    basename(request?.workspacePath) ??
+    "unknown"
+  );
+}
+
+function basename(value: string | null | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const normalized = value.replaceAll("\\", "/").replaceAll(/\/+$/g, "");
+  const segments = normalized.split("/");
+  for (let index = segments.length - 1; index >= 0; index -= 1) {
+    const segment = segments[index];
+    if (segment) {
+      return segment;
+    }
+  }
+
+  return null;
+}
+
+function getLastRequestAt(requests: CopilotChatRequest[]) {
+  const timestamp = requests.reduce((latest, request) => {
+    const candidate = Date.parse(
+      request.requestStartedAt ??
+        request.requestCompletedAt ??
+        request.capturedAt,
+    );
+    return Number.isNaN(candidate) ? latest : Math.max(latest, candidate);
+  }, 0);
+
+  return timestamp === 0 ? null : new Date(timestamp).toISOString();
+}
+
+function compareByLastRequest(
+  a: { lastRequestAt: string | null; totalTokens: number },
+  b: { lastRequestAt: string | null; totalTokens: number },
+) {
+  const byLastRequest =
+    timestampOrZero(b.lastRequestAt) - timestampOrZero(a.lastRequestAt);
+  if (byLastRequest !== 0) {
+    return byLastRequest;
+  }
+
+  return b.totalTokens - a.totalTokens;
+}
+
+function timestampOrZero(value: string | null) {
+  if (!value) {
+    return 0;
+  }
+
+  const timestamp = Date.parse(value);
+  return Number.isNaN(timestamp) ? 0 : timestamp;
 }

@@ -15,20 +15,28 @@ export const dynamic = "force-dynamic";
 interface HomePageProps {
   searchParams?: Promise<{
     auth?: string;
+    taskPage?: string;
   }>;
 }
 
 export default async function HomePage({ searchParams }: HomePageProps) {
+  const parameters = await searchParams;
   const user = await currentUser();
   if (user !== null) {
     const database = await readDatabase();
     const requests = database.chatRequests.filter(
       (request) => request.githubId === user.githubId,
     );
-    return <DashboardOverview login={user.login} requests={requests} />;
+    return (
+      <DashboardOverview
+        login={user.login}
+        requests={requests}
+        taskPage={parsePage(parameters?.taskPage)}
+        taskPageBasePath="/"
+      />
+    );
   }
 
-  const parameters = await searchParams;
   const authError = parameters?.auth;
 
   return (
@@ -114,4 +122,9 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       </Card>
     </main>
   );
+}
+
+function parsePage(value: string | undefined) {
+  const page = Number(value);
+  return Number.isInteger(page) && page > 0 ? page : 1;
 }

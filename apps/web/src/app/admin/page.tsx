@@ -20,7 +20,9 @@ import {
 } from "@/components/ui/table";
 import {
   developerTaskSummaries,
+  formatDateTime,
   formatNumber,
+  getRepositoryName,
   modelSummaries,
   publicLeaderboard,
   summarizeRequests,
@@ -196,10 +198,12 @@ function Tasks({
           <TableHeader>
             <TableRow>
               <TableHead>Task</TableHead>
+              <TableHead>Repo</TableHead>
               <TableHead>Branch</TableHead>
               <TableHead>Requests</TableHead>
               <TableHead>Total tokens</TableHead>
               <TableHead>Estimated cost</TableHead>
+              <TableHead>Last request</TableHead>
               <TableHead>Priced</TableHead>
             </TableRow>
           </TableHeader>
@@ -219,10 +223,12 @@ function Tasks({
                   <TableCell>
                     <strong>{row.task}</strong>
                   </TableCell>
+                  <TableCell>{row.repositoryName}</TableCell>
                   <TableCell>{row.branch ?? "none"}</TableCell>
                   <TableCell>{formatNumber(row.requestCount)}</TableCell>
                   <TableCell>{formatNumber(row.totalTokens)}</TableCell>
                   <TableCell>{formatCurrency(cost.estimatedUsd)}</TableCell>
+                  <TableCell>{formatDateTime(row.lastRequestAt)}</TableCell>
                   <TableCell>
                     {formatNumber(cost.pricedRequestCount)} /{" "}
                     {formatNumber(row.requestCount)}
@@ -370,6 +376,7 @@ function Requests({
             <TableRow>
               <TableHead>Developer</TableHead>
               <TableHead>Session</TableHead>
+              <TableHead>Repo</TableHead>
               <TableHead>Branch</TableHead>
               <TableHead>Model</TableHead>
               <TableHead>Tokens</TableHead>
@@ -383,6 +390,7 @@ function Requests({
                 <TableCell>
                   {request.sessionTitle ?? request.sessionId}
                 </TableCell>
+                <TableCell>{getRepositoryName(request)}</TableCell>
                 <TableCell>{request.branch ?? "none"}</TableCell>
                 <TableCell>{request.modelId ?? "unknown"}</TableCell>
                 <TableCell>

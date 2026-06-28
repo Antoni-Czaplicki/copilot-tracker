@@ -25,10 +25,15 @@ export async function POST(request: NextRequest) {
       chatRequest.sessionId &&
       chatRequest.workspaceId,
   );
-  await upsertChatRequests(validRequests, user);
+  const upserted = await upsertChatRequests(validRequests, user);
 
   return NextResponse.json(
-    { ok: true, upserted: validRequests.length },
+    {
+      ok: true,
+      received: body.requests.length,
+      accepted: validRequests.length,
+      upserted,
+    },
     { status: 202 },
   );
 }
