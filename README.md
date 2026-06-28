@@ -4,7 +4,7 @@ Monorepo for tracking GitHub Copilot Chat token usage by developer, workspace, r
 
 The project has three packages:
 
-- `apps/extension` - VS Code extension that observes Copilot Chat session metadata and sends usage records.
+- `apps/extension` - VS Code extension that configures Copilot Chat OpenTelemetry and sends usage records.
 - `apps/web` - Next.js app with ingestion API routes, GitHub login, dashboard, authenticated leaderboard, admin views, and Drizzle/Postgres storage.
 - `packages/shared` - shared TypeScript event and request contracts.
 
@@ -12,15 +12,15 @@ The project has three packages:
 
 VS Code does not expose a stable public event that lets another extension listen to every built-in Copilot Chat request or response. The public Chat Participant API is for extensions that own their own participant, not for intercepting Copilot's built-in chat.
 
-This extension uses a pragmatic internal-tool approach:
+This extension uses GitHub Copilot Chat OpenTelemetry as the only capture source:
 
-1. Watch VS Code `workspaceStorage/**/chatSessions/*.jsonl` and `*.json` files.
-2. Read the current workspace chat index from `state.vscdb`.
-3. Extract session title, request ids, model metadata, timestamps, and persisted token fields.
-4. Send metadata to the web server API.
+1. Configure Copilot Chat OTel with the file exporter.
+2. Read the local OTel JSONL file.
+3. Group spans by trace and extract `invoke_agent` or `chat` span metadata.
+4. Send model, token, repository, branch, task, and timing metadata to the web server API.
 5. Summarize the data by user, workspace, repository, branch, task, session, and model.
 
-The extension does not store prompts or responses.
+The extension sets Copilot OTel content capture to `false` and does not store prompts or responses.
 
 ## Task Detection
 
@@ -38,14 +38,15 @@ The web dashboard also lets users and admins reassign stored request records to 
 
 ## Token Policy
 
-Token usage is stored only when VS Code/Copilot persisted token fields in the chat session file, for example:
+Token usage is stored from Copilot Chat OpenTelemetry fields, primarily:
 
-- `result.metadata.promptTokens`
-- `result.metadata.outputTokens`
-- `promptTokens`
-- `completionTokens`
+- `gen_ai.usage.input_tokens`
+- `gen_ai.usage.output_tokens`
+- `gen_ai.request.model`
+- `gen_ai.response.model`
+- `gen_ai.conversation.id`
 
-When those fields are missing, the request is still stored but token counts remain `null`. This version does not estimate tokens for billing.
+When a root `invoke_agent` span does not include usage totals, the extension falls back to summing child `chat` span token usage. If OTel omits token counts entirely, the request is still stored but token counts remain `null`. This version does not estimate tokens for billing.
 
 ## Running Locally
 
@@ -113,15 +114,15 @@ http://localhost:3737/api/auth/callback/github
 
 - `Copilot Tracker: Set Current Task`
 - `Copilot Tracker: Use Branch as Task`
-- `Copilot Tracker: Sync Copilot Sessions Now`
+- `Copilot Tracker: Sync Copilot OTel Now`
 - `Copilot Tracker: Open Dashboard`
 - `Copilot Tracker: Show Current Context`
 
 ## Extension Settings
 
 - `copilot-tracker.serverUrl`
-- `copilot-tracker.readVsCodeChatStorage`
-- `copilot-tracker.chatStoragePath`
+- `copilot-tracker.configureCopilotOtel`
+- `copilot-tracker.otelFilePath`
 - `copilot-tracker.syncIntervalSeconds`
 
 ## Web API

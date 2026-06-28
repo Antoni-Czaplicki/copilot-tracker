@@ -1,13 +1,6 @@
 import * as os from "node:os";
 import * as vscode from "vscode";
 
-import {
-  type RequestTaskResolver,
-  createChatSessionWatcher,
-  getChatSessionSignature,
-  getDefaultWorkspaceStorageRoot,
-  readCopilotChatRequests,
-} from "./chatStorage";
 import { getGitHubToken } from "./githubAuth";
 import {
   initializeLogger,
@@ -16,6 +9,14 @@ import {
   logWarn,
   showLogs,
 } from "./logger";
+import {
+  type RequestTaskResolver,
+  createOtelFileWatcher,
+  ensureCopilotOtelConfiguration,
+  getOtelFileSignature,
+  readCopilotOtelRequests,
+  resolveOtelFilePath,
+} from "./otel";
 import { TrackerClient, getTrackerConfig } from "./trackerClient";
 import { TrackerEvent, TrackerEventType, WorkspaceContext } from "./types";
 import { buildWorkspaceContext, setSelectedTask } from "./workspaceContext";
@@ -36,7 +37,7 @@ interface TaskHistoryEntry {
 
 let statusItem: vscode.StatusBarItem;
 let currentWorkspaceContext: WorkspaceContext | undefined;
-let lastChatSignature: string | undefined;
+let lastOtelSignature: string | undefined;
 let syncTimer: ReturnType<typeof setTimeout> | undefined;
 let lastSyncStats = { requestCount: 0, tokenCount: 0, missingTokenCount: 0 };
 
@@ -95,14 +96,6 @@ export function activate(context: vscode.ExtensionContext) {
 
   void initializeExtension(context, client);
 
-  const storageRoot =
-    getTrackerConfig().chatStoragePath || getDefaultWorkspaceStorageRoot();
-  logInfo("Creating chat storage watchers", { storageRoot });
-  const watchers = createChatSessionWatcher(storageRoot, () =>
-    scheduleSync(context, client, 350),
-  );
-  context.subscriptions.push(...watchers);
-
   const branchPoller = setInterval(
     () => void refreshContext(context, client),
     10_000,
@@ -110,7 +103,7 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push({ dispose: () => clearInterval(branchPoller) });
 
   const syncPoller = setInterval(
-    () => void pollForChatStorageChanges(context, client),
+    () => void pollForOtelChanges(context, client),
     getTrackerConfig().syncIntervalSeconds * 1000,
   );
   context.subscriptions.push({ dispose: () => clearInterval(syncPoller) });
@@ -124,8 +117,13 @@ export function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration((event) => {
-      if (event.affectsConfiguration(extensionId)) {
-        logInfo("Copilot Tracker configuration changed", getTrackerConfig());
+      if (
+        event.affectsConfiguration(extensionId) ||
+        event.affectsConfiguration("github.copilot.chat.otel")
+      ) {
+        logInfo("Copilot Tracker or Copilot OTel configuration changed", {
+          trackerConfig: getTrackerConfig(),
+        });
         scheduleSync(context, client, 350);
       }
     }),
@@ -141,6 +139,16 @@ async function initializeExtension(
   context: vscode.ExtensionContext,
   client: TrackerClient,
 ) {
+  const otelFilePath = await ensureCopilotOtelConfiguration(
+    context,
+    getTrackerConfig(),
+  );
+  logInfo("Creating Copilot OTel file watcher", { otelFilePath });
+  context.subscriptions.push(
+    ...createOtelFileWatcher(otelFilePath, () =>
+      scheduleSync(context, client, 350),
+    ),
+  );
   await refreshContext(context, client, "extension-started");
   await syncCopilotSessions(context, client);
 }
@@ -195,7 +203,8 @@ async function showContext(context: vscode.ExtensionContext) {
     `Default task: ${snapshot.defaultTask ?? "none"}`,
     `Selected task: ${snapshot.selectedTask ?? "none"}`,
     `Server: ${config.serverUrl}`,
-    `Chat storage: ${config.chatStoragePath || getDefaultWorkspaceStorageRoot()}`,
+    `OTel file: ${resolveOtelFilePath(context, config)}`,
+    `Configures Copilot OTel: ${config.configureCopilotOtel ? "yes" : "no"}`,
     `Last sync: ${lastSyncStats.requestCount} requests, ${lastSyncStats.tokenCount} tokens, ${lastSyncStats.missingTokenCount} missing token counts`,
   ];
 
@@ -481,32 +490,27 @@ function clearPendingSync() {
   }
 }
 
-async function pollForChatStorageChanges(
+async function pollForOtelChanges(
   context: vscode.ExtensionContext,
   client: TrackerClient,
 ) {
   const config = getTrackerConfig();
-  if (!config.readVsCodeChatStorage) {
-    return;
-  }
-
   try {
-    const storageRoot =
-      config.chatStoragePath || getDefaultWorkspaceStorageRoot();
-    const signature = await getChatSessionSignature(storageRoot);
-    if (lastChatSignature === undefined) {
-      lastChatSignature = signature;
-      logInfo("Initial chat storage signature captured", { storageRoot });
+    const otelFilePath = await ensureCopilotOtelConfiguration(context, config);
+    const signature = await getOtelFileSignature(otelFilePath);
+    if (lastOtelSignature === undefined) {
+      lastOtelSignature = signature;
+      logInfo("Initial Copilot OTel file signature captured", { otelFilePath });
       return;
     }
-    if (signature !== lastChatSignature) {
-      lastChatSignature = signature;
-      logInfo("Chat storage change detected", { storageRoot });
+    if (signature !== lastOtelSignature) {
+      lastOtelSignature = signature;
+      logInfo("Copilot OTel file change detected", { otelFilePath });
       scheduleSync(context, client, 250);
     }
   } catch (error) {
-    console.warn("Copilot Tracker could not poll chat storage changes", error);
-    logError("Could not poll chat storage changes", error);
+    console.warn("Copilot Tracker could not poll OTel file changes", error);
+    logError("Could not poll OTel file changes", error);
   }
 }
 
@@ -515,10 +519,7 @@ async function syncCopilotSessions(
   client: TrackerClient,
 ) {
   const config = getTrackerConfig();
-  if (!config.readVsCodeChatStorage) {
-    logInfo("Skipping session sync because chat storage reading is disabled");
-    return;
-  }
+  const otelFilePath = await ensureCopilotOtelConfiguration(context, config);
 
   await refreshContext(context, client);
   await sendEvent(context, client, "session-sync-started");
@@ -526,22 +527,21 @@ async function syncCopilotSessions(
   try {
     const workspaceContext =
       currentWorkspaceContext ?? (await buildWorkspaceContext(context));
-    logInfo("Session sync started", {
+    logInfo("OTel session sync started", {
       workspaceName: workspaceContext.workspaceName,
       repositoryName: getRepositoryDisplayName(workspaceContext),
       repositoryRoot: workspaceContext.repositoryRoot,
       branch: workspaceContext.branch,
       selectedTask: workspaceContext.selectedTask,
       serverUrl: config.serverUrl,
-      chatStoragePath:
-        config.chatStoragePath || getDefaultWorkspaceStorageRoot(),
+      otelFilePath,
     });
-    const requests = await readCopilotChatRequests(
+    const requests = await readCopilotOtelRequests(
       workspaceContext,
-      config,
+      otelFilePath,
       createTaskResolver(context, workspaceContext),
     );
-    logInfo("Session sync read completed", {
+    logInfo("OTel session sync read completed", {
       requestCount: requests.length,
       tokenCount: requests.reduce(
         (total, request) => total + (request.totalTokens ?? 0),
@@ -563,7 +563,7 @@ async function syncCopilotSessions(
       ).length,
     };
     updateStatusItem(workspaceContext);
-    logInfo("Session sync finished", lastSyncStats);
+    logInfo("OTel session sync finished", lastSyncStats);
     await sendEvent(context, client, "session-sync-finished", lastSyncStats);
   } catch (error) {
     console.warn("Copilot Tracker session sync failed", error);

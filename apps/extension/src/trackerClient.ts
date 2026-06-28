@@ -7,8 +7,8 @@ const extensionId = "copilot-tracker";
 
 export interface TrackerConfig {
   serverUrl: string;
-  readVsCodeChatStorage: boolean;
-  chatStoragePath: string;
+  configureCopilotOtel: boolean;
+  otelFilePath: string;
   syncIntervalSeconds: number;
 }
 
@@ -16,8 +16,8 @@ export function getTrackerConfig(): TrackerConfig {
   const config = vscode.workspace.getConfiguration(extensionId);
   return {
     serverUrl: config.get<string>("serverUrl", "http://localhost:3737"),
-    readVsCodeChatStorage: config.get<boolean>("readVsCodeChatStorage", true),
-    chatStoragePath: config.get<string>("chatStoragePath", ""),
+    configureCopilotOtel: config.get<boolean>("configureCopilotOtel", true),
+    otelFilePath: config.get<string>("otelFilePath", ""),
     syncIntervalSeconds: Math.max(
       5,
       config.get<number>("syncIntervalSeconds", 15),

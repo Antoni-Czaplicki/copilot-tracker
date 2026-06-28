@@ -1,11 +1,12 @@
 {
-  "name": "@copilot-tracker/extension",
+  "name": "copilot-tracker",
   "displayName": "Copilot tracker",
   "version": "0.0.1",
   "description": "Track your copilot tokens per branch or assign them manually",
   "categories": [
     "Other"
   ],
+  "publisher": "antoni-czaplicki",
   "main": "./out/extension.js",
   "scripts": {
     "build": "pnpm run compile",
@@ -31,7 +32,7 @@
       },
       {
         "command": "copilot-tracker.syncCopilotSessions",
-        "title": "Sync Copilot Sessions Now",
+        "title": "Sync Copilot OTel Now",
         "category": "Copilot Tracker"
       },
       {
@@ -58,21 +59,21 @@
           "default": "http://localhost:3737",
           "description": "Copilot Tracker server URL."
         },
-        "copilot-tracker.readVsCodeChatStorage": {
+        "copilot-tracker.configureCopilotOtel": {
           "type": "boolean",
           "default": true,
-          "description": "Read VS Code internal chat session metadata from workspaceStorage."
+          "description": "Automatically configure GitHub Copilot Chat to emit OTel metadata to a local JSONL file."
         },
-        "copilot-tracker.chatStoragePath": {
+        "copilot-tracker.otelFilePath": {
           "type": "string",
           "default": "",
-          "description": "Optional override for VS Code workspaceStorage path. Leave empty to use the platform default."
+          "description": "Optional path for the Copilot Chat OTel JSONL file. Leave empty to use extension global storage."
         },
         "copilot-tracker.syncIntervalSeconds": {
           "type": "number",
           "default": 15,
           "minimum": 5,
-          "description": "Fallback polling interval for detecting Copilot chat session file changes."
+          "description": "Fallback polling interval for detecting Copilot OTel file changes."
         }
       }
     }

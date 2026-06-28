@@ -33,9 +33,7 @@ export interface PromptTokenDetail {
   percentageOfPrompt: number | null;
 }
 
-export type TokenSource =
-  | "vscode-chat-session"
-  | "missing-in-vscode-chat-session";
+export type TokenSource = "copilot-otel" | "missing-in-copilot-otel";
 
 export interface CopilotChatRequest extends WorkspaceContext {
   requestRecordId: string;

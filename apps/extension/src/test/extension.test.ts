@@ -2,19 +2,11 @@ import * as assert from "assert";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-// You can import and use all API from the 'vscode' module
-// as well as import your extension to test it
 import * as vscode from "vscode";
 
-import {
-  getChatSessionWatcherPatterns,
-  readCopilotChatRequests,
-} from "../chatStorage";
-import type { TrackerConfig } from "../trackerClient";
+import { readCopilotOtelRequests } from "../otel";
 import type { WorkspaceContext } from "../types";
 import { getTaskFromBranch } from "../workspaceContext";
-
-// import * as myExtension from '../../extension';
 
 suite("Extension Test Suite", () => {
   vscode.window.showInformationMessage("Start all tests.");
@@ -32,165 +24,218 @@ suite("Extension Test Suite", () => {
     assert.strictEqual(getTaskFromBranch("main"), "main");
   });
 
-  test("Reads current VS Code chat session snapshots", async () => {
-    const storageRoot = await mkdtemp(
-      path.join(os.tmpdir(), "copilot-tracker-storage-"),
-    );
+  test("Reads Copilot OTel invoke_agent request spans", async () => {
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "copilot-otel-"));
 
     try {
-      const workspacePath = path.join(os.tmpdir(), "copilot-tracker-workspace");
-      const workspaceStorage = path.join(storageRoot, "workspace-id");
-      const chatSessionsPath = path.join(workspaceStorage, "chatSessions");
-      await mkdir(chatSessionsPath, { recursive: true });
+      const otelFilePath = path.join(tempDir, "copilot-otel.jsonl");
+      await mkdir(path.dirname(otelFilePath), { recursive: true });
       await writeFile(
-        path.join(workspaceStorage, "workspace.json"),
-        JSON.stringify({ folder: `file://${workspacePath}` }),
-      );
-      await writeFile(
-        path.join(chatSessionsPath, "session-1.jsonl"),
-        `${JSON.stringify({
-          kind: 0,
-          v: {
-            sessionId: "session-1",
-            creationDate: 1_700_000_000_000,
-            inputState: {
-              selectedModel: {
-                metadata: {
-                  name: "GPT Test",
-                  vendor: "OpenAI",
-                  family: "test",
-                },
-              },
-            },
-            requests: [
-              {
-                requestId: "request-1",
-                responseId: "response-1",
-                timestamp: 1_700_000_001_000,
-                modelId: "gpt-test",
-                promptTokens: 12,
-                completionTokens: 34,
-                response: [{ generatedTitle: "Synthetic title" }],
-              },
-              {
-                requestId: "request-2",
-                responseId: "response-2",
-                timestamp: 1_700_000_003_000,
-                modelId: "gpt-test",
-                promptTokens: 2,
-                completionTokens: 3,
-                response: [{ generatedTitle: "Second synthetic title" }],
-              },
-            ],
-          },
-        })}\n${JSON.stringify({
-          kind: 2,
-          v: [
+        otelFilePath,
+        `${JSON.stringify(
+          createResourceSpanRecord([
             {
-              requestId: "request-1",
-              responseId: "response-1",
-              timestamp: 1_700_000_001_000,
-              modelId: "gpt-test",
-              result: {
-                metadata: {
-                  promptTokens: 50,
-                  outputTokens: 5,
-                  resolvedModel: "gpt-test-resolved",
-                },
-              },
-              modelState: {
-                completedAt: 1_700_000_002_000,
-              },
-            },
-          ],
-        })}\n${JSON.stringify({
-          kind: 2,
-          v: [
-            {
-              id: "chunk-1",
-              kind: "text",
-              value: "This is a response chunk, not a request.",
+              traceId: "trace-1",
+              spanId: "span-root-1",
+              name: "invoke_agent copilot",
+              startTimeUnixNano: "1782638208197000000",
+              endTimeUnixNano: "1782638228982000000",
+              attributes: attributes({
+                "gen_ai.operation.name": "invoke_agent",
+                "gen_ai.agent.name": "GitHub Copilot Chat",
+                "gen_ai.conversation.id": "session-1",
+                "gen_ai.request.model": "openai/OpenAI/gpt-5-nano",
+                "gen_ai.response.model": "gpt-5-nano",
+                "gen_ai.usage.input_tokens": 22066,
+                "gen_ai.usage.output_tokens": 1481,
+                "github.copilot.git.repository":
+                  "https://github.com/Antoni-Czaplicki/copilot-tracker.git",
+                "github.copilot.git.branch": "feature/124-login",
+                "copilot_chat.turn_count": 1,
+              }),
             },
             {
-              id: "chunk-2",
-              kind: "toolInvocationSerialized",
-              value: {
-                invocationMessage: "Running command",
-                isComplete: true,
-              },
+              traceId: "trace-1",
+              spanId: "span-chat-1",
+              parentSpanId: "span-root-1",
+              name: "chat gpt-5-nano",
+              startTimeUnixNano: "1782638209000000000",
+              endTimeUnixNano: "1782638228000000000",
+              attributes: attributes({
+                "gen_ai.operation.name": "chat",
+                "gen_ai.request.model": "openai/OpenAI/gpt-5-nano",
+                "gen_ai.response.model": "gpt-5-nano",
+                "gen_ai.response.finish_reasons": ["stop"],
+                "gen_ai.usage.input_tokens": 22066,
+                "gen_ai.usage.output_tokens": 1481,
+              }),
             },
-          ],
-        })}\n`,
+          ]),
+        )}\n`,
       );
 
-      const workspaceContext: WorkspaceContext = {
-        workspaceId: "workspace-id",
-        workspacePath,
-        workspaceName: "workspace",
-        repositoryRoot: workspacePath,
-        repositoryRemoteUrl: null,
-        branch: "feature/123-test",
-        defaultTask: "123",
-        selectedTask: "123",
-      };
-      const config: TrackerConfig = {
-        serverUrl: "https://copilot-tracker.antek.page",
-        readVsCodeChatStorage: true,
-        chatStoragePath: storageRoot,
-        syncIntervalSeconds: 15,
-      };
-
-      const requests = await readCopilotChatRequests(workspaceContext, config);
-      assert.strictEqual(requests.length, 2);
-      assert.strictEqual(requests[0]?.requestRecordId, "request-1");
-      assert.strictEqual(requests[0]?.sessionId, "session-1");
-      assert.strictEqual(requests[0]?.sessionTitle, "Synthetic title");
-      assert.strictEqual(requests[0]?.inputTokens, 50);
-      assert.strictEqual(requests[0]?.outputTokens, 5);
-      assert.strictEqual(requests[0]?.totalTokens, 55);
-      assert.strictEqual(requests[0]?.resolvedModel, "gpt-test-resolved");
-      assert.strictEqual(requests[0]?.selectedTask, "123");
-      assert.strictEqual(requests[1]?.requestRecordId, "request-2");
-      assert.strictEqual(requests[1]?.sessionTitle, "Second synthetic title");
-      assert.strictEqual(requests[1]?.totalTokens, 5);
-      assert.strictEqual(requests[1]?.selectedTask, "123");
-
-      const reassignedRequests = await readCopilotChatRequests(
+      const workspaceContext = createWorkspaceContext();
+      const requests = await readCopilotOtelRequests(
         workspaceContext,
-        config,
-        (request) =>
-          request.requestId === "request-2"
-            ? {
-                branch: "feature/124-login",
-                defaultTask: "124",
-                selectedTask: "124",
-              }
-            : null,
+        otelFilePath,
+        () => ({
+          branch: "feature/124-login",
+          defaultTask: "124",
+          selectedTask: "124",
+        }),
       );
-      assert.strictEqual(reassignedRequests.length, 2);
-      assert.strictEqual(reassignedRequests[0]?.selectedTask, "123");
-      assert.strictEqual(reassignedRequests[1]?.selectedTask, "124");
-      assert.strictEqual(reassignedRequests[1]?.branch, "feature/124-login");
 
-      const directRequests = await readCopilotChatRequests(workspaceContext, {
-        ...config,
-        chatStoragePath: chatSessionsPath,
-      });
-      assert.strictEqual(directRequests.length, 2);
-      assert.strictEqual(directRequests[0]?.requestRecordId, "request-1");
+      assert.strictEqual(requests.length, 1);
+      assert.strictEqual(requests[0]?.requestRecordId, "otel:trace-1");
+      assert.strictEqual(requests[0]?.requestId, "trace-1");
+      assert.strictEqual(requests[0]?.responseId, "span-root-1");
+      assert.strictEqual(requests[0]?.sessionId, "session-1");
+      assert.strictEqual(requests[0]?.sessionTitle, "GitHub Copilot Chat OTel");
+      assert.strictEqual(requests[0]?.modelId, "openai/OpenAI/gpt-5-nano");
+      assert.strictEqual(requests[0]?.resolvedModel, "gpt-5-nano");
+      assert.strictEqual(requests[0]?.inputTokens, 22066);
+      assert.strictEqual(requests[0]?.outputTokens, 1481);
+      assert.strictEqual(requests[0]?.totalTokens, 23547);
+      assert.strictEqual(requests[0]?.tokenSource, "copilot-otel");
+      assert.strictEqual(requests[0]?.toolCallRoundCount, 1);
+      assert.deepStrictEqual(requests[0]?.stopReasons, ["stop"]);
+      assert.strictEqual(requests[0]?.branch, "feature/124-login");
+      assert.strictEqual(requests[0]?.selectedTask, "124");
     } finally {
-      await rm(storageRoot, { recursive: true, force: true });
+      await rm(tempDir, { recursive: true, force: true });
     }
   });
 
-  test("Watches direct chatSessions overrides", () => {
-    assert.deepStrictEqual(getChatSessionWatcherPatterns("/tmp/chatSessions"), [
-      "*.jsonl",
-      "*.json",
-    ]);
-    assert.deepStrictEqual(
-      getChatSessionWatcherPatterns("/tmp/workspaceStorage"),
-      ["**/chatSessions/*.jsonl", "**/chatSessions/*.json"],
-    );
+  test("Falls back to summing Copilot OTel chat spans", async () => {
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "copilot-otel-"));
+
+    try {
+      const otelFilePath = path.join(tempDir, "copilot-otel.jsonl");
+      await writeFile(
+        otelFilePath,
+        `${JSON.stringify(
+          createResourceSpanRecord([
+            {
+              traceId: "trace-2",
+              spanId: "span-root-2",
+              name: "invoke_agent copilot",
+              startTimeUnixNano: "1782638300000000000",
+              endTimeUnixNano: "1782638310000000000",
+              attributes: attributes({
+                "gen_ai.operation.name": "invoke_agent",
+                "gen_ai.agent.name": "GitHub Copilot Chat",
+                "gen_ai.conversation.id": "session-2",
+                "github.copilot.git.repository":
+                  "https://github.com/Antoni-Czaplicki/copilot-tracker",
+              }),
+            },
+            {
+              traceId: "trace-2",
+              spanId: "span-chat-2a",
+              parentSpanId: "span-root-2",
+              name: "chat gpt-5-nano",
+              startTimeUnixNano: "1782638301000000000",
+              endTimeUnixNano: "1782638304000000000",
+              attributes: attributes({
+                "gen_ai.operation.name": "chat",
+                "gen_ai.request.model": "openai/OpenAI/gpt-5-nano",
+                "gen_ai.response.model": "gpt-5-nano",
+                "gen_ai.usage.input_tokens": 10,
+                "gen_ai.usage.output_tokens": 20,
+              }),
+            },
+            {
+              traceId: "trace-2",
+              spanId: "span-chat-2b",
+              parentSpanId: "span-root-2",
+              name: "chat gpt-5-nano",
+              startTimeUnixNano: "1782638305000000000",
+              endTimeUnixNano: "1782638309000000000",
+              attributes: attributes({
+                "gen_ai.operation.name": "chat",
+                "gen_ai.request.model": "openai/OpenAI/gpt-5-nano",
+                "gen_ai.response.model": "gpt-5-nano",
+                "gen_ai.usage.input_tokens": 5,
+                "gen_ai.usage.output_tokens": 6,
+              }),
+            },
+          ]),
+        )}\n`,
+      );
+
+      const requests = await readCopilotOtelRequests(
+        createWorkspaceContext(),
+        otelFilePath,
+      );
+
+      assert.strictEqual(requests.length, 1);
+      assert.strictEqual(requests[0]?.requestRecordId, "otel:trace-2");
+      assert.strictEqual(requests[0]?.inputTokens, 15);
+      assert.strictEqual(requests[0]?.outputTokens, 26);
+      assert.strictEqual(requests[0]?.totalTokens, 41);
+      assert.strictEqual(requests[0]?.toolCallRoundCount, 2);
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
+    }
   });
 });
+
+function createWorkspaceContext(): WorkspaceContext {
+  return {
+    workspaceId: "workspace-id",
+    workspacePath: "/tmp/copilot-tracker",
+    workspaceName: "copilot-tracker",
+    repositoryRoot: "/tmp/copilot-tracker",
+    repositoryRemoteUrl:
+      "https://github.com/Antoni-Czaplicki/copilot-tracker.git",
+    branch: "main",
+    defaultTask: "main",
+    selectedTask: "main",
+  };
+}
+
+function createResourceSpanRecord(spans: unknown[]) {
+  return {
+    resourceSpans: [
+      {
+        resource: {
+          attributes: attributes({
+            "service.name": "copilot-chat",
+            "session.id": "vscode-window-session",
+          }),
+        },
+        scopeSpans: [
+          {
+            spans,
+          },
+        ],
+      },
+    ],
+  };
+}
+
+function attributes(values: Record<string, unknown>) {
+  return Object.entries(values).map(([key, value]) => ({
+    key,
+    value: otelValue(value),
+  }));
+}
+
+function otelValue(value: unknown): Record<string, unknown> {
+  if (typeof value === "string") {
+    return { stringValue: value };
+  }
+  if (typeof value === "number") {
+    return Number.isInteger(value)
+      ? { intValue: String(value) }
+      : { doubleValue: value };
+  }
+  if (typeof value === "boolean") {
+    return { boolValue: value };
+  }
+  if (Array.isArray(value)) {
+    return { arrayValue: { values: value.map(otelValue) } };
+  }
+
+  return { stringValue: String(value) };
+}

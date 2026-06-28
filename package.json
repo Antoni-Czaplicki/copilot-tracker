@@ -5,14 +5,14 @@
   "type": "module",
   "scripts": {
     "build": "pnpm -r build",
-    "compile": "pnpm --filter @copilot-tracker/extension compile",
+    "compile": "pnpm --filter ./apps/extension compile",
     "db:generate": "pnpm --filter @copilot-tracker/web db:generate",
     "db:migrate": "pnpm --filter @copilot-tracker/web db:migrate",
     "db:studio": "pnpm --filter @copilot-tracker/web db:studio",
     "dev:web": "pnpm --filter @copilot-tracker/web dev",
     "format": "prettier . --write",
     "lint": "pnpm -r lint",
-    "test": "pnpm --filter @copilot-tracker/extension test",
+    "test": "pnpm --filter ./apps/extension test",
     "typecheck": "pnpm -r typecheck"
   },
   "prettier": "@solvro/config/prettier",

@@ -6,4 +6,5 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+- Switch tracking to GitHub Copilot Chat OpenTelemetry JSONL ingestion.
 - Initial release
