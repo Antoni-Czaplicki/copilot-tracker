@@ -178,6 +178,89 @@ suite("Extension Test Suite", () => {
       await rm(tempDir, { recursive: true, force: true });
     }
   });
+
+  test("Reads Copilot OTel inference event log records", async () => {
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "copilot-otel-"));
+
+    try {
+      const otelFilePath = path.join(tempDir, "copilot-otel.jsonl");
+      await writeFile(
+        otelFilePath,
+        [
+          createPlainLogRecord({
+            traceId: "trace-log-1",
+            spanId: "span-log-1",
+            hrTime: [1782642443, 672000000],
+            body: "copilot_chat.session.start",
+            resourceSessionId: "vscode-session-1",
+            attributes: {
+              "event.name": "copilot_chat.session.start",
+              "session.id": "chat-session-1",
+              "gen_ai.request.model": "gpt-5-nano",
+              "gen_ai.agent.name": "GitHub Copilot Chat",
+            },
+          }),
+          createPlainLogRecord({
+            traceId: "trace-log-1",
+            spanId: "span-log-1",
+            hrTime: [1782642449, 664000000],
+            body: "GenAI inference: gpt-5-nano",
+            resourceSessionId: "vscode-session-1",
+            attributes: {
+              "event.name": "gen_ai.client.inference.operation.details",
+              "gen_ai.operation.name": "chat",
+              "gen_ai.request.model": "gpt-5-nano",
+              "gen_ai.response.model": "gpt-5-nano-2025-08-07",
+              "gen_ai.response.id": "response-log-1",
+              "gen_ai.response.finish_reasons": ["stop"],
+              "gen_ai.usage.input_tokens": 22266,
+              "gen_ai.usage.output_tokens": 233,
+            },
+          }),
+          createPlainLogRecord({
+            traceId: "trace-log-1",
+            spanId: "span-log-1",
+            hrTime: [1782642449, 688000000],
+            body: "copilot_chat.agent.turn: 0",
+            resourceSessionId: "vscode-session-1",
+            attributes: {
+              "event.name": "copilot_chat.agent.turn",
+              "turn.index": 0,
+              "gen_ai.usage.input_tokens": 22266,
+              "gen_ai.usage.output_tokens": 233,
+              tool_call_count: 0,
+            },
+          }),
+        ]
+          .map((record) => JSON.stringify(record))
+          .join("\n"),
+      );
+
+      const requests = await readCopilotOtelRequests(
+        createWorkspaceContext(),
+        otelFilePath,
+      );
+
+      assert.strictEqual(requests.length, 1);
+      assert.strictEqual(
+        requests[0]?.requestRecordId,
+        "otel-log:trace-log-1:response-log-1",
+      );
+      assert.strictEqual(requests[0]?.requestId, "trace-log-1");
+      assert.strictEqual(requests[0]?.responseId, "response-log-1");
+      assert.strictEqual(requests[0]?.sessionId, "chat-session-1");
+      assert.strictEqual(requests[0]?.sessionTitle, "GitHub Copilot Chat OTel");
+      assert.strictEqual(requests[0]?.modelId, "gpt-5-nano");
+      assert.strictEqual(requests[0]?.resolvedModel, "gpt-5-nano-2025-08-07");
+      assert.strictEqual(requests[0]?.inputTokens, 22266);
+      assert.strictEqual(requests[0]?.outputTokens, 233);
+      assert.strictEqual(requests[0]?.totalTokens, 22499);
+      assert.strictEqual(requests[0]?.tokenSource, "copilot-otel");
+      assert.deepStrictEqual(requests[0]?.stopReasons, ["stop"]);
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
+    }
+  });
 });
 
 function createWorkspaceContext(): WorkspaceContext {
@@ -211,6 +294,52 @@ function createResourceSpanRecord(spans: unknown[]) {
         ],
       },
     ],
+  };
+}
+
+function createPlainLogRecord({
+  traceId,
+  spanId,
+  hrTime,
+  body,
+  resourceSessionId,
+  attributes: recordAttributes,
+}: {
+  traceId: string;
+  spanId: string;
+  hrTime: [number, number];
+  body: string;
+  resourceSessionId: string;
+  attributes: Record<string, unknown>;
+}) {
+  return {
+    hrTime,
+    hrTimeObserved: hrTime,
+    spanContext: {
+      traceId,
+      spanId,
+      traceFlags: 1,
+    },
+    resource: {
+      _rawAttributes: [
+        ["service.name", "copilot-chat"],
+        ["service.version", "0.54.0"],
+        ["session.id", resourceSessionId],
+      ],
+      _asyncAttributesPending: false,
+    },
+    instrumentationScope: {
+      name: "copilot-chat",
+      version: "0.54.0",
+    },
+    attributes: recordAttributes,
+    _body: body,
+    totalAttributesCount: Object.keys(recordAttributes).length,
+    _isReadonly: true,
+    _logRecordLimits: {
+      attributeCountLimit: 128,
+      attributeValueLengthLimit: null,
+    },
   };
 }
 

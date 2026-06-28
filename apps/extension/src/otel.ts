@@ -12,6 +12,7 @@ import {
 } from "./types";
 
 interface ParsedOtelRequest {
+  recordId: string;
   traceId: string;
   spanId: string | null;
   conversationId: string | null;
@@ -50,6 +51,22 @@ interface TraceGroup {
   spans: OtelSpan[];
   invokeSpan: OtelSpan | null;
   chatSpans: OtelSpan[];
+}
+
+interface OtelLogRecord {
+  traceId: string;
+  spanId: string | null;
+  timestamp: string | null;
+  body: string | null;
+  attributes: Record<string, unknown>;
+  resourceAttributes: Record<string, unknown>;
+}
+
+interface LogRecordGroup {
+  records: OtelLogRecord[];
+  sessionStart: OtelLogRecord | null;
+  inferenceRecords: OtelLogRecord[];
+  turnRecords: OtelLogRecord[];
 }
 
 export type RequestTaskResolver = (
@@ -141,11 +158,17 @@ export async function readCopilotOtelRequests(
     repositoryRemoteUrl: workspaceContext.repositoryRemoteUrl,
   });
   const text = await readFile(otelFilePath, "utf8");
-  const spans = text
+  const records = text
     .split(/\r?\n/)
     .filter(Boolean)
-    .flatMap((line) => collectOtelSpans(safeJsonParse(line)));
-  const parsedRequests = parseOtelRequests(spans, workspaceContext);
+    .map((line) => safeJsonParse(line))
+    .filter((record): record is unknown => Boolean(record));
+  const spans = records.flatMap((record) => collectOtelSpans(record));
+  const logRecords = records.flatMap((record) => collectOtelLogRecords(record));
+  const parsedRequests = [
+    ...parseOtelRequests(spans, workspaceContext),
+    ...parseOtelLogRequests(logRecords, workspaceContext),
+  ];
   const requests = parsedRequests.map((request) => {
     const requestWorkspaceContext = {
       ...workspaceContext,
@@ -165,7 +188,7 @@ export async function readCopilotOtelRequests(
 
     return {
       ...requestWorkspaceContext,
-      requestRecordId: `otel:${request.traceId}`,
+      requestRecordId: request.recordId,
       requestId: request.traceId,
       responseId: request.spanId,
       sessionId: request.conversationId ?? request.traceId,
@@ -193,6 +216,7 @@ export async function readCopilotOtelRequests(
   const dedupedRequests = dedupeChatRequests(requests);
   logInfo("Finished reading Copilot OTel requests", {
     spanCount: spans.length,
+    logRecordCount: logRecords.length,
     requestCount: dedupedRequests.length,
     tokenCount: dedupedRequests.reduce(
       (total, request) => total + (request.totalTokens ?? 0),
@@ -257,6 +281,7 @@ function traceToRequest(trace: TraceGroup): ParsedOtelRequest | null {
   const requestCompletedAt = latestTimestamp(spans.map((span) => span.endTime));
 
   return {
+    recordId: `otel:${sourceSpan.traceId}`,
     traceId: sourceSpan.traceId,
     spanId: sourceSpan.spanId,
     conversationId:
@@ -286,6 +311,116 @@ function traceToRequest(trace: TraceGroup): ParsedOtelRequest | null {
   };
 }
 
+function parseOtelLogRequests(
+  logRecords: OtelLogRecord[],
+  workspaceContext: WorkspaceContext,
+): ParsedOtelRequest[] {
+  const groups = new Map<string, LogRecordGroup>();
+  for (const record of logRecords) {
+    const group = groups.get(record.traceId) ?? {
+      records: [],
+      sessionStart: null,
+      inferenceRecords: [],
+      turnRecords: [],
+    };
+    group.records.push(record);
+
+    const eventName = readString(record.attributes, "event.name");
+    if (eventName === "copilot_chat.session.start") {
+      group.sessionStart = chooseEarlierLogRecord(group.sessionStart, record);
+    } else if (eventName === "gen_ai.client.inference.operation.details") {
+      group.inferenceRecords.push(record);
+    } else if (eventName === "copilot_chat.agent.turn") {
+      group.turnRecords.push(record);
+    }
+
+    groups.set(record.traceId, group);
+  }
+
+  return [...groups.values()]
+    .flatMap((group) => logGroupToRequests(group))
+    .filter((request): request is ParsedOtelRequest => Boolean(request))
+    .filter((request) => belongsToWorkspace(request, workspaceContext));
+}
+
+function logGroupToRequests(group: LogRecordGroup): ParsedOtelRequest[] {
+  if (group.inferenceRecords.length > 0) {
+    return group.inferenceRecords.map((record, index) =>
+      logRecordToRequest(record, group, index),
+    );
+  }
+
+  return group.turnRecords.map((record, index) =>
+    logRecordToRequest(record, group, index),
+  );
+}
+
+function logRecordToRequest(
+  record: OtelLogRecord,
+  group: LogRecordGroup,
+  index: number,
+): ParsedOtelRequest {
+  const matchingTurn =
+    group.turnRecords.find((turn) => turn.spanId === record.spanId) ??
+    group.turnRecords[index] ??
+    null;
+  const attributes = mergeAttributes(
+    record.resourceAttributes,
+    group.sessionStart?.attributes ?? {},
+    matchingTurn?.attributes ?? {},
+    record.attributes,
+  );
+  const responseId =
+    readString(attributes, "gen_ai.response.id") ?? record.spanId;
+  const sessionId =
+    readString(group.sessionStart?.attributes ?? {}, "session.id") ??
+    readString(attributes, "gen_ai.conversation.id") ??
+    readString(record.resourceAttributes, "session.id");
+  const timestamp = record.timestamp ?? matchingTurn?.timestamp ?? null;
+
+  return {
+    recordId: `otel-log:${record.traceId}:${responseId ?? index}`,
+    traceId: record.traceId,
+    spanId: responseId,
+    conversationId: sessionId,
+    agentName: readString(attributes, "gen_ai.agent.name"),
+    repositoryRemoteUrl:
+      readString(attributes, "github.copilot.git.repository") ??
+      readString(attributes, "copilot_chat.repo.remote_url"),
+    branch:
+      readString(attributes, "github.copilot.git.branch") ??
+      readString(attributes, "copilot_chat.repo.head_branch_name"),
+    requestStartedAt: group.sessionStart?.timestamp ?? timestamp,
+    requestCompletedAt: timestamp,
+    modelId: readString(attributes, "gen_ai.request.model"),
+    resolvedModel: readString(attributes, "gen_ai.response.model"),
+    inputTokens: readNumber(attributes, "gen_ai.usage.input_tokens"),
+    outputTokens: readNumber(attributes, "gen_ai.usage.output_tokens"),
+    promptTokenDetails: [],
+    toolCallRoundCount:
+      group.turnRecords.length > 0 ? group.turnRecords.length : 1,
+    stopReasons: readStringList(attributes, "gen_ai.response.finish_reasons"),
+  };
+}
+
+function chooseEarlierLogRecord(
+  current: OtelLogRecord | null,
+  next: OtelLogRecord,
+) {
+  if (!current) {
+    return next;
+  }
+
+  return logRecordTimestamp(next) < logRecordTimestamp(current)
+    ? next
+    : current;
+}
+
+function logRecordTimestamp(record: OtelLogRecord) {
+  const timestamp = Date.parse(record.timestamp ?? "");
+  return Number.isNaN(timestamp) ? Number.POSITIVE_INFINITY : timestamp;
+}
+
 function collectOtelSpans(record: unknown): OtelSpan[] {
   if (!isRecord(record)) {
     return [];
@@ -299,6 +434,86 @@ function collectOtelSpans(record: unknown): OtelSpan[] {
 
   const span = readPlainSpan(record, readSpanResourceAttributes(record));
   return span ? [span] : [];
+}
+
+function collectOtelLogRecords(record: unknown): OtelLogRecord[] {
+  if (!isRecord(record)) {
+    return [];
+  }
+
+  if (Array.isArray(record.resourceLogs)) {
+    return record.resourceLogs.flatMap((resourceLog) =>
+      collectResourceLogs(resourceLog),
+    );
+  }
+
+  const logRecord = readPlainLogRecord(
+    record,
+    readLogRecordResourceAttributes(record),
+  );
+  return logRecord ? [logRecord] : [];
+}
+
+function collectResourceLogs(resourceLog: unknown): OtelLogRecord[] {
+  if (!isRecord(resourceLog)) {
+    return [];
+  }
+
+  const resourceAttributes = readAttributes(
+    readUnknown(resourceLog, ["resource", "attributes"]),
+  );
+  const scopeLogs = readUnknown(resourceLog, ["scopeLogs"]);
+  if (!Array.isArray(scopeLogs)) {
+    return [];
+  }
+
+  return scopeLogs.flatMap((scopeLog) => {
+    const logRecords = readUnknown(scopeLog, ["logRecords"]);
+    if (!Array.isArray(logRecords)) {
+      return [];
+    }
+    return logRecords
+      .map((logRecord) => readPlainLogRecord(logRecord, resourceAttributes))
+      .filter((logRecord): logRecord is OtelLogRecord => Boolean(logRecord));
+  });
+}
+
+function readPlainLogRecord(
+  value: unknown,
+  resourceAttributes: Record<string, unknown>,
+): OtelLogRecord | null {
+  if (!isRecord(value)) {
+    return null;
+  }
+
+  const attributes = readAttributes(readUnknown(value, ["attributes"]));
+  if (!readString(attributes, "event.name")) {
+    return null;
+  }
+
+  const spanContext = isRecord(value.spanContext) ? value.spanContext : {};
+  const traceId =
+    readString(spanContext, "traceId") ??
+    readStringFromRecord(value, "traceId");
+  if (!traceId) {
+    return null;
+  }
+
+  return {
+    traceId,
+    spanId:
+      readString(spanContext, "spanId") ??
+      readStringFromRecord(value, "spanId"),
+    timestamp:
+      toIsoDate(readUnknown(value, ["timeUnixNano"])) ??
+      toIsoDate(readUnknown(value, ["hrTime"])) ??
+      toIsoDate(readUnknown(value, ["timestamp"])),
+    body:
+      readStringFromRecord(value, "_body") ??
+      readStringFromRecord(value, "body"),
+    attributes,
+    resourceAttributes,
+  };
 }
 
 function collectResourceSpans(resourceSpan: unknown): OtelSpan[] {
@@ -365,6 +580,15 @@ function readPlainSpan(
 function readSpanResourceAttributes(value: Record<string, unknown>) {
   return mergeAttributes(
     readAttributes(readUnknown(value, ["resource", "attributes"])),
+    readAttributes(readUnknown(value, ["resource", "_rawAttributes"])),
+    readAttributes(readUnknown(value, ["resourceAttributes"])),
+  );
+}
+
+function readLogRecordResourceAttributes(value: Record<string, unknown>) {
+  return mergeAttributes(
+    readAttributes(readUnknown(value, ["resource", "attributes"])),
+    readAttributes(readUnknown(value, ["resource", "_rawAttributes"])),
     readAttributes(readUnknown(value, ["resourceAttributes"])),
   );
 }
@@ -373,12 +597,21 @@ function readAttributes(value: unknown): Record<string, unknown> {
   if (Array.isArray(value)) {
     return Object.fromEntries(
       value
-        .filter(isRecord)
-        .map((entry) => [
-          readStringFromRecord(entry, "key"),
-          readOtelValue(readUnknown(entry, ["value"])),
-        ])
-        .filter(([key]) => Boolean(key)),
+        .map((entry) => {
+          if (Array.isArray(entry) && entry.length >= 2) {
+            return [String(entry[0]), entry[1]] as const;
+          }
+          if (!isRecord(entry)) {
+            return null;
+          }
+          return [
+            readStringFromRecord(entry, "key"),
+            readOtelValue(readUnknown(entry, ["value"])),
+          ] as const;
+        })
+        .filter((entry): entry is readonly [string, unknown] =>
+          Boolean(entry?.[0]),
+        ),
     );
   }
 
@@ -686,6 +919,15 @@ function toNumber(value: unknown): number | null {
 }
 
 function toIsoDate(value: unknown): string | null {
+  if (Array.isArray(value) && value.length >= 2) {
+    const seconds = toNumber(value[0]);
+    const nanos = toNumber(value[1]);
+    if (seconds !== null && nanos !== null) {
+      return new Date(
+        seconds * 1000 + Math.round(nanos / 1_000_000),
+      ).toISOString();
+    }
+  }
   if (typeof value === "bigint") {
     return new Date(Number(value / 1_000_000n)).toISOString();
   }

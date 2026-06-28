@@ -2,6 +2,8 @@
 
 Monorepo for tracking GitHub Copilot Chat token usage by developer, workspace, repository, branch, task, session, and model.
 
+For setup instructions, see [INSTALL.md](./INSTALL.md).
+
 The project has three packages:
 
 - `apps/extension` - VS Code extension that configures Copilot Chat OpenTelemetry and sends usage records.
