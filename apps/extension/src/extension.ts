@@ -1,6 +1,10 @@
 import * as os from "node:os";
 import * as vscode from "vscode";
 
+import {
+  createChatSessionTitleResolver,
+  getDefaultWorkspaceStorageRoot,
+} from "./chatSessionTitles";
 import { getGitHubToken } from "./githubAuth";
 import {
   initializeLogger,
@@ -204,6 +208,7 @@ async function showContext(context: vscode.ExtensionContext) {
     `Selected task: ${snapshot.selectedTask ?? "none"}`,
     `Server: ${config.serverUrl}`,
     `OTel file: ${resolveOtelFilePath(context, config)}`,
+    `Chat title storage: ${getDefaultWorkspaceStorageRoot()}`,
     `Configures Copilot OTel: ${config.configureCopilotOtel ? "yes" : "no"}`,
     `Last sync: ${lastSyncStats.requestCount} requests, ${lastSyncStats.tokenCount} tokens, ${lastSyncStats.missingTokenCount} missing token counts`,
   ];
@@ -536,10 +541,13 @@ async function syncCopilotSessions(
       serverUrl: config.serverUrl,
       otelFilePath,
     });
+    const sessionResolver =
+      await createChatSessionTitleResolver(workspaceContext);
     const requests = await readCopilotOtelRequests(
       workspaceContext,
       otelFilePath,
       createTaskResolver(context, workspaceContext),
+      sessionResolver,
     );
     logInfo("OTel session sync read completed", {
       requestCount: requests.length,

@@ -90,7 +90,10 @@ suite("Extension Test Suite", () => {
       assert.strictEqual(requests[0]?.requestId, "trace-1");
       assert.strictEqual(requests[0]?.responseId, "span-root-1");
       assert.strictEqual(requests[0]?.sessionId, "session-1");
-      assert.strictEqual(requests[0]?.sessionTitle, "GitHub Copilot Chat OTel");
+      assert.strictEqual(
+        requests[0]?.sessionTitle,
+        "copilot-tracker - 124 - gpt-5-nano",
+      );
       assert.strictEqual(requests[0]?.modelId, "openai/OpenAI/gpt-5-nano");
       assert.strictEqual(requests[0]?.resolvedModel, "gpt-5-nano");
       assert.strictEqual(requests[0]?.inputTokens, 22066);
@@ -249,7 +252,10 @@ suite("Extension Test Suite", () => {
       assert.strictEqual(requests[0]?.requestId, "trace-log-1");
       assert.strictEqual(requests[0]?.responseId, "response-log-1");
       assert.strictEqual(requests[0]?.sessionId, "chat-session-1");
-      assert.strictEqual(requests[0]?.sessionTitle, "GitHub Copilot Chat OTel");
+      assert.strictEqual(
+        requests[0]?.sessionTitle,
+        "copilot-tracker - main - gpt-5-nano",
+      );
       assert.strictEqual(requests[0]?.modelId, "gpt-5-nano");
       assert.strictEqual(requests[0]?.resolvedModel, "gpt-5-nano-2025-08-07");
       assert.strictEqual(requests[0]?.inputTokens, 22266);
@@ -257,6 +263,63 @@ suite("Extension Test Suite", () => {
       assert.strictEqual(requests[0]?.totalTokens, 22499);
       assert.strictEqual(requests[0]?.tokenSource, "copilot-otel");
       assert.deepStrictEqual(requests[0]?.stopReasons, ["stop"]);
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  test("Uses matched VS Code chat session titles for OTel requests", async () => {
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "copilot-otel-"));
+
+    try {
+      const otelFilePath = path.join(tempDir, "copilot-otel.jsonl");
+      await writeFile(
+        otelFilePath,
+        JSON.stringify(
+          createPlainLogRecord({
+            traceId: "trace-title-1",
+            spanId: "span-title-1",
+            hrTime: [1782643951, 813000000],
+            body: "GenAI inference: gpt-5-nano",
+            resourceSessionId: "otel-session-title-1",
+            attributes: {
+              "event.name": "gen_ai.client.inference.operation.details",
+              "gen_ai.operation.name": "chat",
+              "gen_ai.request.model": "gpt-5-nano",
+              "gen_ai.response.model": "gpt-5-nano-2025-08-07",
+              "gen_ai.response.id": "response-title-1",
+              "gen_ai.usage.input_tokens": 21908,
+              "gen_ai.usage.output_tokens": 907,
+            },
+          }),
+        ),
+      );
+
+      const requests = await readCopilotOtelRequests(
+        createWorkspaceContext(),
+        otelFilePath,
+        undefined,
+        (request) =>
+          request.traceId === "trace-title-1"
+            ? {
+                sessionId: "vscode-chat-session-1",
+                sessionTitle:
+                  "Second Copilot Tracker smoke test. What is 2 + 2?",
+                sessionCreatedAt: "2026-06-28T10:52:15.138Z",
+              }
+            : null,
+      );
+
+      assert.strictEqual(requests.length, 1);
+      assert.strictEqual(requests[0]?.sessionId, "vscode-chat-session-1");
+      assert.strictEqual(
+        requests[0]?.sessionTitle,
+        "Second Copilot Tracker smoke test. What is 2 + 2?",
+      );
+      assert.strictEqual(
+        requests[0]?.sessionCreatedAt,
+        "2026-06-28T10:52:15.138Z",
+      );
     } finally {
       await rm(tempDir, { recursive: true, force: true });
     }

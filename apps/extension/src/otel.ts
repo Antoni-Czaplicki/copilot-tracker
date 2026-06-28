@@ -76,6 +76,27 @@ export type RequestTaskResolver = (
   >,
 ) => RequestTaskResolution | null | undefined;
 
+export interface OtelSessionLookupRequest {
+  traceId: string;
+  conversationId: string | null;
+  requestStartedAt: string | null;
+  requestCompletedAt: string | null;
+  modelId: string | null;
+  resolvedModel: string | null;
+  inputTokens: number | null;
+  outputTokens: number | null;
+}
+
+export interface OtelSessionLookupResult {
+  sessionId: string | null;
+  sessionTitle: string | null;
+  sessionCreatedAt: string | null;
+}
+
+export type OtelSessionResolver = (
+  request: OtelSessionLookupRequest,
+) => OtelSessionLookupResult | null | undefined;
+
 export function getDefaultOtelFilePath(context: vscode.ExtensionContext) {
   return path.join(context.globalStorageUri.fsPath, "copilot-otel.jsonl");
 }
@@ -145,6 +166,7 @@ export async function readCopilotOtelRequests(
   workspaceContext: WorkspaceContext,
   otelFilePath: string,
   resolveTaskForRequest?: RequestTaskResolver,
+  resolveSessionForRequest?: OtelSessionResolver,
 ): Promise<CopilotChatRequest[]> {
   if (!existsSync(otelFilePath)) {
     logWarn("Copilot OTel file does not exist yet", { otelFilePath });
@@ -170,6 +192,7 @@ export async function readCopilotOtelRequests(
     ...parseOtelLogRequests(logRecords, workspaceContext),
   ];
   const requests = parsedRequests.map((request) => {
+    const sessionMatch = resolveSessionForRequest?.(request) ?? null;
     const requestWorkspaceContext = {
       ...workspaceContext,
       branch: request.branch ?? workspaceContext.branch,
@@ -191,11 +214,12 @@ export async function readCopilotOtelRequests(
       requestRecordId: request.recordId,
       requestId: request.traceId,
       responseId: request.spanId,
-      sessionId: request.conversationId ?? request.traceId,
-      sessionTitle: request.agentName
-        ? `${request.agentName} OTel`
-        : "Copilot OTel",
-      sessionCreatedAt: null,
+      sessionId:
+        sessionMatch?.sessionId ?? request.conversationId ?? request.traceId,
+      sessionTitle:
+        sessionMatch?.sessionTitle ??
+        buildOtelSessionTitle(request, requestWorkspaceContext),
+      sessionCreatedAt: sessionMatch?.sessionCreatedAt ?? null,
       requestStartedAt: request.requestStartedAt,
       requestCompletedAt: request.requestCompletedAt,
       modelId: request.modelId,
@@ -670,6 +694,74 @@ function normalizeRemoteUrl(value: string) {
     .replace(/^git@github\.com:/, "https://github.com/")
     .replace(/\.git$/i, "")
     .toLowerCase();
+}
+
+function buildOtelSessionTitle(
+  request: ParsedOtelRequest,
+  workspaceContext: WorkspaceContext,
+) {
+  return (
+    [
+      getRepositoryDisplayName(workspaceContext),
+      getTaskDisplayName(workspaceContext),
+      getModelDisplayName(request.modelId ?? request.resolvedModel),
+    ]
+      .filter((part): part is string => Boolean(part))
+      .join(" - ") ||
+    normalizeAgentName(request.agentName) ||
+    "Copilot Chat"
+  );
+}
+
+function getRepositoryDisplayName(workspaceContext: WorkspaceContext) {
+  return (
+    basename(workspaceContext.repositoryRoot) ??
+    getRepositoryNameFromRemote(workspaceContext.repositoryRemoteUrl) ??
+    workspaceContext.workspaceName ??
+    basename(workspaceContext.workspacePath)
+  );
+}
+
+function getTaskDisplayName(workspaceContext: WorkspaceContext) {
+  return (
+    workspaceContext.selectedTask ??
+    workspaceContext.defaultTask ??
+    workspaceContext.branch
+  );
+}
+
+function getModelDisplayName(modelId: string | null) {
+  if (!modelId) {
+    return null;
+  }
+
+  const modelName = basename(modelId) ?? modelId;
+  return modelName.replace(/-\d{4}-\d{2}-\d{2}$/u, "");
+}
+
+function normalizeAgentName(agentName: string | null) {
+  if (!agentName) {
+    return null;
+  }
+
+  return agentName.replace(/\s+OTel$/iu, "").trim() || null;
+}
+
+function getRepositoryNameFromRemote(remoteUrl: string | null) {
+  if (!remoteUrl) {
+    return null;
+  }
+
+  return basename(remoteUrl.replace(/\.git$/iu, ""));
+}
+
+function basename(value: string | null) {
+  if (!value) {
+    return null;
+  }
+
+  const normalized = value.replace(/\\/g, "/").replace(/\/+$/g, "");
+  return normalized.split("/").filter(Boolean).at(-1) ?? null;
 }
 
 function isInvokeAgentSpan(span: OtelSpan) {
