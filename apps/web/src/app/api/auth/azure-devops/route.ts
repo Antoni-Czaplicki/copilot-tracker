@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { oauthStateCookie } from "@/lib/auth";
+import { oauthStateCookie, secureCookieOptions } from "@/lib/auth";
 import {
   MissingAzureDevOpsOAuthConfigError,
   appBaseUrl,
@@ -33,10 +33,7 @@ export function GET() {
 
   const response = NextResponse.redirect(url);
   response.cookies.set(oauthStateCookie(), state, {
-    httpOnly: true,
-    maxAge: 10 * 60,
-    path: "/",
-    sameSite: "lax",
+    ...secureCookieOptions(10 * 60),
   });
   return response;
 }

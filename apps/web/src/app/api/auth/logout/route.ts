@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-import { sessionCookie } from "@/lib/auth";
+import { expiredCookieOptions, sessionCookie } from "@/lib/auth";
 import { appBaseUrl } from "@/lib/config";
 import { deleteSession } from "@/lib/store";
 
@@ -12,6 +12,6 @@ export async function POST(request: NextRequest) {
   }
 
   const response = NextResponse.redirect(new URL("/", appBaseUrl()));
-  response.cookies.delete(sessionCookie());
+  response.cookies.set(sessionCookie(), "", expiredCookieOptions());
   return response;
 }

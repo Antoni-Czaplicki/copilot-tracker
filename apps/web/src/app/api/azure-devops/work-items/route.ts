@@ -1,0 +1,71 @@
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+
+import {
+  authenticateIngestRequest,
+  currentUser,
+  readAzureDevOpsSessionAccessToken,
+  sessionCookie,
+} from "@/lib/auth";
+import {
+  AzureDevOpsWorkItemsError,
+  searchAzureDevOpsWorkItems,
+} from "@/lib/azureDevOpsWorkItems";
+
+export async function GET(request: NextRequest) {
+  const query = request.nextUrl.searchParams.get("query")?.trim() ?? "";
+  if (query.length === 0) {
+    return NextResponse.json({ workItems: [] });
+  }
+
+  const accessToken = await getAzureDevOpsAccessToken(request);
+  if (!accessToken) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const workItems = await searchAzureDevOpsWorkItems({
+      accessToken,
+      query,
+    });
+
+    return NextResponse.json({ workItems });
+  } catch (error) {
+    if (error instanceof AzureDevOpsWorkItemsError) {
+      return NextResponse.json(
+        { error: error.code },
+        { status: toClientStatus(error.status) },
+      );
+    }
+
+    throw error;
+  }
+}
+
+async function getAzureDevOpsAccessToken(request: NextRequest) {
+  const authorization = request.headers.get("authorization");
+  if (authorization?.startsWith("Bearer ")) {
+    const user = await authenticateIngestRequest(request);
+    return user ? authorization.slice("Bearer ".length).trim() : null;
+  }
+
+  const user = await currentUser();
+  if (!user) {
+    return null;
+  }
+
+  const sessionId = request.cookies.get(sessionCookie())?.value;
+  if (!sessionId) {
+    return null;
+  }
+
+  return readAzureDevOpsSessionAccessToken(sessionId);
+}
+
+function toClientStatus(status: number) {
+  if (status === 401 || status === 403 || status === 429) {
+    return status;
+  }
+
+  return 502;
+}

@@ -105,18 +105,23 @@ export function publicLeaderboard(database: TrackerDatabase): LeaderboardRow[] {
     })[]
   >();
   for (const request of filterMeaningfulChatRequests(database.chatRequests)) {
-    const login = request.userLogin ?? "unknown";
-    grouped.set(login, [...(grouped.get(login) ?? []), request]);
+    const key = request.userId ?? `login:${request.userLogin ?? "unknown"}`;
+    grouped.set(key, [...(grouped.get(key) ?? []), request]);
   }
 
   return [...grouped.entries()]
-    .map(([userLogin, requests]) => ({
-      userLogin,
-      userId: requests[0]?.userId ?? null,
-      githubLogin: requests[0]?.githubLogin ?? null,
-      ...summarizeRequests(requests),
-      rank: 0,
-    }))
+    .map(([, requests]) => {
+      const user = requests[0]?.userId
+        ? database.users.find((entry) => entry.userId === requests[0]?.userId)
+        : null;
+      return {
+        userLogin: user?.login ?? requests[0]?.userLogin ?? "unknown",
+        userId: requests[0]?.userId ?? null,
+        githubLogin: user?.githubLogin ?? requests[0]?.githubLogin ?? null,
+        ...summarizeRequests(requests),
+        rank: 0,
+      };
+    })
     .sort((a, b) => b.totalTokens - a.totalTokens)
     .map((row, index) => ({ ...row, rank: index + 1 }));
 }

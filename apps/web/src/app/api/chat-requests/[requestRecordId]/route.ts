@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 import { currentUser, isAdmin } from "@/lib/auth";
+import { taskAssignmentSchema } from "@/lib/payloadSchemas";
 import { updateChatRequestTask } from "@/lib/store";
 
 export async function PATCH(
@@ -14,18 +15,19 @@ export async function PATCH(
   }
 
   const { requestRecordId } = await context.params;
-  const body = (await request.json()) as { selectedTask?: string };
-  const selectedTask = body.selectedTask?.trim();
-  if (!selectedTask) {
+  const payload = taskAssignmentSchema
+    .pick({ selectedTask: true })
+    .safeParse(await readJson(request));
+  if (!payload.success) {
     return NextResponse.json(
-      { error: "selectedTask is required" },
+      { error: "invalid task assignment" },
       { status: 400 },
     );
   }
 
   const updated = await updateChatRequestTask(
     requestRecordId,
-    selectedTask,
+    payload.data.selectedTask,
     user,
     isAdmin(user),
   );
@@ -35,4 +37,13 @@ export async function PATCH(
   }
 
   return NextResponse.json({ ok: true });
+}
+
+async function readJson(request: NextRequest): Promise<unknown> {
+  try {
+    const payload: unknown = await request.json();
+    return payload;
+  } catch {
+    return null;
+  }
 }

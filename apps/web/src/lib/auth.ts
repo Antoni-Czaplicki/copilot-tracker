@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 
 import {
   adminAzureDevOpsLogins,
+  appBaseUrl,
   authMode,
   azureDevOpsAccountsUrl,
   azureDevOpsOrg,
@@ -10,8 +11,16 @@ import {
   azureDevOpsScope,
   requireAzureDevOpsOAuthConfig,
 } from "./config";
-import type { StoredUser } from "./store";
-import { createSession, readDatabase, upsertUser } from "./store";
+import type { AzureDevOpsSessionTokens, StoredUser } from "./store";
+import {
+  clearSessionAzureDevOpsTokens,
+  createSession,
+  readUserById,
+  readUserBySessionId,
+  readSessionAzureDevOpsTokens,
+  updateSessionAzureDevOpsTokens,
+  upsertUser,
+} from "./store";
 
 export interface AzureDevOpsUser {
   id: string;
@@ -30,6 +39,26 @@ export function sessionCookie() {
 
 export function oauthStateCookie() {
   return oauthStateCookieName;
+}
+
+export function secureCookieOptions(maxAge: number) {
+  return {
+    httpOnly: true,
+    maxAge,
+    path: "/",
+    sameSite: "lax" as const,
+    secure: shouldUseSecureCookies(),
+  };
+}
+
+export function expiredCookieOptions() {
+  return {
+    httpOnly: true,
+    maxAge: 0,
+    path: "/",
+    sameSite: "lax" as const,
+    secure: shouldUseSecureCookies(),
+  };
 }
 
 export async function currentUser(): Promise<StoredUser | null> {
@@ -51,13 +80,7 @@ export async function currentUser(): Promise<StoredUser | null> {
     return null;
   }
 
-  const database = await readDatabase();
-  const session = database.sessions.find((entry) => entry.id === sessionId);
-  if (!session || Date.parse(session.expiresAt) <= Date.now()) {
-    return null;
-  }
-
-  return database.users.find((user) => user.userId === session.userId) ?? null;
+  return readUserBySessionId(sessionId);
 }
 
 export function isAdmin(user: StoredUser | null): boolean {
@@ -70,9 +93,10 @@ export function isAdmin(user: StoredUser | null): boolean {
 
 export async function createUserSession(
   azureUser: AzureDevOpsUser,
+  azureDevOpsTokens?: AzureDevOpsSessionTokens,
 ): Promise<string> {
   const user = await upsertAzureDevOpsUser(azureUser);
-  const session = await createSession(user.userId);
+  const session = await createSession(user.userId, azureDevOpsTokens);
   return session.id;
 }
 
@@ -107,7 +131,7 @@ export async function authenticateIngestRequest(
 
 export async function exchangeAzureDevOpsCode(code: string) {
   const oauthConfig = requireAzureDevOpsOAuthConfig();
-  const response = await fetch(oauthConfig.tokenUrl, {
+  const response = await fetchWithTimeout(oauthConfig.tokenUrl, {
     method: "POST",
     headers: {
       accept: "application/json",
@@ -127,16 +151,75 @@ export async function exchangeAzureDevOpsCode(code: string) {
     return null;
   }
 
-  const payload = (await response.json()) as { access_token?: string };
-  return payload.access_token && payload.access_token.length > 0
-    ? payload.access_token
-    : null;
+  const payload = (await response.json()) as {
+    access_token?: string;
+    refresh_token?: string;
+    expires_in?: number;
+  };
+  return toAzureDevOpsSessionTokens(payload);
+}
+
+export async function readAzureDevOpsSessionAccessToken(
+  sessionId: string,
+): Promise<string | null> {
+  const tokens = await readSessionAzureDevOpsTokens(sessionId);
+  if (!tokens) {
+    return null;
+  }
+
+  if (!isTokenNearExpiry(tokens.expiresAt)) {
+    return tokens.accessToken;
+  }
+
+  if (!tokens.refreshToken) {
+    return null;
+  }
+
+  const refreshedTokens = await refreshAzureDevOpsAccessToken(
+    tokens.refreshToken,
+  );
+  if (!refreshedTokens) {
+    await clearSessionAzureDevOpsTokens(sessionId);
+    return null;
+  }
+
+  await updateSessionAzureDevOpsTokens(sessionId, refreshedTokens);
+  return refreshedTokens.accessToken;
+}
+
+async function refreshAzureDevOpsAccessToken(refreshToken: string) {
+  const oauthConfig = requireAzureDevOpsOAuthConfig();
+  const response = await fetchWithTimeout(oauthConfig.tokenUrl, {
+    method: "POST",
+    headers: {
+      accept: "application/json",
+      "content-type": "application/x-www-form-urlencoded",
+    },
+    body: new URLSearchParams({
+      client_id: oauthConfig.clientId,
+      client_secret: oauthConfig.clientSecret,
+      grant_type: "refresh_token",
+      refresh_token: refreshToken,
+      scope: azureDevOpsScope(),
+    }),
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const payload = (await response.json()) as {
+    access_token?: string;
+    refresh_token?: string;
+    expires_in?: number;
+  };
+  return toAzureDevOpsSessionTokens(payload, refreshToken);
 }
 
 export async function fetchAzureDevOpsUser(
   accessToken: string,
 ): Promise<AzureDevOpsUser | null> {
-  const profileResponse = await fetch(
+  const profileResponse = await fetchWithTimeout(
     new URL("/_apis/profile/profiles/me?api-version=7.1", azureDevOpsProfileUrl()),
     {
       headers: {
@@ -189,7 +272,7 @@ async function validateAzureDevOpsOrgMembership(
   accessToken: string,
   memberId: string,
 ) {
-  const response = await fetch(
+  const response = await fetchWithTimeout(
     new URL(
       `/_apis/accounts?memberId=${encodeURIComponent(memberId)}&api-version=7.1`,
       azureDevOpsAccountsUrl(),
@@ -212,10 +295,10 @@ async function validateAzureDevOpsOrgMembership(
   const expectedOrg = azureDevOpsOrg().toLowerCase();
   return (payload.value ?? []).some((account) => {
     const accountName = account.accountName?.toLowerCase();
-    const accountUri = account.accountUri?.toLowerCase();
+    const accountUri = account.accountUri;
     return (
       accountName === expectedOrg ||
-      accountUri?.includes(`/${expectedOrg}`) === true
+      accountUriContainsOrg(accountUri, expectedOrg)
     );
   });
 }
@@ -223,8 +306,7 @@ async function validateAzureDevOpsOrgMembership(
 async function upsertAzureDevOpsUser(
   azureUser: AzureDevOpsUser,
 ): Promise<StoredUser> {
-  const database = await readDatabase();
-  const existing = database.users.find((user) => user.userId === azureUser.id);
+  const existing = await readUserById(azureUser.id);
   const admins = adminAzureDevOpsLogins();
   return upsertUser({
     userId: azureUser.id,
@@ -235,4 +317,76 @@ async function upsertAzureDevOpsUser(
     githubLogin: existing?.githubLogin ?? null,
     role: admins.has(azureUser.login.toLowerCase()) ? "admin" : "user",
   });
+}
+
+function toAzureDevOpsSessionTokens(
+  payload: {
+    access_token?: string;
+    refresh_token?: string;
+    expires_in?: number;
+  },
+  fallbackRefreshToken: string | null = null,
+): AzureDevOpsSessionTokens | null {
+  if (!payload.access_token) {
+    return null;
+  }
+
+  const expiresInSeconds =
+    typeof payload.expires_in === "number" ? payload.expires_in : 3600;
+
+  return {
+    accessToken: payload.access_token,
+    refreshToken: payload.refresh_token ?? fallbackRefreshToken,
+    expiresAt: new Date(Date.now() + expiresInSeconds * 1000).toISOString(),
+  };
+}
+
+function isTokenNearExpiry(expiresAt: string | null) {
+  if (!expiresAt) {
+    return true;
+  }
+
+  const expiry = Date.parse(expiresAt);
+  return Number.isNaN(expiry) || expiry <= Date.now() + 60_000;
+}
+
+function shouldUseSecureCookies() {
+  try {
+    return new URL(appBaseUrl()).protocol === "https:";
+  } catch {
+    return process.env.NODE_ENV === "production";
+  }
+}
+
+function accountUriContainsOrg(value: string | undefined, expectedOrg: string) {
+  if (!value) {
+    return false;
+  }
+
+  try {
+    return new URL(value).pathname
+      .split("/")
+      .map((part) => part.toLowerCase())
+      .includes(expectedOrg);
+  } catch {
+    return value
+      .split("/")
+      .map((part) => part.toLowerCase())
+      .includes(expectedOrg);
+  }
+}
+
+async function fetchWithTimeout(
+  input: RequestInfo | URL,
+  init: RequestInit,
+): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => {
+    controller.abort();
+  }, 15_000);
+  try {
+    return await fetch(input, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
 }

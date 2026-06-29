@@ -96,8 +96,10 @@ AZURE_DEVOPS_CLIENT_ID=your-azure-app-client-id
 AZURE_DEVOPS_CLIENT_SECRET=your-azure-app-client-secret
 AZURE_DEVOPS_ORG=your-azure-devops-org
 AZURE_DEVOPS_TENANT_ID=organizations
+COPILOT_TRACKER_TOKEN_ENCRYPTION_KEY=replace-with-a-random-secret
 ADMIN_AZURE_DEVOPS_LOGINS=your-work-email@example.com
 COPILOT_TRACKER_AUTH_MODE=azure-devops
+COPILOT_TRACKER_LEADERBOARD_ENABLED=true
 GITHUB_COPILOT_BILLING_TOKEN=...
 GITHUB_COPILOT_BILLING_SCOPE_TYPE=user
 GITHUB_COPILOT_BILLING_SCOPE=your-github-login
@@ -112,9 +114,11 @@ http://localhost:3737/api/auth/callback/azure-devops
 
 `AZURE_DEVOPS_CLIENT_ID`, `AZURE_DEVOPS_CLIENT_SECRET`, and `AZURE_DEVOPS_ORG` are required when `COPILOT_TRACKER_AUTH_MODE=azure-devops`.
 
-The app requests the Azure DevOps `vso.profile` delegated scope to read the signed-in user's profile and organization accounts.
+The app requests Azure DevOps `vso.profile` and `vso.work` delegated scopes to read the signed-in user's profile, organization accounts, and work item metadata for task search. It also requests `offline_access` so the web session can refresh Azure DevOps work-item search tokens.
 
-The extension signs in through VS Code's Microsoft authentication provider and the server validates that token against Azure DevOps before accepting usage. Users can optionally map their Azure DevOps identity to a GitHub username for billing/reporting correlation.
+The extension signs in through VS Code's Microsoft authentication provider and the server validates that token against Azure DevOps before accepting usage. Background sync uses the profile scope silently; work-item search asks for work-item access when the user explicitly searches. Users can optionally map their Azure DevOps identity to a GitHub username for billing/reporting correlation.
+
+`COPILOT_TRACKER_TOKEN_ENCRYPTION_KEY` is used to encrypt Azure DevOps session tokens at rest. If it is omitted, the app falls back to `AZURE_DEVOPS_CLIENT_SECRET`.
 
 `apps/web/.env.example` contains the expected environment variables.
 
@@ -123,15 +127,16 @@ The extension signs in through VS Code's Microsoft authentication provider and t
 - `Copilot Tracker: Set Current Task`
 - `Copilot Tracker: Use Branch as Task`
 - `Copilot Tracker: Sync Copilot OTel Now`
+- `Copilot Tracker: Sign In`
 - `Copilot Tracker: Open Dashboard`
 - `Copilot Tracker: Show Current Context`
 
 ## Extension Settings
 
 - `copilot-tracker.serverUrl`
-- `copilot-tracker.configureCopilotOtel`
 - `copilot-tracker.otelFilePath`
 - `copilot-tracker.syncIntervalSeconds`
+- `copilot-tracker.showCurrentSessionTokensInStatusBar`
 
 ## Web API
 

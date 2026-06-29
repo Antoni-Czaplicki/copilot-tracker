@@ -21,6 +21,9 @@ export const sessions = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => users.userId, { onDelete: "cascade" }),
+    azureAccessToken: text("azure_access_token"),
+    azureRefreshToken: text("azure_refresh_token"),
+    azureTokenExpiresAt: text("azure_token_expires_at"),
     createdAt: text("created_at").notNull(),
     expiresAt: text("expires_at").notNull(),
   },
@@ -112,6 +115,11 @@ export const chatRequests = pgTable(
   },
   (table) => [
     index("chat_requests_user_id_idx").on(table.userId),
+    index("chat_requests_session_id_idx").on(table.sessionId),
+    index("chat_requests_user_session_id_idx").on(
+      table.userId,
+      table.sessionId,
+    ),
     index("chat_requests_workspace_id_idx").on(table.workspaceId),
     index("chat_requests_selected_task_idx").on(table.selectedTask),
     index("chat_requests_captured_at_idx").on(table.capturedAt),

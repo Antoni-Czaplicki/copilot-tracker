@@ -1,8 +1,7 @@
-import type { CopilotChatRequest } from "@copilot-tracker/shared";
 import { redirect } from "next/navigation";
 
 import { GithubLoginEditor } from "@/components/github-login-editor";
-import { TaskEditor } from "@/components/task-editor";
+import { RequestSessionsGrid } from "@/components/request-sessions-grid";
 import { Badge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/ui/button";
 import {
@@ -25,8 +24,6 @@ import {
   filterMeaningfulChatRequests,
   formatDateTime,
   formatNumber,
-  getRepositoryName,
-  getRequestActivityTimestamp,
   modelSummaries,
   publicLeaderboard,
   summarizeRequests,
@@ -116,6 +113,7 @@ export default async function AdminPage({
         {views.map((entry) => (
           <LinkButton
             key={entry.id}
+            aria-current={entry.id === view ? "page" : undefined}
             href={`/admin?view=${entry.id}`}
             variant={entry.id === view ? "default" : "outline"}
           >
@@ -383,86 +381,20 @@ function Requests({
 }: {
   database: Awaited<ReturnType<typeof readDatabase>>;
 }) {
-  const recentRequests = [...database.chatRequests]
-    .sort(
-      (a, b) => getRequestActivityTimestamp(b) - getRequestActivityTimestamp(a),
-    )
-    .slice(0, 100);
-
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Recent team requests</CardTitle>
+        <CardTitle>Team requests by session</CardTitle>
         <CardDescription>
-          Prompt and response bodies are not stored; this table shows metadata
-          only.
+          Prompt and response bodies are not stored. Reassign complete sessions
+          or select individual request rows for narrower corrections.
         </CardDescription>
       </CardHeader>
-      <CardContent className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Developer</TableHead>
-              <TableHead>Session</TableHead>
-              <TableHead>Repo</TableHead>
-              <TableHead>Branch</TableHead>
-              <TableHead>Model</TableHead>
-              <TableHead>Tokens</TableHead>
-              <TableHead>Cost</TableHead>
-              <TableHead>Task</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {recentRequests.map((request) => (
-              <TableRow key={request.requestRecordId}>
-                <TableCell>
-                  {request.userLogin ?? "unknown"}
-                  {request.githubLogin ? (
-                    <span className="text-muted-foreground ml-2 text-xs">
-                      GitHub @{request.githubLogin}
-                    </span>
-                  ) : null}
-                </TableCell>
-                <TableCell>
-                  {request.sessionTitle ?? request.sessionId}
-                </TableCell>
-                <TableCell>{getRepositoryName(request)}</TableCell>
-                <TableCell>{request.branch ?? "none"}</TableCell>
-                <TableCell>{request.modelId ?? "unknown"}</TableCell>
-                <TableCell>
-                  {request.totalTokens === null
-                    ? "missing"
-                    : formatNumber(request.totalTokens)}
-                </TableCell>
-                <TableCell>{formatRequestCost(request)}</TableCell>
-                <TableCell>
-                  <TaskEditor
-                    initialTask={
-                      request.selectedTask ?? request.defaultTask ?? "No task"
-                    }
-                    requestRecordId={request.requestRecordId}
-                  />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+      <CardContent>
+        <RequestSessionsGrid requests={database.chatRequests} showDeveloper />
       </CardContent>
     </Card>
   );
-}
-
-function formatRequestCost(request: CopilotChatRequest) {
-  if (request.totalTokens === null) {
-    return "missing";
-  }
-
-  const cost = estimateRequestsCost([request]);
-  if (cost.pricedRequestCount === 0) {
-    return "unpriced";
-  }
-
-  return formatCurrency(cost.estimatedUsd);
 }
 
 function GithubBilling({

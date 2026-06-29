@@ -47,6 +47,11 @@
         "category": "Copilot Tracker"
       },
       {
+        "command": "copilot-tracker.signIn",
+        "title": "Sign In",
+        "category": "Copilot Tracker"
+      },
+      {
         "command": "copilot-tracker.openDashboard",
         "title": "Open Dashboard",
         "category": "Copilot Tracker"
@@ -68,12 +73,7 @@
         "copilot-tracker.serverUrl": {
           "type": "string",
           "default": "http://localhost:3737",
-          "description": "Copilot Tracker server URL."
-        },
-        "copilot-tracker.configureCopilotOtel": {
-          "type": "boolean",
-          "default": true,
-          "description": "Automatically configure GitHub Copilot Chat to emit OTel metadata to a local JSONL file."
+          "description": "Copilot Tracker server URL. Set this in user settings; workspace values are ignored for token safety."
         },
         "copilot-tracker.otelFilePath": {
           "type": "string",
@@ -85,6 +85,11 @@
           "default": 15,
           "minimum": 5,
           "description": "Fallback polling interval for detecting Copilot OTel file changes."
+        },
+        "copilot-tracker.showCurrentSessionTokensInStatusBar": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show current Copilot chat session token usage in the status bar."
         }
       }
     }
@@ -94,6 +99,7 @@
     "onCommand:copilot-tracker.setTask",
     "onCommand:copilot-tracker.useBranchTask",
     "onCommand:copilot-tracker.syncCopilotSessions",
+    "onCommand:copilot-tracker.signIn",
     "onCommand:copilot-tracker.openDashboard",
     "onCommand:copilot-tracker.showContext",
     "onCommand:copilot-tracker.showLogs"

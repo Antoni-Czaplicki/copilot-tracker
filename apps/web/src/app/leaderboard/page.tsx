@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { Badge } from "@/components/ui/badge";
 import {
@@ -18,12 +18,17 @@ import {
 } from "@/components/ui/table";
 import { formatNumber, publicLeaderboard } from "@/lib/analytics";
 import { currentUser } from "@/lib/auth";
+import { leaderboardEnabled } from "@/lib/config";
 import { formatCurrency } from "@/lib/pricing";
 import { readDatabase } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
 export default async function LeaderboardPage() {
+  if (!leaderboardEnabled()) {
+    notFound();
+  }
+
   const user = await currentUser();
   if (user === null) {
     redirect("/");
@@ -69,27 +74,38 @@ export default async function LeaderboardPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rows.map((row) => (
-                <TableRow key={row.userId ?? row.userLogin}>
-                  <TableCell>#{row.rank}</TableCell>
-                  <TableCell>
-                    <strong>{row.userLogin}</strong>
-                    {row.githubLogin ? (
-                      <span className="text-muted-foreground ml-2 text-xs">
-                        GitHub @{row.githubLogin}
-                      </span>
-                    ) : null}
-                  </TableCell>
-                  <TableCell>{formatNumber(row.requestCount)}</TableCell>
-                  <TableCell>{formatNumber(row.inputTokens)}</TableCell>
-                  <TableCell>{formatNumber(row.outputTokens)}</TableCell>
-                  <TableCell>{formatNumber(row.totalTokens)}</TableCell>
-                  <TableCell>{formatCurrency(row.estimatedUsd)}</TableCell>
-                  <TableCell>
-                    {formatNumber(row.averageTokensPerRequest)}
+              {rows.length > 0 ? (
+                rows.map((row) => (
+                  <TableRow key={row.userId ?? row.userLogin}>
+                    <TableCell>#{row.rank}</TableCell>
+                    <TableCell>
+                      <strong>{row.userLogin}</strong>
+                      {row.githubLogin ? (
+                        <span className="text-muted-foreground ml-2 text-xs">
+                          GitHub @{row.githubLogin}
+                        </span>
+                      ) : null}
+                    </TableCell>
+                    <TableCell>{formatNumber(row.requestCount)}</TableCell>
+                    <TableCell>{formatNumber(row.inputTokens)}</TableCell>
+                    <TableCell>{formatNumber(row.outputTokens)}</TableCell>
+                    <TableCell>{formatNumber(row.totalTokens)}</TableCell>
+                    <TableCell>{formatCurrency(row.estimatedUsd)}</TableCell>
+                    <TableCell>
+                      {formatNumber(row.averageTokensPerRequest)}
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    className="text-muted-foreground h-16 text-center"
+                    colSpan={8}
+                  >
+                    No developer usage captured yet.
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </CardContent>

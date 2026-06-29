@@ -17,6 +17,7 @@
     "@base-ui/react": "^1.6.0",
     "@copilot-tracker/shared": "workspace:*",
     "@t3-oss/env-nextjs": "^0.13.11",
+    "@tanstack/react-table": "^8.21.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.45.2",

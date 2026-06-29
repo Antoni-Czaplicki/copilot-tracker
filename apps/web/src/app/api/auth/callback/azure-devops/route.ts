@@ -4,8 +4,10 @@ import { NextResponse } from "next/server";
 import {
   createUserSession,
   exchangeAzureDevOpsCode,
+  expiredCookieOptions,
   fetchAzureDevOpsUser,
   oauthStateCookie,
+  secureCookieOptions,
   sessionCookie,
 } from "@/lib/auth";
 import { MissingAzureDevOpsOAuthConfigError, appBaseUrl } from "@/lib/config";
@@ -24,9 +26,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/?auth=failed", appBaseUrl()));
   }
 
-  let accessToken: string | null;
+  let tokens: Awaited<ReturnType<typeof exchangeAzureDevOpsCode>>;
   try {
-    accessToken = await exchangeAzureDevOpsCode(code);
+    tokens = await exchangeAzureDevOpsCode(code);
   } catch (error) {
     if (error instanceof MissingAzureDevOpsOAuthConfigError) {
       return NextResponse.redirect(
@@ -36,23 +38,20 @@ export async function GET(request: NextRequest) {
 
     throw error;
   }
-  if (accessToken === null) {
+  if (tokens === null) {
     return NextResponse.redirect(new URL("/?auth=failed", appBaseUrl()));
   }
 
-  const azureUser = await fetchAzureDevOpsUser(accessToken);
+  const azureUser = await fetchAzureDevOpsUser(tokens.accessToken);
   if (azureUser === null) {
     return NextResponse.redirect(new URL("/?auth=failed", appBaseUrl()));
   }
 
-  const sessionId = await createUserSession(azureUser);
+  const sessionId = await createUserSession(azureUser, tokens);
   const response = NextResponse.redirect(new URL("/dashboard", appBaseUrl()));
   response.cookies.set(sessionCookie(), sessionId, {
-    httpOnly: true,
-    maxAge: 30 * 24 * 60 * 60,
-    path: "/",
-    sameSite: "lax",
+    ...secureCookieOptions(30 * 24 * 60 * 60),
   });
-  response.cookies.delete(oauthStateCookie());
+  response.cookies.set(oauthStateCookie(), "", expiredCookieOptions());
   return response;
 }

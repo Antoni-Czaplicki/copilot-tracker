@@ -3,10 +3,12 @@ import { JetBrains_Mono } from "next/font/google";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { NavLinkButton } from "@/components/nav-link-button";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button, LinkButton } from "@/components/ui/button";
 import { currentUser, isAdmin } from "@/lib/auth";
+import { leaderboardEnabled } from "@/lib/config";
 import { cn } from "@/lib/utils";
 
 import "./globals.css";
@@ -28,6 +30,7 @@ export default async function RootLayout({
   children: ReactNode;
 }) {
   const user = await currentUser();
+  const showLeaderboard = leaderboardEnabled();
 
   return (
     <html
@@ -57,20 +60,20 @@ export default async function RootLayout({
                 </span>
               </Link>
               <nav className="flex flex-wrap items-center gap-2">
-                {user ? (
-                  <LinkButton href="/leaderboard" variant="ghost">
+                {user && showLeaderboard ? (
+                  <NavLinkButton href="/leaderboard">
                     Leaderboard
-                  </LinkButton>
+                  </NavLinkButton>
                 ) : null}
                 {user ? (
-                  <LinkButton href="/dashboard" variant="ghost">
+                  <NavLinkButton href="/dashboard">
                     Dashboard
-                  </LinkButton>
+                  </NavLinkButton>
                 ) : null}
                 {isAdmin(user) ? (
-                  <LinkButton href="/admin" variant="ghost">
+                  <NavLinkButton href="/admin">
                     Admin
-                  </LinkButton>
+                  </NavLinkButton>
                 ) : null}
                 <ThemeToggle />
                 {user ? (

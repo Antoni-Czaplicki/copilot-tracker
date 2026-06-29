@@ -21,7 +21,7 @@ suite("Extension Test Suite", () => {
     assert.strictEqual(getTaskFromBranch("124v2"), "124");
     assert.strictEqual(getTaskFromBranch("feature/124-login"), "124");
     assert.strictEqual(getTaskFromBranch("feature/ABC-123-login"), "123");
-    assert.strictEqual(getTaskFromBranch("main"), "main");
+    assert.strictEqual(getTaskFromBranch("main"), null);
   });
 
   test("Reads Copilot OTel invoke_agent request spans", async () => {
@@ -311,7 +311,7 @@ suite("Extension Test Suite", () => {
       );
 
       assert.strictEqual(requests.length, 1);
-      assert.strictEqual(requests[0]?.sessionId, "vscode-chat-session-1");
+      assert.strictEqual(requests[0]?.sessionId, "otel-session-title-1");
       assert.strictEqual(
         requests[0]?.sessionTitle,
         "Second Copilot Tracker smoke test. What is 2 + 2?",
@@ -335,8 +335,8 @@ function createWorkspaceContext(): WorkspaceContext {
     repositoryRemoteUrl:
       "https://github.com/Antoni-Czaplicki/copilot-tracker.git",
     branch: "main",
-    defaultTask: "main",
-    selectedTask: "main",
+    defaultTask: null,
+    selectedTask: null,
   };
 }
 
@@ -388,6 +388,10 @@ function createPlainLogRecord({
         ["service.name", "copilot-chat"],
         ["service.version", "0.54.0"],
         ["session.id", resourceSessionId],
+        [
+          "github.copilot.git.repository",
+          "https://github.com/Antoni-Czaplicki/copilot-tracker.git",
+        ],
       ],
       _asyncAttributesPending: false,
     },

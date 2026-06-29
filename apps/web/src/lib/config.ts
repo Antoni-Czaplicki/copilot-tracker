@@ -32,6 +32,10 @@ export function authMode() {
   return env.COPILOT_TRACKER_AUTH_MODE;
 }
 
+export function leaderboardEnabled() {
+  return env.COPILOT_TRACKER_LEADERBOARD_ENABLED;
+}
+
 export function adminAzureDevOpsLogins() {
   return new Set(
     (env.ADMIN_AZURE_DEVOPS_LOGINS ?? "")
@@ -55,7 +59,14 @@ export function azureDevOpsTenantId() {
 }
 
 export function azureDevOpsScope() {
-  return "openid profile email 499b84ac-1321-427f-aa17-267ca6975798/vso.profile";
+  return [
+    "openid",
+    "profile",
+    "email",
+    "offline_access",
+    "499b84ac-1321-427f-aa17-267ca6975798/vso.profile",
+    "499b84ac-1321-427f-aa17-267ca6975798/vso.work",
+  ].join(" ");
 }
 
 export function azureDevOpsProfileUrl() {
@@ -64,6 +75,10 @@ export function azureDevOpsProfileUrl() {
 
 export function azureDevOpsAccountsUrl() {
   return "https://app.vssps.visualstudio.com";
+}
+
+export function azureDevOpsWorkItemsUrl() {
+  return `https://dev.azure.com/${encodeURIComponent(azureDevOpsOrg())}`;
 }
 
 export class MissingAzureDevOpsOAuthConfigError extends Error {

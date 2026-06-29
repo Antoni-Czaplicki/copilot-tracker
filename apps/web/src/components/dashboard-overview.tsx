@@ -1,7 +1,7 @@
 import type { CopilotChatRequest } from "@copilot-tracker/shared";
 
 import { GithubLoginEditor } from "@/components/github-login-editor";
-import { TaskEditor } from "@/components/task-editor";
+import { RequestSessionsGrid } from "@/components/request-sessions-grid";
 import { TaskTokenChart } from "@/components/task-token-chart";
 import { Badge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/ui/button";
@@ -24,17 +24,16 @@ import {
   filterMeaningfulChatRequests,
   formatDateTime,
   formatNumber,
-  getRepositoryName,
-  getRequestActivityTimestamp,
   summarizeRequests,
   taskSummaries,
 } from "@/lib/analytics";
-import { estimateRequestsCost, formatCurrency } from "@/lib/pricing";
+import { formatCurrency } from "@/lib/pricing";
 
 interface DashboardOverviewProps {
   login: string;
   githubLogin?: string | null;
   requests: CopilotChatRequest[];
+  focusedSessionId?: string | null;
   taskPage?: number;
   taskPageBasePath?: string;
 }
@@ -44,6 +43,7 @@ const taskPageSize = 10;
 export function DashboardOverview({
   login,
   githubLogin = null,
+  focusedSessionId = null,
   requests,
   taskPage = 1,
   taskPageBasePath = "/dashboard",
@@ -57,11 +57,6 @@ export function DashboardOverview({
     (currentTaskPage - 1) * taskPageSize,
     currentTaskPage * taskPageSize,
   );
-  const recentRequests = [...visibleRequests]
-    .sort(
-      (a, b) => getRequestActivityTimestamp(b) - getRequestActivityTimestamp(a),
-    )
-    .slice(0, 20);
   const chartData = summaries.slice(0, 8).map((summary) => ({
     task: summary.task,
     input: summary.inputTokens,
@@ -153,21 +148,36 @@ export function DashboardOverview({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedSummaries.map((summary) => (
-                <TableRow
-                  key={`${summary.task}-${summary.repositoryRoot}-${summary.branch}`}
-                >
-                  <TableCell>
-                    <strong>{summary.task}</strong>
+              {paginatedSummaries.length > 0 ? (
+                paginatedSummaries.map((summary) => (
+                  <TableRow
+                    key={`${summary.task}-${summary.repositoryRoot}-${summary.branch}`}
+                  >
+                    <TableCell>
+                      <strong>{summary.task}</strong>
+                    </TableCell>
+                    <TableCell>{summary.repositoryName}</TableCell>
+                    <TableCell>{summary.branch ?? "none"}</TableCell>
+                    <TableCell>{formatNumber(summary.requestCount)}</TableCell>
+                    <TableCell>{formatNumber(summary.totalTokens)}</TableCell>
+                    <TableCell>
+                      {formatCurrency(summary.estimatedUsd)}
+                    </TableCell>
+                    <TableCell>
+                      {formatDateTime(summary.lastRequestAt)}
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    className="text-muted-foreground h-16 text-center"
+                    colSpan={7}
+                  >
+                    No task usage captured yet.
                   </TableCell>
-                  <TableCell>{summary.repositoryName}</TableCell>
-                  <TableCell>{summary.branch ?? "none"}</TableCell>
-                  <TableCell>{formatNumber(summary.requestCount)}</TableCell>
-                  <TableCell>{formatNumber(summary.totalTokens)}</TableCell>
-                  <TableCell>{formatCurrency(summary.estimatedUsd)}</TableCell>
-                  <TableCell>{formatDateTime(summary.lastRequestAt)}</TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
           {taskPageCount > 1 ? (
@@ -201,57 +211,17 @@ export function DashboardOverview({
 
       <Card>
         <CardHeader>
-          <CardTitle>Recent requests</CardTitle>
+          <CardTitle>Requests by session</CardTitle>
           <CardDescription>
-            Task reassignment updates future summaries immediately.
+            Reassign an entire chat session, or select specific rows for a
+            narrower edit.
           </CardDescription>
         </CardHeader>
-        <CardContent className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Session</TableHead>
-                <TableHead>Repo</TableHead>
-                <TableHead>Model</TableHead>
-                <TableHead>Tokens</TableHead>
-                <TableHead>Cost</TableHead>
-                <TableHead>Time</TableHead>
-                <TableHead>Task</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {recentRequests.map((request) => (
-                <TableRow key={request.requestRecordId}>
-                  <TableCell>
-                    {request.sessionTitle ?? request.sessionId}
-                  </TableCell>
-                  <TableCell>{getRepositoryName(request)}</TableCell>
-                  <TableCell>{request.modelId ?? "unknown"}</TableCell>
-                  <TableCell>
-                    {request.totalTokens === null
-                      ? "missing"
-                      : formatNumber(request.totalTokens)}
-                  </TableCell>
-                  <TableCell>{formatRequestCost(request)}</TableCell>
-                  <TableCell>
-                    {formatDateTime(
-                      request.requestCompletedAt ??
-                        request.requestStartedAt ??
-                        request.capturedAt,
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <TaskEditor
-                      initialTask={
-                        request.selectedTask ?? request.defaultTask ?? "No task"
-                      }
-                      requestRecordId={request.requestRecordId}
-                    />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+        <CardContent>
+          <RequestSessionsGrid
+            focusedSessionId={focusedSessionId}
+            requests={visibleRequests}
+          />
         </CardContent>
       </Card>
     </main>
@@ -269,19 +239,6 @@ function Metric({ label, value }: { label: string; value: number | string }) {
       </CardContent>
     </Card>
   );
-}
-
-function formatRequestCost(request: CopilotChatRequest) {
-  if (request.totalTokens === null) {
-    return "missing";
-  }
-
-  const cost = estimateRequestsCost([request]);
-  if (cost.pricedRequestCount === 0) {
-    return "unpriced";
-  }
-
-  return formatCurrency(cost.estimatedUsd);
 }
 
 function taskPageHref(basePath: string, page: number) {

@@ -22,13 +22,14 @@ where they can be explored on a dashboard and leaderboard.
 - **Copilot Tracker: Open Dashboard** — open the tracker dashboard.
 - **Copilot Tracker: Show Current Context** — inspect the active attribution.
 - **Copilot Tracker: Show Logs** — open the extension log output.
+- **Copilot Tracker: Sign In** — sign in with VS Code Microsoft auth and trust the configured tracker server origin.
 
 ## Settings
 
-- `copilot-tracker.serverUrl` — Copilot Tracker server URL.
-- `copilot-tracker.configureCopilotOtel` — auto-configure Copilot Chat OTel export.
+- `copilot-tracker.serverUrl` — Copilot Tracker server URL from user settings. Workspace values are ignored for token safety.
 - `copilot-tracker.otelFilePath` — optional path for the OTel JSONL file.
 - `copilot-tracker.syncIntervalSeconds` — fallback polling interval.
+- `copilot-tracker.showCurrentSessionTokensInStatusBar` — show current session tokens and estimated cost in the status bar.
 
 See the [project README](https://github.com/Antoni-Czaplicki/copilot-tracker)
 and [INSTALL.md](https://github.com/Antoni-Czaplicki/copilot-tracker/blob/main/INSTALL.md)

@@ -2,29 +2,50 @@ import * as vscode from "vscode";
 
 import { logInfo, logWarn } from "./logger";
 
-const azureDevOpsScope =
-  "499b84ac-1321-427f-aa17-267ca6975798/vso.profile";
+const azureDevOpsProfileScopes = [
+  "499b84ac-1321-427f-aa17-267ca6975798/vso.profile",
+];
+const azureDevOpsWorkItemScopes = [
+  ...azureDevOpsProfileScopes,
+  "499b84ac-1321-427f-aa17-267ca6975798/vso.work",
+];
 
-export async function getAzureDevOpsToken(): Promise<string | null> {
+export interface AzureDevOpsTokenOptions {
+  interactive?: boolean;
+  workItemAccess?: boolean;
+}
+
+export async function getAzureDevOpsToken({
+  interactive = false,
+  workItemAccess = false,
+}: AzureDevOpsTokenOptions = {}): Promise<string | null> {
   try {
     logInfo("Requesting Azure DevOps authentication session");
     const session = await vscode.authentication.getSession(
       "microsoft",
-      [azureDevOpsScope],
-      { createIfNone: true },
+      workItemAccess ? azureDevOpsWorkItemScopes : azureDevOpsProfileScopes,
+      { createIfNone: interactive },
     );
+    if (!session) {
+      logInfo("Azure DevOps authentication session not available", {
+        interactive,
+        workItemAccess,
+      });
+      return null;
+    }
+
     logInfo("Azure DevOps authentication session acquired", {
       accountLabel: session.account.label,
       scopes: session.scopes,
+      interactive,
+      workItemAccess,
     });
     return session.accessToken;
   } catch (error) {
-    console.warn(
-      "Copilot Tracker could not acquire Azure DevOps authentication session",
-      error,
-    );
     logWarn("Could not acquire Azure DevOps authentication session", {
       error: error instanceof Error ? error.message : String(error),
+      interactive,
+      workItemAccess,
     });
     return null;
   }

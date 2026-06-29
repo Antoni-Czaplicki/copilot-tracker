@@ -23,19 +23,26 @@ export function GithubLoginEditor({
   async function submit(event: SyntheticEvent<HTMLFormElement>) {
     event.preventDefault();
     setState("saving");
-    const response = await fetch(endpoint, {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ githubLogin }),
-    });
-    setState(response.ok ? "saved" : "error");
+    try {
+      const response = await fetch(endpoint, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ githubLogin }),
+      });
+      setState(response.ok ? "saved" : "error");
+    } catch {
+      setState("error");
+    }
   }
 
   return (
-    <form className="flex min-w-[280px] items-center gap-2" onSubmit={submit}>
+    <form
+      className="flex w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-row sm:items-center"
+      onSubmit={submit}
+    >
       <Input
         aria-label="GitHub username"
-        className="max-w-[180px]"
+        className="w-full sm:max-w-[180px]"
         placeholder="github-username"
         value={githubLogin}
         onChange={(event) => {
@@ -46,12 +53,22 @@ export function GithubLoginEditor({
         {state === "saving" ? "Saving" : "Save"}
       </Button>
       {state === "saved" ? (
-        <span className="text-xs font-bold text-[oklch(0.527_0.154_150.069)]">
+        <span
+          aria-live="polite"
+          className="text-xs font-bold text-[oklch(0.527_0.154_150.069)]"
+          role="status"
+        >
           Saved
         </span>
       ) : null}
       {state === "error" ? (
-        <span className="text-destructive text-xs font-bold">Failed</span>
+        <span
+          aria-live="polite"
+          className="text-destructive text-xs font-bold"
+          role="status"
+        >
+          Failed
+        </span>
       ) : null}
     </form>
   );

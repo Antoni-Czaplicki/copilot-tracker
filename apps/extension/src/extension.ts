@@ -21,14 +21,25 @@ import {
   readCopilotOtelRequests,
   resolveOtelFilePath,
 } from "./otel";
-import { TrackerClient, getTrackerConfig } from "./trackerClient";
-import { TrackerEvent, TrackerEventType, WorkspaceContext } from "./types";
+import { estimateRequestsCostUsd } from "./pricing";
+import {
+  type AzureDevOpsWorkItem,
+  TrackerClient,
+  getTrackerConfig,
+} from "./trackerClient";
+import {
+  type CopilotChatRequest,
+  TrackerEvent,
+  TrackerEventType,
+  WorkspaceContext,
+} from "./types";
 import { buildWorkspaceContext, setSelectedTask } from "./workspaceContext";
 
 const extensionId = "copilot-tracker";
 const lastBranchPromptKey = "lastBranchPrompt";
 const taskHistoryKey = "taskHistory";
 const maxTaskHistoryEntries = 200;
+const maxStatusTaskLength = 28;
 
 interface TaskHistoryEntry {
   workspaceId: string;
@@ -40,10 +51,26 @@ interface TaskHistoryEntry {
 }
 
 let statusItem: vscode.StatusBarItem;
+let sessionTokenStatusItem: vscode.StatusBarItem;
 let currentWorkspaceContext: WorkspaceContext | undefined;
 let lastOtelSignature: string | undefined;
 let syncTimer: ReturnType<typeof setTimeout> | undefined;
 let lastSyncStats = { requestCount: 0, tokenCount: 0, missingTokenCount: 0 };
+let lastSessionStats: SessionTokenStats | null = null;
+let lastSyncError: string | null = null;
+let syncInProgress = false;
+let syncQueued = false;
+let otelLifecycleDisposables: vscode.Disposable[] = [];
+
+interface SessionTokenStats {
+  sessionId: string;
+  sessionTitle: string | null;
+  requestCount: number;
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+  estimatedUsd: number;
+}
 
 export function activate(context: vscode.ExtensionContext) {
   const outputChannel = initializeLogger();
@@ -56,7 +83,7 @@ export function activate(context: vscode.ExtensionContext) {
     ),
   });
 
-  const client = new TrackerClient(getAzureDevOpsToken);
+  const client = new TrackerClient(getAzureDevOpsToken, context.globalState);
 
   statusItem = vscode.window.createStatusBarItem(
     `${extensionId}.status`,
@@ -66,6 +93,14 @@ export function activate(context: vscode.ExtensionContext) {
   statusItem.name = "Copilot Tracker";
   statusItem.command = `${extensionId}.setTask`;
   context.subscriptions.push(statusItem);
+
+  sessionTokenStatusItem = vscode.window.createStatusBarItem(
+    `${extensionId}.sessionTokens`,
+    vscode.StatusBarAlignment.Left,
+    97,
+  );
+  sessionTokenStatusItem.name = "Copilot Tracker Session Tokens";
+  context.subscriptions.push(sessionTokenStatusItem);
 
   context.subscriptions.push(
     vscode.commands.registerCommand(`${extensionId}.setTask`, () =>
@@ -83,8 +118,13 @@ export function activate(context: vscode.ExtensionContext) {
     ),
   );
   context.subscriptions.push(
-    vscode.commands.registerCommand(`${extensionId}.openDashboard`, () =>
-      openDashboard(),
+    vscode.commands.registerCommand(`${extensionId}.signIn`, () =>
+      signIn(context, client),
+    ),
+  );
+  context.subscriptions.push(
+    vscode.commands.registerCommand(`${extensionId}.openDashboard`, (sessionId?: string) =>
+      openDashboard(sessionId),
     ),
   );
   context.subscriptions.push(
@@ -106,16 +146,11 @@ export function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push({ dispose: () => clearInterval(branchPoller) });
 
-  const syncPoller = setInterval(
-    () => void pollForOtelChanges(context, client),
-    getTrackerConfig().syncIntervalSeconds * 1000,
-  );
-  context.subscriptions.push({ dispose: () => clearInterval(syncPoller) });
-
   context.subscriptions.push(
     vscode.workspace.onDidChangeWorkspaceFolders(() => {
       logInfo("Workspace folders changed");
       void refreshContext(context, client, "extension-started");
+      void rebuildOtelSyncLifecycle(context, client);
       scheduleSync(context, client, 350);
     }),
   );
@@ -128,11 +163,15 @@ export function activate(context: vscode.ExtensionContext) {
         logInfo("Copilot Tracker or Copilot OTel configuration changed", {
           trackerConfig: getTrackerConfig(),
         });
-        scheduleSync(context, client, 350);
+        updateSessionTokenStatusItem();
+        void rebuildOtelSyncLifecycle(context, client).then(() =>
+          scheduleSync(context, client, 350),
+        );
       }
     }),
   );
   context.subscriptions.push({ dispose: () => clearPendingSync() });
+  context.subscriptions.push({ dispose: () => disposeOtelSyncLifecycle() });
 }
 
 export function deactivate() {
@@ -143,18 +182,83 @@ async function initializeExtension(
   context: vscode.ExtensionContext,
   client: TrackerClient,
 ) {
-  const otelFilePath = await ensureCopilotOtelConfiguration(
-    context,
-    getTrackerConfig(),
-  );
-  logInfo("Creating Copilot OTel file watcher", { otelFilePath });
-  context.subscriptions.push(
-    ...createOtelFileWatcher(otelFilePath, () =>
-      scheduleSync(context, client, 350),
-    ),
-  );
+  await rebuildOtelSyncLifecycle(context, client);
   await refreshContext(context, client, "extension-started");
-  await syncCopilotSessions(context, client);
+  scheduleSync(context, client, 350);
+}
+
+async function rebuildOtelSyncLifecycle(
+  context: vscode.ExtensionContext,
+  client: TrackerClient,
+) {
+  disposeOtelSyncLifecycle();
+  try {
+    const config = getTrackerConfig();
+    const otelFilePath = await ensureCopilotOtelConfiguration(context, config);
+    logInfo("Creating Copilot OTel sync lifecycle", {
+      otelFilePath,
+      syncIntervalSeconds: config.syncIntervalSeconds,
+    });
+    otelLifecycleDisposables = [
+      ...createOtelFileWatcher(otelFilePath, () =>
+        scheduleSync(context, client, 350),
+      ),
+    ];
+    const syncPoller = setInterval(
+      () => void pollForOtelChanges(context, client),
+      config.syncIntervalSeconds * 1000,
+    );
+    otelLifecycleDisposables.push({
+      dispose: () => clearInterval(syncPoller),
+    });
+    lastSyncError = null;
+  } catch (error) {
+    lastSyncError = error instanceof Error ? error.message : String(error);
+    logError("Could not initialize Copilot OTel sync lifecycle", error);
+    updateStatusItem(currentWorkspaceContext);
+  }
+}
+
+function disposeOtelSyncLifecycle() {
+  for (const disposable of otelLifecycleDisposables) {
+    disposable.dispose();
+  }
+  otelLifecycleDisposables = [];
+}
+
+async function signIn(
+  _context: vscode.ExtensionContext,
+  client: TrackerClient,
+) {
+  try {
+    const signedIn = await client.signInAndTrustServer();
+    if (!signedIn) {
+      void vscode.window.showWarningMessage(
+        "Copilot Tracker could not sign in to Azure DevOps.",
+        "Show Logs",
+      ).then((choice) => {
+        if (choice === "Show Logs") {
+          showLogs();
+        }
+      });
+      return;
+    }
+
+    lastSyncError = null;
+    updateStatusItem(currentWorkspaceContext);
+    void vscode.window.showInformationMessage("Copilot Tracker is signed in.");
+  } catch (error) {
+    lastSyncError = error instanceof Error ? error.message : String(error);
+    logError("Copilot Tracker sign-in failed", error);
+    updateStatusItem(currentWorkspaceContext);
+    void vscode.window.showErrorMessage(lastSyncError, "Show Logs").then(
+      (choice) => {
+        if (choice === "Show Logs") {
+          showLogs();
+        }
+      },
+    );
+  }
 }
 
 async function setTask(
@@ -162,14 +266,10 @@ async function setTask(
   client: TrackerClient,
 ) {
   const snapshot = await buildWorkspaceContext(context);
-  const task = await vscode.window.showInputBox({
-    title: "Assign Copilot usage to task",
-    prompt: "Enter the current task number or identifier.",
-    value: snapshot.selectedTask ?? snapshot.defaultTask ?? "",
-    ignoreFocusOut: true,
-    validateInput: (value) =>
-      value.trim().length === 0 ? "Task cannot be empty." : undefined,
-  });
+  const task = await pickAzureDevOpsTask(
+    client,
+    snapshot.selectedTask ?? snapshot.defaultTask ?? "",
+  );
 
   if (task === undefined) {
     return;
@@ -195,6 +295,141 @@ async function useBranchTask(
   await syncCopilotSessions(context, client);
 }
 
+async function pickAzureDevOpsTask(
+  client: TrackerClient,
+  initialValue: string,
+): Promise<string | undefined> {
+  interface TaskQuickPickItem extends vscode.QuickPickItem {
+    taskId?: string;
+    disabled?: boolean;
+  }
+
+  return new Promise((resolve) => {
+    const quickPick = vscode.window.createQuickPick<TaskQuickPickItem>();
+    const disposables: vscode.Disposable[] = [];
+    let settled = false;
+    let searchTimer: ReturnType<typeof setTimeout> | undefined;
+    let searchSequence = 0;
+
+    function finish(value: string | undefined) {
+      if (settled) {
+        return;
+      }
+
+      settled = true;
+      if (searchTimer) {
+        clearTimeout(searchTimer);
+      }
+      for (const disposable of disposables) {
+        disposable.dispose();
+      }
+      quickPick.dispose();
+      resolve(value);
+    }
+
+    function manualItem(value: string): TaskQuickPickItem {
+      return {
+        label: value ? `Use "${value}"` : "Type a task id or title",
+        description: value ? "Manual task value" : undefined,
+        taskId: value || undefined,
+        disabled: !value,
+      };
+    }
+
+    function scheduleSearch(value: string) {
+      const query = value.trim();
+      if (searchTimer) {
+        clearTimeout(searchTimer);
+      }
+
+      if (query.length < 2 && !/^\d+$/u.test(query)) {
+        quickPick.busy = false;
+        quickPick.items = [manualItem(query)];
+        return;
+      }
+
+      const sequence = ++searchSequence;
+      searchTimer = setTimeout(() => {
+        quickPick.busy = true;
+        client
+          .searchWorkItems(query)
+          .then((workItems) => {
+            if (sequence !== searchSequence) {
+              return;
+            }
+            quickPick.items = [
+              ...workItems.map(workItemQuickPickItem),
+              manualItem(query),
+            ];
+          })
+          .catch((error: unknown) => {
+            if (sequence !== searchSequence) {
+              return;
+            }
+            logWarn("Azure DevOps work item search failed", {
+              error: error instanceof Error ? error.message : String(error),
+            });
+            quickPick.items = [
+              {
+                label: "Azure DevOps search unavailable",
+                description: "Use the typed task value instead",
+                disabled: true,
+              },
+              manualItem(query),
+            ];
+          })
+          .finally(() => {
+            if (sequence === searchSequence) {
+              quickPick.busy = false;
+            }
+          });
+      }, 250);
+    }
+
+    quickPick.title = "Assign Copilot usage to Azure DevOps work item";
+    quickPick.placeholder = "Type a work item id or title";
+    quickPick.ignoreFocusOut = true;
+    quickPick.matchOnDescription = true;
+    quickPick.matchOnDetail = true;
+    quickPick.value = initialValue;
+    quickPick.items = [manualItem(initialValue.trim())];
+
+    disposables.push(
+      quickPick.onDidChangeValue((value) => {
+        scheduleSearch(value);
+      }),
+      quickPick.onDidAccept(() => {
+        const selected = quickPick.selectedItems[0];
+        if (selected?.disabled) {
+          return;
+        }
+
+        const task = selected?.taskId ?? quickPick.value.trim();
+        finish(task || undefined);
+      }),
+      quickPick.onDidHide(() => {
+        finish(undefined);
+      }),
+    );
+
+    scheduleSearch(initialValue);
+    quickPick.show();
+  });
+}
+
+function workItemQuickPickItem(
+  workItem: AzureDevOpsWorkItem,
+): vscode.QuickPickItem & { taskId: string } {
+  return {
+    label: `$(issues) ${workItem.id}: ${workItem.title}`,
+    description: [workItem.type, workItem.state, workItem.project]
+      .filter(Boolean)
+      .join(" / "),
+    detail: workItem.assignedTo ? `Assigned to ${workItem.assignedTo}` : "",
+    taskId: String(workItem.id),
+  };
+}
+
 async function showContext(context: vscode.ExtensionContext) {
   const snapshot = await buildWorkspaceContext(context);
   const config = getTrackerConfig();
@@ -209,8 +444,8 @@ async function showContext(context: vscode.ExtensionContext) {
     `Server: ${config.serverUrl}`,
     `OTel file: ${resolveOtelFilePath(context, config)}`,
     `Chat title storage: ${getDefaultWorkspaceStorageRoot()}`,
-    `Configures Copilot OTel: ${config.configureCopilotOtel ? "yes" : "no"}`,
     `Last sync: ${lastSyncStats.requestCount} requests, ${lastSyncStats.tokenCount} tokens, ${lastSyncStats.missingTokenCount} missing token counts`,
+    `Current session tokens: ${lastSessionStats ? `${lastSessionStats.totalTokens} total (${lastSessionStats.inputTokens} input / ${lastSessionStats.outputTokens} output)` : "none"}`,
   ];
 
   void vscode.window.showInformationMessage(details.join("\n"), {
@@ -218,8 +453,11 @@ async function showContext(context: vscode.ExtensionContext) {
   });
 }
 
-async function openDashboard() {
+async function openDashboard(sessionId?: string) {
   const url = new URL("/dashboard", getTrackerConfig().serverUrl);
+  if (sessionId) {
+    url.searchParams.set("sessionId", sessionId);
+  }
   logInfo("Opening dashboard", { url: url.toString() });
   await vscode.env.openExternal(vscode.Uri.parse(url.toString()));
 }
@@ -459,20 +697,69 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function updateStatusItem(snapshot: WorkspaceContext) {
-  const task = snapshot.selectedTask ?? "No task";
-  const branch = snapshot.branch
+function updateStatusItem(snapshot: WorkspaceContext | undefined) {
+  const task = snapshot?.selectedTask ?? "No task";
+  const branch = snapshot?.branch
     ? `$(git-branch) ${snapshot.branch}`
     : "no git branch";
-  statusItem.text = `AI ${task}`;
+  statusItem.text = `${lastSyncError ? "$(warning)" : "AI"} ${compactStatusText(task)}`;
   statusItem.tooltip = [
     "Copilot Tracker",
     `Task: ${task}`,
     `Branch: ${branch}`,
     `Last sync: ${lastSyncStats.requestCount} requests, ${lastSyncStats.tokenCount} tokens`,
+    lastSyncError ? `Last error: ${lastSyncError}` : null,
     "Click to change task",
-  ].join("\n");
+  ]
+    .filter(Boolean)
+    .join("\n");
   statusItem.show();
+  updateSessionTokenStatusItem();
+}
+
+function updateSessionTokenStatusItem() {
+  if (!getTrackerConfig().showCurrentSessionTokensInStatusBar) {
+    sessionTokenStatusItem.hide();
+    return;
+  }
+
+  const stats = lastSessionStats;
+  if (!stats) {
+    sessionTokenStatusItem.text = "$(pulse) 0 tokens";
+    sessionTokenStatusItem.tooltip =
+      "Copilot Tracker\nNo Copilot chat session tokens captured yet.\nClick to open tracker.";
+    sessionTokenStatusItem.command = {
+      command: `${extensionId}.openDashboard`,
+      title: "Open Copilot Tracker",
+    };
+    sessionTokenStatusItem.show();
+    return;
+  }
+
+  const tooltip = new vscode.MarkdownString(
+    [
+      "**Copilot Tracker session**",
+      "",
+      `Session: ${stats.sessionTitle ?? stats.sessionId}`,
+      `Requests: ${formatNumber(stats.requestCount)}`,
+      `Input: ${formatNumber(stats.inputTokens)}`,
+      `Output: ${formatNumber(stats.outputTokens)}`,
+      `Total: ${formatNumber(stats.totalTokens)}`,
+      `Estimated cost: ${formatCurrency(stats.estimatedUsd)}`,
+      "",
+      "Click to open this session in the web tracker.",
+    ].join("\n\n"),
+  );
+  tooltip.isTrusted = true;
+
+  sessionTokenStatusItem.text = `$(pulse) ${formatCompactNumber(stats.totalTokens)} tokens`;
+  sessionTokenStatusItem.tooltip = tooltip;
+  sessionTokenStatusItem.command = {
+    command: `${extensionId}.openDashboard`,
+    title: "Open Copilot Tracker",
+    arguments: [stats.sessionId],
+  };
+  sessionTokenStatusItem.show();
 }
 
 function scheduleSync(
@@ -514,8 +801,9 @@ async function pollForOtelChanges(
       scheduleSync(context, client, 250);
     }
   } catch (error) {
-    console.warn("Copilot Tracker could not poll OTel file changes", error);
+    lastSyncError = error instanceof Error ? error.message : String(error);
     logError("Could not poll OTel file changes", error);
+    updateStatusItem(currentWorkspaceContext);
   }
 }
 
@@ -523,13 +811,33 @@ async function syncCopilotSessions(
   context: vscode.ExtensionContext,
   client: TrackerClient,
 ) {
-  const config = getTrackerConfig();
-  const otelFilePath = await ensureCopilotOtelConfiguration(context, config);
+  if (syncInProgress) {
+    syncQueued = true;
+    logInfo("Sync already in progress; queued another sync");
+    return;
+  }
 
-  await refreshContext(context, client);
-  await sendEvent(context, client, "session-sync-started");
-
+  syncInProgress = true;
   try {
+    do {
+      syncQueued = false;
+      await performCopilotSessionSync(context, client);
+    } while (syncQueued);
+  } finally {
+    syncInProgress = false;
+  }
+}
+
+async function performCopilotSessionSync(
+  context: vscode.ExtensionContext,
+  client: TrackerClient,
+) {
+  try {
+    const config = getTrackerConfig();
+    const otelFilePath = await ensureCopilotOtelConfiguration(context, config);
+    await refreshContext(context, client);
+    await sendEvent(context, client, "session-sync-started");
+
     const workspaceContext =
       currentWorkspaceContext ?? (await buildWorkspaceContext(context));
     logInfo("OTel session sync started", {
@@ -560,6 +868,7 @@ async function syncCopilotSessions(
       ).length,
     });
     await client.sendChatRequests(requests);
+    lastSessionStats = currentSessionTokenStats(requests);
     lastSyncStats = {
       requestCount: requests.length,
       tokenCount: requests.reduce(
@@ -570,16 +879,84 @@ async function syncCopilotSessions(
         (request) => request.totalTokens === null,
       ).length,
     };
+    lastSyncError = null;
     updateStatusItem(workspaceContext);
     logInfo("OTel session sync finished", lastSyncStats);
     await sendEvent(context, client, "session-sync-finished", lastSyncStats);
   } catch (error) {
-    console.warn("Copilot Tracker session sync failed", error);
+    lastSyncError = error instanceof Error ? error.message : String(error);
     logError("Session sync failed", error);
+    updateStatusItem(currentWorkspaceContext);
     await sendEvent(context, client, "session-sync-failed", {
-      message: error instanceof Error ? error.message : String(error),
+      message: lastSyncError,
     });
   }
+}
+
+function currentSessionTokenStats(
+  requests: CopilotChatRequest[],
+): SessionTokenStats | null {
+  const latestRequest = [...requests]
+    .filter((request) => request.totalTokens !== null)
+    .sort((a, b) => requestTimestamp(b) - requestTimestamp(a))[0];
+  if (!latestRequest) {
+    return null;
+  }
+
+  const sessionRequests = requests.filter(
+    (request) => request.sessionId === latestRequest.sessionId,
+  );
+  return {
+    sessionId: latestRequest.sessionId,
+    sessionTitle: latestRequest.sessionTitle,
+    requestCount: sessionRequests.length,
+    inputTokens: sessionRequests.reduce(
+      (total, request) => total + (request.inputTokens ?? 0),
+      0,
+    ),
+    outputTokens: sessionRequests.reduce(
+      (total, request) => total + (request.outputTokens ?? 0),
+      0,
+    ),
+    totalTokens: sessionRequests.reduce(
+      (total, request) => total + (request.totalTokens ?? 0),
+      0,
+    ),
+    estimatedUsd: estimateRequestsCostUsd(sessionRequests),
+  };
+}
+
+function requestTimestamp(request: CopilotChatRequest) {
+  return timestampOrZero(
+    request.requestCompletedAt ?? request.requestStartedAt ?? request.capturedAt,
+  );
+}
+
+function formatNumber(value: number) {
+  return new Intl.NumberFormat("en-US").format(value);
+}
+
+function formatCompactNumber(value: number) {
+  return new Intl.NumberFormat("en-US", {
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(value);
+}
+
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: value < 1 ? 4 : 2,
+  }).format(value);
+}
+
+function compactStatusText(value: string) {
+  if (value.length <= maxStatusTaskLength) {
+    return value;
+  }
+
+  return `${value.slice(0, maxStatusTaskLength - 1)}…`;
 }
 
 function getRepositoryDisplayName(workspaceContext: WorkspaceContext) {

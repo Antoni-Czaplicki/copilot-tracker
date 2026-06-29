@@ -40,12 +40,11 @@ After installing or updating the extension, reload VS Code:
 
 ## Configure The Extension
 
-Open VS Code user or workspace settings as JSON and set the tracker server URL:
+Open VS Code user settings as JSON and set the tracker server URL:
 
 ```jsonc
 {
   "copilot-tracker.serverUrl": "https://copilot-tracker.antek.page",
-  "copilot-tracker.configureCopilotOtel": true,
   "copilot-tracker.otelFilePath": "",
   "copilot-tracker.syncIntervalSeconds": 15,
 }
@@ -59,8 +58,7 @@ For local development, use the local web server instead:
 }
 ```
 
-With `copilot-tracker.configureCopilotOtel` enabled, the extension configures
-these Copilot Chat settings automatically:
+The extension configures these Copilot Chat settings automatically:
 
 ```jsonc
 {
@@ -149,8 +147,10 @@ AZURE_DEVOPS_CLIENT_ID=your-azure-app-client-id
 AZURE_DEVOPS_CLIENT_SECRET=your-azure-app-client-secret
 AZURE_DEVOPS_ORG=your-azure-devops-org
 AZURE_DEVOPS_TENANT_ID=organizations
+COPILOT_TRACKER_TOKEN_ENCRYPTION_KEY=replace-with-a-random-secret
 ADMIN_AZURE_DEVOPS_LOGINS=your-work-email@example.com
 COPILOT_TRACKER_AUTH_MODE=azure-devops
+COPILOT_TRACKER_LEADERBOARD_ENABLED=true
 GITHUB_COPILOT_BILLING_TOKEN=
 GITHUB_COPILOT_BILLING_SCOPE_TYPE=user
 GITHUB_COPILOT_BILLING_SCOPE=your-github-login
@@ -166,6 +166,11 @@ http://localhost:3737/api/auth/callback/azure-devops
 `AZURE_DEVOPS_CLIENT_ID`, `AZURE_DEVOPS_CLIENT_SECRET`, and
 `AZURE_DEVOPS_ORG` are required when
 `COPILOT_TRACKER_AUTH_MODE=azure-devops`.
+Work-item search uses Azure DevOps `vso.profile` and `vso.work` delegated
+scopes; the web login also requests `offline_access` so sessions can refresh
+work-item search tokens.
+`COPILOT_TRACKER_TOKEN_ENCRYPTION_KEY` encrypts stored Azure DevOps session
+tokens. If it is omitted, the app falls back to `AZURE_DEVOPS_CLIENT_SECRET`.
 
 ## Build And Package The Extension
 
@@ -192,7 +197,7 @@ If no data appears on the dashboard:
 
 1. Reload VS Code after installing or updating the extension.
 2. Run `Copilot Tracker: Show Current Context`.
-3. Confirm `copilot-tracker.serverUrl` points to the expected server.
+3. Confirm `copilot-tracker.serverUrl` points to the expected server in user settings.
 4. Make a new Copilot Chat request.
 5. Run `Copilot Tracker: Sync Copilot OTel Now`.
 6. Check `Copilot Tracker: Show Logs`.
@@ -202,8 +207,12 @@ Microsoft/Azure DevOps inside VS Code and that your account belongs to the
 configured Azure DevOps organization. By default, the ingest API validates the
 VS Code Azure DevOps bearer token before accepting usage.
 
+For the first authenticated call to a non-local server, run
+`Copilot Tracker: Sign In` and approve the trusted server origin prompt.
+
 If the extension keeps using `localhost`, set `copilot-tracker.serverUrl` in
-settings and reload VS Code.
+user settings and reload VS Code. Workspace-level `serverUrl` values are ignored
+so a repository cannot redirect Azure DevOps bearer tokens.
 
 If you see duplicate extension installs, keep
 `antoni-czaplicki.copilot-tracker` and uninstall any old package such as

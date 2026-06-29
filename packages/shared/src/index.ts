@@ -33,7 +33,10 @@ export interface PromptTokenDetail {
   percentageOfPrompt: number | null;
 }
 
-export type TokenSource = "copilot-otel" | "missing-in-copilot-otel";
+export type TokenSource =
+  | "copilot-otel"
+  | "partial-in-copilot-otel"
+  | "missing-in-copilot-otel";
 
 export interface CopilotChatRequest extends WorkspaceContext {
   requestRecordId: string;

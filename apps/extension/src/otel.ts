@@ -19,6 +19,7 @@ interface ParsedOtelRequest {
   agentName: string | null;
   repositoryRemoteUrl: string | null;
   branch: string | null;
+  sessionCreatedAt: string | null;
   requestStartedAt: string | null;
   requestCompletedAt: string | null;
   modelId: string | null;
@@ -81,6 +82,7 @@ export interface OtelSessionLookupRequest {
   conversationId: string | null;
   requestStartedAt: string | null;
   requestCompletedAt: string | null;
+  sessionCreatedAt: string | null;
   modelId: string | null;
   resolvedModel: string | null;
   inputTokens: number | null;
@@ -114,13 +116,6 @@ export async function ensureCopilotOtelConfiguration(
 ): Promise<string> {
   const otelFilePath = resolveOtelFilePath(context, config);
   await mkdir(path.dirname(otelFilePath), { recursive: true });
-
-  if (!config.configureCopilotOtel) {
-    logInfo("Skipping Copilot OTel settings configuration", {
-      otelFilePath,
-    });
-    return otelFilePath;
-  }
 
   const copilotConfig = vscode.workspace.getConfiguration(
     "github.copilot.chat.otel",
@@ -202,12 +197,7 @@ export async function readCopilotOtelRequests(
     };
     const inputTokens = request.inputTokens;
     const outputTokens = request.outputTokens;
-    const totalTokens =
-      inputTokens === null && outputTokens === null
-        ? null
-        : (inputTokens ?? 0) + (outputTokens ?? 0);
-    const tokenSource: CopilotChatRequest["tokenSource"] =
-      totalTokens === null ? "missing-in-copilot-otel" : "copilot-otel";
+    const tokenCapture = summarizeTokenCapture(inputTokens, outputTokens);
 
     return {
       ...requestWorkspaceContext,
@@ -215,11 +205,12 @@ export async function readCopilotOtelRequests(
       requestId: request.traceId,
       responseId: request.spanId,
       sessionId:
-        sessionMatch?.sessionId ?? request.conversationId ?? request.traceId,
+        request.conversationId ?? sessionMatch?.sessionId ?? request.traceId,
       sessionTitle:
         sessionMatch?.sessionTitle ??
         buildOtelSessionTitle(request, requestWorkspaceContext),
-      sessionCreatedAt: sessionMatch?.sessionCreatedAt ?? null,
+      sessionCreatedAt:
+        sessionMatch?.sessionCreatedAt ?? request.sessionCreatedAt ?? null,
       requestStartedAt: request.requestStartedAt,
       requestCompletedAt: request.requestCompletedAt,
       modelId: request.modelId,
@@ -229,8 +220,8 @@ export async function readCopilotOtelRequests(
       modelFamily: null,
       inputTokens,
       outputTokens,
-      totalTokens,
-      tokenSource,
+      totalTokens: tokenCapture.totalTokens,
+      tokenSource: tokenCapture.tokenSource,
       promptTokenDetails: request.promptTokenDetails,
       toolCallRoundCount: request.toolCallRoundCount,
       stopReasons: request.stopReasons,
@@ -318,6 +309,7 @@ function traceToRequest(trace: TraceGroup): ParsedOtelRequest | null {
     branch:
       readString(attributes, "github.copilot.git.branch") ??
       readString(attributes, "copilot_chat.repo.head_branch_name"),
+    sessionCreatedAt: null,
     requestStartedAt,
     requestCompletedAt,
     modelId:
@@ -394,18 +386,21 @@ function logRecordToRequest(
     matchingTurn?.attributes ?? {},
     record.attributes,
   );
-  const responseId =
-    readString(attributes, "gen_ai.response.id") ?? record.spanId;
+  const responseId = readString(attributes, "gen_ai.response.id");
+  const spanOrResponseId = responseId ?? record.spanId;
   const sessionId =
     readString(group.sessionStart?.attributes ?? {}, "session.id") ??
     readString(attributes, "gen_ai.conversation.id") ??
     readString(record.resourceAttributes, "session.id");
   const timestamp = record.timestamp ?? matchingTurn?.timestamp ?? null;
+  const fallbackRecordId = `${record.spanId ?? "record"}:${index}`;
 
   return {
-    recordId: `otel-log:${record.traceId}:${responseId ?? index}`,
+    recordId: `otel-log:${record.traceId}:${
+      responseId ?? fallbackRecordId
+    }`,
     traceId: record.traceId,
-    spanId: responseId,
+    spanId: spanOrResponseId,
     conversationId: sessionId,
     agentName: readString(attributes, "gen_ai.agent.name"),
     repositoryRemoteUrl:
@@ -414,7 +409,8 @@ function logRecordToRequest(
     branch:
       readString(attributes, "github.copilot.git.branch") ??
       readString(attributes, "copilot_chat.repo.head_branch_name"),
-    requestStartedAt: group.sessionStart?.timestamp ?? timestamp,
+    sessionCreatedAt: group.sessionStart?.timestamp ?? null,
+    requestStartedAt: timestamp,
     requestCompletedAt: timestamp,
     modelId: readString(attributes, "gen_ai.request.model"),
     resolvedModel: readString(attributes, "gen_ai.response.model"),
@@ -678,8 +674,16 @@ function belongsToWorkspace(
   request: ParsedOtelRequest,
   workspaceContext: WorkspaceContext,
 ) {
-  if (!request.repositoryRemoteUrl || !workspaceContext.repositoryRemoteUrl) {
+  if (!workspaceContext.repositoryRemoteUrl) {
     return true;
+  }
+
+  if (!request.repositoryRemoteUrl) {
+    logDebug("Ignored OTel request without repository metadata", {
+      traceId: request.traceId,
+      conversationId: request.conversationId,
+    });
+    return false;
   }
 
   return (
@@ -839,25 +843,104 @@ function mergeAttributes(...sources: Record<string, unknown>[]) {
 function dedupeChatRequests(
   requests: CopilotChatRequest[],
 ): CopilotChatRequest[] {
-  const byRecordId = new Map<string, CopilotChatRequest>();
+  const deduped: CopilotChatRequest[] = [];
   for (const request of requests) {
-    const previous = byRecordId.get(request.requestRecordId);
-    byRecordId.set(
-      request.requestRecordId,
-      previous ? chooseRicherRequest(previous, request) : request,
+    const previousIndex = deduped.findIndex((candidate) =>
+      areSameCapturedRequest(candidate, request),
+    );
+    if (previousIndex === -1) {
+      deduped.push(request);
+      continue;
+    }
+
+    deduped[previousIndex] = mergeRicherRequest(
+      deduped[previousIndex],
+      request,
     );
   }
 
-  return [...byRecordId.values()];
+  return deduped;
 }
 
-function chooseRicherRequest(
+function areSameCapturedRequest(
+  current: CopilotChatRequest,
+  next: CopilotChatRequest,
+) {
+  if (current.requestRecordId === next.requestRecordId) {
+    return true;
+  }
+
+  if (current.requestId !== next.requestId || current.requestId === null) {
+    return false;
+  }
+
+  const hasMixedSignals =
+    current.requestRecordId.startsWith("otel:") !==
+    next.requestRecordId.startsWith("otel:");
+  if (!hasMixedSignals) {
+    return false;
+  }
+
+  if (
+    current.responseId !== null &&
+    next.responseId !== null &&
+    current.responseId === next.responseId
+  ) {
+    return true;
+  }
+
+  return (
+    Math.abs(requestTimestamp(current) - requestTimestamp(next)) <= 5_000 &&
+    (current.sessionId === next.sessionId ||
+      current.sessionId === current.requestId ||
+      next.sessionId === next.requestId)
+  );
+}
+
+function mergeRicherRequest(
   current: CopilotChatRequest,
   next: CopilotChatRequest,
 ): CopilotChatRequest {
-  return requestCompletenessScore(next) > requestCompletenessScore(current)
-    ? next
-    : current;
+  const preferred =
+    requestCompletenessScore(next) > requestCompletenessScore(current)
+      ? next
+      : current;
+  const fallback = preferred === next ? current : next;
+
+  return {
+    ...preferred,
+    requestRecordId: preferred.requestRecordId,
+    requestId: preferred.requestId ?? fallback.requestId,
+    responseId: preferred.responseId ?? fallback.responseId,
+    sessionTitle: preferred.sessionTitle ?? fallback.sessionTitle,
+    sessionCreatedAt: preferred.sessionCreatedAt ?? fallback.sessionCreatedAt,
+    requestStartedAt: preferred.requestStartedAt ?? fallback.requestStartedAt,
+    requestCompletedAt:
+      preferred.requestCompletedAt ?? fallback.requestCompletedAt,
+    modelId: preferred.modelId ?? fallback.modelId,
+    resolvedModel: preferred.resolvedModel ?? fallback.resolvedModel,
+    inputTokens: preferred.inputTokens ?? fallback.inputTokens,
+    outputTokens: preferred.outputTokens ?? fallback.outputTokens,
+    totalTokens: preferred.totalTokens ?? fallback.totalTokens,
+    tokenSource:
+      preferred.tokenSource === "copilot-otel"
+        ? preferred.tokenSource
+        : fallback.tokenSource === "copilot-otel"
+          ? fallback.tokenSource
+          : preferred.tokenSource,
+    promptTokenDetails:
+      preferred.promptTokenDetails.length > 0
+        ? preferred.promptTokenDetails
+        : fallback.promptTokenDetails,
+    toolCallRoundCount: Math.max(
+      preferred.toolCallRoundCount,
+      fallback.toolCallRoundCount,
+    ),
+    stopReasons:
+      preferred.stopReasons.length > 0
+        ? preferred.stopReasons
+        : fallback.stopReasons,
+  };
 }
 
 function requestCompletenessScore(request: CopilotChatRequest) {
@@ -889,6 +972,30 @@ function requestTimestamp(request: CopilotChatRequest) {
       request.capturedAt,
   );
   return Number.isNaN(timestamp) ? 0 : timestamp;
+}
+
+function summarizeTokenCapture(
+  inputTokens: number | null,
+  outputTokens: number | null,
+): Pick<CopilotChatRequest, "totalTokens" | "tokenSource"> {
+  if (inputTokens === null && outputTokens === null) {
+    return {
+      totalTokens: null,
+      tokenSource: "missing-in-copilot-otel",
+    };
+  }
+
+  if (inputTokens === null || outputTokens === null) {
+    return {
+      totalTokens: null,
+      tokenSource: "partial-in-copilot-otel",
+    };
+  }
+
+  return {
+    totalTokens: inputTokens + outputTokens,
+    tokenSource: "copilot-otel",
+  };
 }
 
 function earliestTimestamp(values: (string | null)[]) {

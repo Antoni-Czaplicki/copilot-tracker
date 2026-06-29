@@ -21,11 +21,13 @@ export async function buildWorkspaceContext(
     ? await getRemoteUrl(repositoryRoot)
     : null;
   const defaultTask = branch ? getTaskFromBranch(branch) : null;
+  const workspaceId = createWorkspaceId(workspacePath, repositoryRoot);
   const manuallySelectedTask =
+    context.workspaceState.get<string>(selectedTaskStorageKey(workspaceId)) ??
     context.workspaceState.get<string>(selectedTaskKey);
 
   return {
-    workspaceId: createWorkspaceId(workspacePath, repositoryRoot),
+    workspaceId,
     workspacePath,
     workspaceName: workspaceFolder?.name ?? null,
     repositoryRoot,
@@ -40,7 +42,12 @@ export async function setSelectedTask(
   context: vscode.ExtensionContext,
   task: string | undefined,
 ) {
-  await context.workspaceState.update(selectedTaskKey, task);
+  const snapshot = await buildWorkspaceContext(context);
+  await context.workspaceState.update(
+    selectedTaskStorageKey(snapshot.workspaceId),
+    task,
+  );
+  await context.workspaceState.update(selectedTaskKey, undefined);
 }
 
 export function getWorkspaceFolder(): vscode.WorkspaceFolder | undefined {
@@ -104,9 +111,9 @@ export async function getRemoteUrl(cwd: string): Promise<string | null> {
   }
 }
 
-export function getTaskFromBranch(branch: string): string {
+export function getTaskFromBranch(branch: string): string | null {
   const numberLike = branch.match(/\d+/);
-  return numberLike?.[0] ?? branch;
+  return numberLike?.[0] ?? null;
 }
 
 function createWorkspaceId(
@@ -115,4 +122,8 @@ function createWorkspaceId(
 ): string {
   const stableValue = repositoryRoot ?? workspacePath ?? "empty-window";
   return createHash("sha256").update(stableValue).digest("hex").slice(0, 16);
+}
+
+function selectedTaskStorageKey(workspaceId: string) {
+  return `${selectedTaskKey}:${workspaceId}`;
 }

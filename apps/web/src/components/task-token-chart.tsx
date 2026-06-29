@@ -1,6 +1,6 @@
 "use client";
 
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, Legend, XAxis } from "recharts";
 
 import type { ChartConfig } from "@/components/ui/chart";
 import {
@@ -40,8 +40,10 @@ export function TaskTokenChart({ data }: { data: TaskTokenChartDatum[] }) {
           dataKey="task"
           tickLine={false}
           tickMargin={10}
+          tickFormatter={formatAxisTask}
         />
         <ChartTooltip content={<ChartTooltipContent />} cursor={false} />
+        <Legend />
         <Bar
           dataKey="input"
           fill="var(--color-input)"
@@ -57,4 +59,8 @@ export function TaskTokenChart({ data }: { data: TaskTokenChartDatum[] }) {
       </BarChart>
     </ChartContainer>
   );
+}
+
+function formatAxisTask(value: string) {
+  return value.length > 18 ? `${value.slice(0, 17)}…` : value;
 }
