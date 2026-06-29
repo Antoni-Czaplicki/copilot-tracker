@@ -27,14 +27,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # Build the shared package first so its declaration files exist; the web
+      # app's type-aware lint/typecheck rules resolve @copilot-tracker/shared
+      # from dist.
+      - name: Build shared package
+        run: pnpm --filter @copilot-tracker/shared build
+
       - name: Lint
         run: pnpm -r lint
 
       - name: Typecheck
         run: pnpm -r typecheck
-
-      - name: Build
-        run: pnpm -r build
 
   test-extension:
     name: Extension tests
