@@ -112,6 +112,8 @@ http://localhost:3737/api/auth/callback/azure-devops
 
 `AZURE_DEVOPS_CLIENT_ID`, `AZURE_DEVOPS_CLIENT_SECRET`, and `AZURE_DEVOPS_ORG` are required when `COPILOT_TRACKER_AUTH_MODE=azure-devops`.
 
+The app requests the Azure DevOps `vso.profile` delegated scope to read the signed-in user's profile and organization accounts.
+
 The extension signs in through VS Code's Microsoft authentication provider and the server validates that token against Azure DevOps before accepting usage. Users can optionally map their Azure DevOps identity to a GitHub username for billing/reporting correlation.
 
 `apps/web/.env.example` contains the expected environment variables.

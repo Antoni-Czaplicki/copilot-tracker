@@ -55,7 +55,7 @@ export function azureDevOpsTenantId() {
 }
 
 export function azureDevOpsScope() {
-  return "openid profile email 499b84ac-1321-427f-aa17-267ca6975798/.default";
+  return "openid profile email 499b84ac-1321-427f-aa17-267ca6975798/vso.profile";
 }
 
 export function azureDevOpsProfileUrl() {

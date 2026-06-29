@@ -2,7 +2,8 @@ import * as vscode from "vscode";
 
 import { logInfo, logWarn } from "./logger";
 
-const azureDevOpsScope = "499b84ac-1321-427f-aa17-267ca6975798/.default";
+const azureDevOpsScope =
+  "499b84ac-1321-427f-aa17-267ca6975798/vso.profile";
 
 export async function getAzureDevOpsToken(): Promise<string | null> {
   try {
