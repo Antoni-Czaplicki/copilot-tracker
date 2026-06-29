@@ -129,7 +129,7 @@ docker compose up -d postgres
 DATABASE_URL=postgres://copilot_tracker:copilot_tracker@localhost:54329/copilot_tracker pnpm db:migrate
 ```
 
-Start the web app without GitHub auth for local smoke testing:
+Start the web app without Azure DevOps auth for local smoke testing:
 
 ```sh
 DATABASE_URL=postgres://copilot_tracker:copilot_tracker@localhost:54329/copilot_tracker \
@@ -139,15 +139,18 @@ pnpm dev:web
 
 The local app runs at `http://localhost:3737`.
 
-For GitHub login, create a GitHub OAuth app and configure:
+For Azure DevOps login, create a Microsoft Entra app registration with Azure
+DevOps delegated access and configure:
 
 ```sh
 NEXT_PUBLIC_APP_URL=http://localhost:3737
 DATABASE_URL=postgres://copilot_tracker:copilot_tracker@localhost:54329/copilot_tracker
-GITHUB_CLIENT_ID=your-github-oauth-client-id
-GITHUB_CLIENT_SECRET=your-github-oauth-client-secret
-ADMIN_GITHUB_LOGINS=your-github-login
-COPILOT_TRACKER_AUTH_MODE=github
+AZURE_DEVOPS_CLIENT_ID=your-azure-app-client-id
+AZURE_DEVOPS_CLIENT_SECRET=your-azure-app-client-secret
+AZURE_DEVOPS_ORG=your-azure-devops-org
+AZURE_DEVOPS_TENANT_ID=organizations
+ADMIN_AZURE_DEVOPS_LOGINS=your-work-email@example.com
+COPILOT_TRACKER_AUTH_MODE=azure-devops
 GITHUB_COPILOT_BILLING_TOKEN=
 GITHUB_COPILOT_BILLING_SCOPE_TYPE=user
 GITHUB_COPILOT_BILLING_SCOPE=your-github-login
@@ -157,11 +160,12 @@ CRON_SECRET=
 Use this OAuth callback URL:
 
 ```text
-http://localhost:3737/api/auth/callback/github
+http://localhost:3737/api/auth/callback/azure-devops
 ```
 
-`GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` are required when
-`COPILOT_TRACKER_AUTH_MODE=github`.
+`AZURE_DEVOPS_CLIENT_ID`, `AZURE_DEVOPS_CLIENT_SECRET`, and
+`AZURE_DEVOPS_ORG` are required when
+`COPILOT_TRACKER_AUTH_MODE=azure-devops`.
 
 ## Build And Package The Extension
 
@@ -193,9 +197,10 @@ If no data appears on the dashboard:
 5. Run `Copilot Tracker: Sync Copilot OTel Now`.
 6. Check `Copilot Tracker: Show Logs`.
 
-If the request is rejected by the server, make sure you are signed in to GitHub
-inside VS Code. By default, the ingest API validates the VS Code GitHub bearer
-token against GitHub `/user`.
+If the request is rejected by the server, make sure you are signed in to
+Microsoft/Azure DevOps inside VS Code and that your account belongs to the
+configured Azure DevOps organization. By default, the ingest API validates the
+VS Code Azure DevOps bearer token before accepting usage.
 
 If the extension keeps using `localhost`, set `copilot-tracker.serverUrl` in
 settings and reload VS Code.

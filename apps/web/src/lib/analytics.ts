@@ -15,8 +15,9 @@ export interface SummaryMetrics {
 }
 
 export interface LeaderboardRow extends SummaryMetrics {
-  githubLogin: string;
-  githubId: number | null;
+  userLogin: string;
+  userId: string | null;
+  githubLogin: string | null;
   rank: number;
 }
 
@@ -28,8 +29,9 @@ export interface TaskSummaryRow extends SummaryMetrics {
 }
 
 export interface DeveloperTaskSummaryRow extends SummaryMetrics {
-  githubLogin: string;
-  githubId: number | null;
+  userLogin: string;
+  userId: string | null;
+  githubLogin: string | null;
   task: string;
 }
 
@@ -97,19 +99,21 @@ export function publicLeaderboard(database: TrackerDatabase): LeaderboardRow[] {
   const grouped = new Map<
     string,
     (CopilotChatRequest & {
+      userLogin: string | null;
+      userId: string | null;
       githubLogin: string | null;
-      githubId: number | null;
     })[]
   >();
   for (const request of filterMeaningfulChatRequests(database.chatRequests)) {
-    const login = request.githubLogin ?? "unknown";
+    const login = request.userLogin ?? "unknown";
     grouped.set(login, [...(grouped.get(login) ?? []), request]);
   }
 
   return [...grouped.entries()]
-    .map(([githubLogin, requests]) => ({
-      githubLogin,
-      githubId: requests[0]?.githubId ?? null,
+    .map(([userLogin, requests]) => ({
+      userLogin,
+      userId: requests[0]?.userId ?? null,
+      githubLogin: requests[0]?.githubLogin ?? null,
       ...summarizeRequests(requests),
       rank: 0,
     }))
@@ -148,22 +152,25 @@ export function taskSummaries(
 
 export function developerTaskSummaries(
   sourceRequests: (CopilotChatRequest & {
+    userLogin?: string | null;
+    userId?: string | null;
     githubLogin?: string | null;
-    githubId?: number | null;
   })[],
 ): DeveloperTaskSummaryRow[] {
   const requests = filterMeaningfulChatRequests(sourceRequests);
   const grouped = new Map<
     string,
     (CopilotChatRequest & {
+      userLogin?: string | null;
+      userId?: string | null;
       githubLogin?: string | null;
-      githubId?: number | null;
     })[]
   >();
   for (const request of requests) {
     const key = [
-      request.githubLogin ?? "unknown",
-      request.githubId ?? "",
+      request.userLogin ?? "unknown",
+      request.userId ?? "",
+      request.githubLogin ?? "",
       request.selectedTask ?? request.defaultTask ?? "No task",
     ].join("\u0000");
     grouped.set(key, [...(grouped.get(key) ?? []), request]);
@@ -171,10 +178,11 @@ export function developerTaskSummaries(
 
   return [...grouped.entries()]
     .map(([key, groupedRequests]) => {
-      const [githubLogin, githubId, task] = key.split("\u0000");
+      const [userLogin, userId, githubLogin, task] = key.split("\u0000");
       return {
-        githubLogin,
-        githubId: githubId ? Number(githubId) : null,
+        userLogin,
+        userId: userId || null,
+        githubLogin: githubLogin || null,
         task,
         ...summarizeRequests(groupedRequests),
       };

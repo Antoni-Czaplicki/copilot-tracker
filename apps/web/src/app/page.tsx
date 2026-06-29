@@ -26,10 +26,11 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   if (user !== null) {
     const database = await readDatabase();
     const requests = database.chatRequests.filter(
-      (request) => request.githubId === user.githubId,
+      (request) => request.userId === user.userId,
     );
     return (
       <DashboardOverview
+        githubLogin={user.githubLogin}
         login={user.login}
         requests={requests}
         taskPage={parsePage(parameters?.taskPage)}
@@ -45,10 +46,10 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       {authError === "misconfigured" ? (
         <Card>
           <CardHeader>
-            <CardTitle>GitHub login is not configured</CardTitle>
+            <CardTitle>Azure DevOps login is not configured</CardTitle>
             <CardDescription>
-              Set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET for this deployment,
-              then try logging in again.
+              Set AZURE_DEVOPS_CLIENT_ID, AZURE_DEVOPS_CLIENT_SECRET, and
+              AZURE_DEVOPS_ORG for this deployment, then try logging in again.
             </CardDescription>
           </CardHeader>
         </Card>
@@ -75,7 +76,9 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             <ExternalLink aria-hidden="true" data-icon="inline-start" />
             GitHub
           </LinkButton>
-          <LinkButton href="/api/auth/github">Log in with GitHub</LinkButton>
+          <LinkButton href="/api/auth/azure-devops">
+            Log in with Azure DevOps
+          </LinkButton>
         </div>
       </section>
 
@@ -99,7 +102,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         <Card>
           <CardContent>
             <div className="text-muted-foreground mb-1.5 text-xs">Auth</div>
-            <div className="text-2xl font-bold">GitHub</div>
+            <div className="text-2xl font-bold">Azure DevOps</div>
           </CardContent>
         </Card>
         <Card>

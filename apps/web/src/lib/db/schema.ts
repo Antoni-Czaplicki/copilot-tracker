@@ -1,18 +1,12 @@
-import {
-  bigint,
-  index,
-  integer,
-  jsonb,
-  pgTable,
-  text,
-} from "drizzle-orm/pg-core";
+import { index, integer, jsonb, pgTable, text } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
-  githubId: bigint("github_id", { mode: "number" }).primaryKey(),
+  userId: text("user_id").primaryKey(),
   login: text("login").notNull(),
   name: text("name"),
   avatarUrl: text("avatar_url"),
   email: text("email"),
+  githubLogin: text("github_login"),
   role: text("role", { enum: ["admin", "user"] })
     .notNull()
     .default("user"),
@@ -24,14 +18,14 @@ export const sessions = pgTable(
   "sessions",
   {
     id: text("id").primaryKey(),
-    githubId: bigint("github_id", { mode: "number" })
+    userId: text("user_id")
       .notNull()
-      .references(() => users.githubId, { onDelete: "cascade" }),
+      .references(() => users.userId, { onDelete: "cascade" }),
     createdAt: text("created_at").notNull(),
     expiresAt: text("expires_at").notNull(),
   },
   (table) => [
-    index("sessions_github_id_idx").on(table.githubId),
+    index("sessions_user_id_idx").on(table.userId),
     index("sessions_expires_at_idx").on(table.expiresAt),
   ],
 );
@@ -54,14 +48,15 @@ export const trackerEvents = pgTable(
     defaultTask: text("default_task"),
     selectedTask: text("selected_task"),
     payload: jsonb("payload").$type<Record<string, unknown> | null>(),
+    userLogin: text("user_login"),
     githubLogin: text("github_login"),
-    githubId: bigint("github_id", { mode: "number" }).references(
-      () => users.githubId,
+    userId: text("user_id").references(
+      () => users.userId,
       { onDelete: "set null" },
     ),
   },
   (table) => [
-    index("tracker_events_github_id_idx").on(table.githubId),
+    index("tracker_events_user_id_idx").on(table.userId),
     index("tracker_events_workspace_id_idx").on(table.workspaceId),
     index("tracker_events_timestamp_idx").on(table.timestamp),
   ],
@@ -108,14 +103,15 @@ export const chatRequests = pgTable(
     branch: text("branch"),
     defaultTask: text("default_task"),
     selectedTask: text("selected_task"),
+    userLogin: text("user_login"),
     githubLogin: text("github_login"),
-    githubId: bigint("github_id", { mode: "number" }).references(
-      () => users.githubId,
+    userId: text("user_id").references(
+      () => users.userId,
       { onDelete: "set null" },
     ),
   },
   (table) => [
-    index("chat_requests_github_id_idx").on(table.githubId),
+    index("chat_requests_user_id_idx").on(table.userId),
     index("chat_requests_workspace_id_idx").on(table.workspaceId),
     index("chat_requests_selected_task_idx").on(table.selectedTask),
     index("chat_requests_captured_at_idx").on(table.capturedAt),

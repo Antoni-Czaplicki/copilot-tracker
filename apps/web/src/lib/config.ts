@@ -32,30 +32,78 @@ export function authMode() {
   return env.COPILOT_TRACKER_AUTH_MODE;
 }
 
-export function adminGithubLogins() {
+export function adminAzureDevOpsLogins() {
   return new Set(
-    (env.ADMIN_GITHUB_LOGINS ?? "")
+    (env.ADMIN_AZURE_DEVOPS_LOGINS ?? "")
       .split(",")
       .map((login) => login.trim().toLowerCase())
       .filter(Boolean),
   );
 }
 
-export class MissingGithubOAuthConfigError extends Error {
+export function azureDevOpsOrg() {
+  const org = env.AZURE_DEVOPS_ORG;
+  if (org === undefined) {
+    throw new MissingAzureDevOpsOAuthConfigError();
+  }
+
+  return normalizeAzureDevOpsOrg(org);
+}
+
+export function azureDevOpsTenantId() {
+  return env.AZURE_DEVOPS_TENANT_ID ?? "organizations";
+}
+
+export function azureDevOpsScope() {
+  return "openid profile email 499b84ac-1321-427f-aa17-267ca6975798/.default";
+}
+
+export function azureDevOpsProfileUrl() {
+  return "https://app.vssps.visualstudio.com";
+}
+
+export function azureDevOpsAccountsUrl() {
+  return "https://app.vssps.visualstudio.com";
+}
+
+export class MissingAzureDevOpsOAuthConfigError extends Error {
   constructor() {
     super(
-      "GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET are required for GitHub login.",
+      "AZURE_DEVOPS_CLIENT_ID, AZURE_DEVOPS_CLIENT_SECRET, and AZURE_DEVOPS_ORG are required for Azure DevOps login.",
     );
-    this.name = "MissingGithubOAuthConfigError";
+    this.name = "MissingAzureDevOpsOAuthConfigError";
   }
 }
 
-export function requireGithubOAuthConfig() {
-  const clientId = env.GITHUB_CLIENT_ID;
-  const clientSecret = env.GITHUB_CLIENT_SECRET;
-  if (clientId === undefined || clientSecret === undefined) {
-    throw new MissingGithubOAuthConfigError();
+export function requireAzureDevOpsOAuthConfig() {
+  const clientId = env.AZURE_DEVOPS_CLIENT_ID;
+  const clientSecret = env.AZURE_DEVOPS_CLIENT_SECRET;
+  const org = env.AZURE_DEVOPS_ORG;
+  if (
+    clientId === undefined ||
+    clientSecret === undefined ||
+    org === undefined
+  ) {
+    throw new MissingAzureDevOpsOAuthConfigError();
   }
 
-  return { clientId, clientSecret };
+  const tenantId = azureDevOpsTenantId();
+  return {
+    clientId,
+    clientSecret,
+    org: normalizeAzureDevOpsOrg(org),
+    authorizeUrl: `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/authorize`,
+    tokenUrl: `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`,
+    redirectUri: `${appBaseUrl()}/api/auth/callback/azure-devops`,
+  };
+}
+
+function normalizeAzureDevOpsOrg(value: string) {
+  const trimmed = value.trim().replace(/\/+$/, "");
+  try {
+    const url = new URL(trimmed);
+    return url.pathname.split("/").find(Boolean) ?? trimmed;
+  } catch {
+    return trimmed;
+  }
 }

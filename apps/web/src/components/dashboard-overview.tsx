@@ -1,5 +1,6 @@
 import type { CopilotChatRequest } from "@copilot-tracker/shared";
 
+import { GithubLoginEditor } from "@/components/github-login-editor";
 import { TaskEditor } from "@/components/task-editor";
 import { TaskTokenChart } from "@/components/task-token-chart";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +33,7 @@ import { estimateRequestsCost, formatCurrency } from "@/lib/pricing";
 
 interface DashboardOverviewProps {
   login: string;
+  githubLogin?: string | null;
   requests: CopilotChatRequest[];
   taskPage?: number;
   taskPageBasePath?: string;
@@ -41,6 +43,7 @@ const taskPageSize = 10;
 
 export function DashboardOverview({
   login,
+  githubLogin = null,
   requests,
   taskPage = 1,
   taskPageBasePath = "/dashboard",
@@ -77,7 +80,7 @@ export function DashboardOverview({
             assignments when the branch guess was wrong.
           </p>
         </div>
-        <Badge>@{login}</Badge>
+        <Badge>{login}</Badge>
       </section>
 
       <section className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
@@ -93,6 +96,22 @@ export function DashboardOverview({
           value={formatCurrency(metrics.estimatedUsd)}
         />
       </section>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>GitHub username mapping</CardTitle>
+          <CardDescription>
+            Optional metadata for matching Azure DevOps users to GitHub billing
+            or reports.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <GithubLoginEditor
+            endpoint="/api/users/me/github-login"
+            initialGithubLogin={githubLogin}
+          />
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

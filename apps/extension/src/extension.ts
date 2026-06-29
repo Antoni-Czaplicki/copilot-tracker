@@ -5,7 +5,7 @@ import {
   createChatSessionTitleResolver,
   getDefaultWorkspaceStorageRoot,
 } from "./chatSessionTitles";
-import { getGitHubToken } from "./githubAuth";
+import { getAzureDevOpsToken } from "./azureDevOpsAuth";
 import {
   initializeLogger,
   logError,
@@ -56,7 +56,7 @@ export function activate(context: vscode.ExtensionContext) {
     ),
   });
 
-  const client = new TrackerClient(getGitHubToken);
+  const client = new TrackerClient(getAzureDevOpsToken);
 
   statusItem = vscode.window.createStatusBarItem(
     `${extensionId}.status`,

@@ -41,6 +41,8 @@ function exportCsv(
       return toCsv(
         [
           "rank",
+          "userLogin",
+          "userId",
           "githubLogin",
           "requests",
           "missing",
@@ -51,6 +53,8 @@ function exportCsv(
         ],
         publicLeaderboard(database).map((row) => [
           row.rank,
+          row.userLogin,
+          row.userId,
           row.githubLogin,
           row.requestCount,
           row.missingTokenCount,
@@ -99,8 +103,9 @@ function exportCsv(
     case "developer-tasks": {
       return toCsv(
         [
+          "userLogin",
+          "userId",
           "githubLogin",
-          "githubId",
           "task",
           "requests",
           "inputTokens",
@@ -108,8 +113,9 @@ function exportCsv(
           "totalTokens",
         ],
         developerTaskSummaries(chatRequests).map((row) => [
+          row.userLogin,
+          row.userId,
           row.githubLogin,
-          row.githubId,
           row.task,
           row.requestCount,
           row.inputTokens,
@@ -164,6 +170,8 @@ function exportCsv(
       return toCsv(
         [
           "requestRecordId",
+          "userLogin",
+          "userId",
           "githubLogin",
           "sessionTitle",
           "branch",
@@ -176,6 +184,8 @@ function exportCsv(
         ],
         chatRequests.map((row) => [
           row.requestRecordId,
+          row.userLogin,
+          row.userId,
           row.githubLogin,
           row.sessionTitle,
           row.branch,

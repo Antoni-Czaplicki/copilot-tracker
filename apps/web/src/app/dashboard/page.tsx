@@ -19,10 +19,11 @@ export default async function DashboardPage({
   const params = await searchParams;
   const database = await readDatabase();
   const requests = database.chatRequests.filter(
-    (request) => request.githubId === user.githubId,
+    (request) => request.userId === user.userId,
   );
   return (
     <DashboardOverview
+      githubLogin={user.githubLogin}
       login={user.login}
       requests={requests}
       taskPage={parsePage(params.taskPage)}

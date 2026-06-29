@@ -76,12 +76,12 @@ export default async function RootLayout({
                 {user ? (
                   <form action="/api/auth/logout" method="post">
                     <Button type="submit" variant="secondary">
-                      Log out @{user.login}
+                      Log out {user.login}
                     </Button>
                   </form>
                 ) : (
-                  <LinkButton href="/api/auth/github">
-                    Log in with GitHub
+                  <LinkButton href="/api/auth/azure-devops">
+                    Log in with Azure DevOps
                   </LinkButton>
                 )}
               </nav>

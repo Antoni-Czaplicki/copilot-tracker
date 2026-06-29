@@ -16,11 +16,12 @@ import {
 } from "./db/schema";
 
 export interface StoredUser {
-  githubId: number;
+  userId: string;
   login: string;
   name: string | null;
   avatarUrl: string | null;
   email: string | null;
+  githubLogin: string | null;
   role: "admin" | "user";
   createdAt: string;
   lastSeenAt: string;
@@ -28,19 +29,21 @@ export interface StoredUser {
 
 export interface StoredSession {
   id: string;
-  githubId: number;
+  userId: string;
   createdAt: string;
   expiresAt: string;
 }
 
 export type StoredTrackerEvent = TrackerEvent & {
+  userLogin: string | null;
   githubLogin: string | null;
-  githubId: number | null;
+  userId: string | null;
 };
 
 export type StoredChatRequest = CopilotChatRequest & {
+  userLogin: string | null;
   githubLogin: string | null;
-  githubId: number | null;
+  userId: string | null;
 };
 
 export interface TrackerDatabase {
@@ -101,12 +104,13 @@ export async function upsertUser(
     .insert(users)
     .values({ ...user, createdAt: now, lastSeenAt: now })
     .onConflictDoUpdate({
-      target: users.githubId,
+      target: users.userId,
       set: {
         login: user.login,
         name: user.name,
         avatarUrl: user.avatarUrl,
         email: user.email,
+        githubLogin: user.githubLogin,
         role: user.role,
         lastSeenAt: now,
       },
@@ -116,12 +120,12 @@ export async function upsertUser(
   return stored;
 }
 
-export async function createSession(githubId: number): Promise<StoredSession> {
+export async function createSession(userId: string): Promise<StoredSession> {
   const [session] = await db
     .insert(sessions)
     .values({
       id: crypto.randomUUID(),
-      githubId,
+      userId,
       createdAt: new Date().toISOString(),
       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     })
@@ -143,8 +147,9 @@ export async function insertTrackerEvent(
     .values({
       ...event,
       payload: event.payload ?? null,
-      githubLogin: user.login,
-      githubId: user.githubId,
+      userLogin: user.login,
+      githubLogin: user.githubLogin,
+      userId: user.userId,
     })
     .onConflictDoNothing({ target: trackerEvents.eventId });
 }
@@ -165,8 +170,9 @@ export async function upsertChatRequests(
         ...request,
         promptTokenDetails: request.promptTokenDetails ?? [],
         stopReasons: request.stopReasons ?? [],
-        githubLogin: user.login,
-        githubId: user.githubId,
+        userLogin: user.login,
+        githubLogin: user.githubLogin,
+        userId: user.userId,
       })),
     )
     .onConflictDoUpdate({
@@ -205,8 +211,9 @@ export async function upsertChatRequests(
           then excluded.selected_task
           else ${chatRequests.selectedTask}
         end`,
-        githubLogin: user.login,
-        githubId: user.githubId,
+        userLogin: user.login,
+        githubLogin: user.githubLogin,
+        userId: user.userId,
       },
     });
 
@@ -296,12 +303,12 @@ export async function updateChatRequestTask(
   canEditAll: boolean,
 ): Promise<boolean> {
   const [chatRequest] = await db
-    .select({ githubId: chatRequests.githubId })
+    .select({ userId: chatRequests.userId })
     .from(chatRequests)
     .where(eq(chatRequests.requestRecordId, requestRecordId))
     .limit(1);
 
-  if (!chatRequest || (!canEditAll && chatRequest.githubId !== user.githubId)) {
+  if (!chatRequest || (!canEditAll && chatRequest.userId !== user.userId)) {
     return false;
   }
 
@@ -311,6 +318,35 @@ export async function updateChatRequestTask(
     .where(eq(chatRequests.requestRecordId, requestRecordId));
 
   return true;
+}
+
+export async function updateUserGithubLogin(
+  userId: string,
+  githubLogin: string | null,
+): Promise<StoredUser | null> {
+  const [user] = await db
+    .update(users)
+    .set({
+      githubLogin,
+      lastSeenAt: new Date().toISOString(),
+    })
+    .where(eq(users.userId, userId))
+    .returning();
+
+  if (!user) {
+    return null;
+  }
+
+  await db
+    .update(chatRequests)
+    .set({ githubLogin })
+    .where(eq(chatRequests.userId, userId));
+  await db
+    .update(trackerEvents)
+    .set({ githubLogin })
+    .where(eq(trackerEvents.userId, userId));
+
+  return user;
 }
 
 export async function upsertGithubCopilotBillingUsage(
@@ -358,8 +394,9 @@ function toStoredEvent(
     defaultTask: row.defaultTask,
     selectedTask: row.selectedTask,
     payload: row.payload ?? undefined,
+    userLogin: row.userLogin,
     githubLogin: row.githubLogin,
-    githubId: row.githubId,
+    userId: row.userId,
   };
 }
 
@@ -396,7 +433,8 @@ function toStoredChatRequest(
     branch: row.branch,
     defaultTask: row.defaultTask,
     selectedTask: row.selectedTask,
+    userLogin: row.userLogin,
     githubLogin: row.githubLogin,
-    githubId: row.githubId,
+    userId: row.userId,
   };
 }

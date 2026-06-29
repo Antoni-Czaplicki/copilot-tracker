@@ -1,6 +1,7 @@
 import type { CopilotChatRequest } from "@copilot-tracker/shared";
 import { redirect } from "next/navigation";
 
+import { GithubLoginEditor } from "@/components/github-login-editor";
 import { TaskEditor } from "@/components/task-editor";
 import { Badge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/ui/button";
@@ -92,7 +93,7 @@ export default async function AdminPage({
           </h1>
           <p className="text-muted-foreground mt-1.5 max-w-[720px] text-sm">
             Full team usage, task attribution, model cost estimates, GitHub
-            billing sync, and CSV exports.
+            username mapping, billing sync, and CSV exports.
           </p>
         </div>
         <Badge>Admin</Badge>
@@ -160,6 +161,7 @@ function Overview({
           <TableHeader>
             <TableRow>
               <TableHead>Developer</TableHead>
+              <TableHead>GitHub username</TableHead>
               <TableHead>Requests</TableHead>
               <TableHead>Missing</TableHead>
               <TableHead>Total tokens</TableHead>
@@ -169,9 +171,19 @@ function Overview({
           </TableHeader>
           <TableBody>
             {leaderboard.map((row) => (
-              <TableRow key={row.githubLogin}>
+              <TableRow key={row.userId ?? row.userLogin}>
                 <TableCell>
-                  <strong>@{row.githubLogin}</strong>
+                  <strong>{row.userLogin}</strong>
+                </TableCell>
+                <TableCell>
+                  {row.userId ? (
+                    <GithubLoginEditor
+                      endpoint={`/api/admin/users/${encodeURIComponent(row.userId)}/github-login`}
+                      initialGithubLogin={row.githubLogin}
+                    />
+                  ) : (
+                    "unknown"
+                  )}
                 </TableCell>
                 <TableCell>{formatNumber(row.requestCount)}</TableCell>
                 <TableCell>{formatNumber(row.missingTokenCount)}</TableCell>
@@ -282,8 +294,15 @@ function DeveloperTasks({
           </TableHeader>
           <TableBody>
             {rows.map((row) => (
-              <TableRow key={`${row.githubLogin}-${row.task}`}>
-                <TableCell>@{row.githubLogin}</TableCell>
+              <TableRow key={`${row.userId ?? row.userLogin}-${row.task}`}>
+                <TableCell>
+                  {row.userLogin}
+                  {row.githubLogin ? (
+                    <span className="text-muted-foreground ml-2 text-xs">
+                      GitHub @{row.githubLogin}
+                    </span>
+                  ) : null}
+                </TableCell>
                 <TableCell>
                   <strong>{row.task}</strong>
                 </TableCell>
@@ -396,7 +415,14 @@ function Requests({
           <TableBody>
             {recentRequests.map((request) => (
               <TableRow key={request.requestRecordId}>
-                <TableCell>@{request.githubLogin ?? "unknown"}</TableCell>
+                <TableCell>
+                  {request.userLogin ?? "unknown"}
+                  {request.githubLogin ? (
+                    <span className="text-muted-foreground ml-2 text-xs">
+                      GitHub @{request.githubLogin}
+                    </span>
+                  ) : null}
+                </TableCell>
                 <TableCell>
                   {request.sessionTitle ?? request.sessionId}
                 </TableCell>

@@ -7,7 +7,7 @@ For setup instructions, see [INSTALL.md](./INSTALL.md).
 The project has three packages:
 
 - `apps/extension` - VS Code extension that configures Copilot Chat OpenTelemetry and sends usage records.
-- `apps/web` - Next.js app with ingestion API routes, GitHub login, dashboard, authenticated leaderboard, admin views, and Drizzle/Postgres storage.
+- `apps/web` - Next.js app with ingestion API routes, Azure DevOps login, dashboard, authenticated leaderboard, admin views, and Drizzle/Postgres storage.
 - `packages/shared` - shared TypeScript event and request contracts.
 
 ## Current Tracking Model
@@ -77,7 +77,7 @@ Start the web app:
 DATABASE_URL=postgres://copilot_tracker:copilot_tracker@localhost:54329/copilot_tracker pnpm dev:web
 ```
 
-For local smoke testing without GitHub OAuth or GitHub bearer-token validation:
+For local smoke testing without Azure DevOps OAuth or bearer-token validation:
 
 ```sh
 DATABASE_URL=postgres://copilot_tracker:copilot_tracker@localhost:54329/copilot_tracker COPILOT_TRACKER_AUTH_MODE=disabled pnpm dev:web
@@ -85,30 +85,34 @@ DATABASE_URL=postgres://copilot_tracker:copilot_tracker@localhost:54329/copilot_
 
 The web app runs on `http://localhost:3737`.
 
-## GitHub Login
+## Azure DevOps Login
 
-Create a GitHub OAuth app and set:
+Create a Microsoft Entra app registration with Azure DevOps delegated access and set:
 
 ```sh
 NEXT_PUBLIC_APP_URL=http://localhost:3737
 DATABASE_URL=postgres://copilot_tracker:copilot_tracker@localhost:54329/copilot_tracker
-GITHUB_CLIENT_ID=your-github-oauth-client-id
-GITHUB_CLIENT_SECRET=your-github-oauth-client-secret
-ADMIN_GITHUB_LOGINS=your-github-login
-COPILOT_TRACKER_AUTH_MODE=github
+AZURE_DEVOPS_CLIENT_ID=your-azure-app-client-id
+AZURE_DEVOPS_CLIENT_SECRET=your-azure-app-client-secret
+AZURE_DEVOPS_ORG=your-azure-devops-org
+AZURE_DEVOPS_TENANT_ID=organizations
+ADMIN_AZURE_DEVOPS_LOGINS=your-work-email@example.com
+COPILOT_TRACKER_AUTH_MODE=azure-devops
 GITHUB_COPILOT_BILLING_TOKEN=...
 GITHUB_COPILOT_BILLING_SCOPE_TYPE=user
 GITHUB_COPILOT_BILLING_SCOPE=your-github-login
 CRON_SECRET=...
 ```
 
-Use this callback URL in the GitHub OAuth app:
+Use this callback URL in the app registration:
 
 ```text
-http://localhost:3737/api/auth/callback/github
+http://localhost:3737/api/auth/callback/azure-devops
 ```
 
-`GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` are required when `COPILOT_TRACKER_AUTH_MODE=github`.
+`AZURE_DEVOPS_CLIENT_ID`, `AZURE_DEVOPS_CLIENT_SECRET`, and `AZURE_DEVOPS_ORG` are required when `COPILOT_TRACKER_AUTH_MODE=azure-devops`.
+
+The extension signs in through VS Code's Microsoft authentication provider and the server validates that token against Azure DevOps before accepting usage. Users can optionally map their Azure DevOps identity to a GitHub username for billing/reporting correlation.
 
 `apps/web/.env.example` contains the expected environment variables.
 
@@ -134,11 +138,11 @@ http://localhost:3737/api/auth/callback/github
 - `PATCH /api/chat-requests/:requestRecordId`
 - `GET /api/admin/export?type=tasks`
 - `GET /api/admin/github-billing/sync`
-- `GET /api/auth/github`
-- `GET /api/auth/callback/github`
+- `GET /api/auth/azure-devops`
+- `GET /api/auth/callback/azure-devops`
 - `POST /api/auth/logout`
 
-By default, ingest endpoints validate the VS Code GitHub bearer token against GitHub `/user`. Set `COPILOT_TRACKER_AUTH_MODE=disabled` only for local development.
+By default, ingest endpoints validate the VS Code Azure DevOps bearer token and configured organization membership. Set `COPILOT_TRACKER_AUTH_MODE=disabled` only for local development.
 
 ## Database
 

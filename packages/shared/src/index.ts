@@ -60,8 +60,9 @@ export interface CopilotChatRequest extends WorkspaceContext {
 }
 
 export interface AuthenticatedIdentity {
+  userId: string | null;
+  userLogin: string | null;
+  userName: string | null;
+  userEmail: string | null;
   githubLogin: string | null;
-  githubId: number | null;
-  githubName: string | null;
-  githubEmail: string | null;
 }

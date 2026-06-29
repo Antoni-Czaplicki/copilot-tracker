@@ -2,17 +2,18 @@ import { NextResponse } from "next/server";
 
 import { oauthStateCookie } from "@/lib/auth";
 import {
-  MissingGithubOAuthConfigError,
+  MissingAzureDevOpsOAuthConfigError,
   appBaseUrl,
-  requireGithubOAuthConfig,
+  azureDevOpsScope,
+  requireAzureDevOpsOAuthConfig,
 } from "@/lib/config";
 
 export function GET() {
-  let clientId: string;
+  let oauthConfig: ReturnType<typeof requireAzureDevOpsOAuthConfig>;
   try {
-    ({ clientId } = requireGithubOAuthConfig());
+    oauthConfig = requireAzureDevOpsOAuthConfig();
   } catch (error) {
-    if (error instanceof MissingGithubOAuthConfigError) {
+    if (error instanceof MissingAzureDevOpsOAuthConfigError) {
       return NextResponse.redirect(
         new URL("/?auth=misconfigured", appBaseUrl()),
       );
@@ -22,13 +23,12 @@ export function GET() {
   }
 
   const state = crypto.randomUUID();
-  const url = new URL("https://github.com/login/oauth/authorize");
-  url.searchParams.set("client_id", clientId);
-  url.searchParams.set(
-    "redirect_uri",
-    `${appBaseUrl()}/api/auth/callback/github`,
-  );
-  url.searchParams.set("scope", "read:user user:email");
+  const url = new URL(oauthConfig.authorizeUrl);
+  url.searchParams.set("client_id", oauthConfig.clientId);
+  url.searchParams.set("response_type", "code");
+  url.searchParams.set("redirect_uri", oauthConfig.redirectUri);
+  url.searchParams.set("response_mode", "query");
+  url.searchParams.set("scope", azureDevOpsScope());
   url.searchParams.set("state", state);
 
   const response = NextResponse.redirect(url);

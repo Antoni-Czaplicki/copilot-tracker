@@ -3,15 +3,12 @@ import { NextResponse } from "next/server";
 
 import {
   createUserSession,
-  fetchGitHubUser,
+  exchangeAzureDevOpsCode,
+  fetchAzureDevOpsUser,
   oauthStateCookie,
   sessionCookie,
 } from "@/lib/auth";
-import {
-  MissingGithubOAuthConfigError,
-  appBaseUrl,
-  requireGithubOAuthConfig,
-} from "@/lib/config";
+import { MissingAzureDevOpsOAuthConfigError, appBaseUrl } from "@/lib/config";
 
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get("code");
@@ -27,11 +24,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/?auth=failed", appBaseUrl()));
   }
 
-  let githubOAuthConfig: ReturnType<typeof requireGithubOAuthConfig>;
+  let accessToken: string | null;
   try {
-    githubOAuthConfig = requireGithubOAuthConfig();
+    accessToken = await exchangeAzureDevOpsCode(code);
   } catch (error) {
-    if (error instanceof MissingGithubOAuthConfigError) {
+    if (error instanceof MissingAzureDevOpsOAuthConfigError) {
       return NextResponse.redirect(
         new URL("/?auth=misconfigured", appBaseUrl()),
       );
@@ -39,39 +36,16 @@ export async function GET(request: NextRequest) {
 
     throw error;
   }
-
-  const tokenResponse = await fetch(
-    "https://github.com/login/oauth/access_token",
-    {
-      method: "POST",
-      headers: {
-        accept: "application/json",
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        client_id: githubOAuthConfig.clientId,
-        client_secret: githubOAuthConfig.clientSecret,
-        code,
-        redirect_uri: `${appBaseUrl()}/api/auth/callback/github`,
-      }),
-    },
-  );
-  const tokenPayload = (await tokenResponse.json()) as {
-    access_token?: string;
-  };
-  if (
-    tokenPayload.access_token === undefined ||
-    tokenPayload.access_token === ""
-  ) {
+  if (accessToken === null) {
     return NextResponse.redirect(new URL("/?auth=failed", appBaseUrl()));
   }
 
-  const githubUser = await fetchGitHubUser(tokenPayload.access_token);
-  if (githubUser === null) {
+  const azureUser = await fetchAzureDevOpsUser(accessToken);
+  if (azureUser === null) {
     return NextResponse.redirect(new URL("/?auth=failed", appBaseUrl()));
   }
 
-  const sessionId = await createUserSession(githubUser);
+  const sessionId = await createUserSession(azureUser);
   const response = NextResponse.redirect(new URL("/dashboard", appBaseUrl()));
   response.cookies.set(sessionCookie(), sessionId, {
     httpOnly: true,

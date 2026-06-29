@@ -70,10 +70,15 @@ export default async function LeaderboardPage() {
             </TableHeader>
             <TableBody>
               {rows.map((row) => (
-                <TableRow key={row.githubLogin}>
+                <TableRow key={row.userId ?? row.userLogin}>
                   <TableCell>#{row.rank}</TableCell>
                   <TableCell>
-                    <strong>@{row.githubLogin}</strong>
+                    <strong>{row.userLogin}</strong>
+                    {row.githubLogin ? (
+                      <span className="text-muted-foreground ml-2 text-xs">
+                        GitHub @{row.githubLogin}
+                      </span>
+                    ) : null}
                   </TableCell>
                   <TableCell>{formatNumber(row.requestCount)}</TableCell>
                   <TableCell>{formatNumber(row.inputTokens)}</TableCell>
