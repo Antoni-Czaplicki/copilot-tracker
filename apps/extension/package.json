@@ -7,11 +7,22 @@
     "Other"
   ],
   "publisher": "antoni-czaplicki",
+  "license": "MIT",
+  "homepage": "https://github.com/Antoni-Czaplicki/copilot-tracker#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Antoni-Czaplicki/copilot-tracker.git",
+    "directory": "apps/extension"
+  },
+  "bugs": {
+    "url": "https://github.com/Antoni-Czaplicki/copilot-tracker/issues"
+  },
   "main": "./out/extension.js",
   "scripts": {
     "build": "pnpm run compile",
     "compile": "tsc -p ./",
     "lint": "eslint src",
+    "package": "vsce package --no-dependencies",
     "pretest": "pnpm run compile && pnpm run lint",
     "test": "vscode-test",
     "typecheck": "tsc -p ./ --noEmit",
@@ -93,6 +104,7 @@
     "@types/vscode": "^1.125.0",
     "@vscode/test-cli": "^0.0.15",
     "@vscode/test-electron": "^3.0.0",
+    "@vscode/vsce": "^3.2.0",
     "eslint": "^10.6.0",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.61.1"
