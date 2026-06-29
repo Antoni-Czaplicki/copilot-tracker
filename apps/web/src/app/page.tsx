@@ -1,5 +1,6 @@
 import { DashboardOverview } from "@/components/dashboard-overview";
 import { LinkButton } from "@/components/ui/button";
+import { ExternalLink } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -64,7 +65,18 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             assignment. This web app turns that stream into team-visible usage.
           </p>
         </div>
-        <LinkButton href="/api/auth/github">Log in with GitHub</LinkButton>
+        <div className="flex flex-wrap items-center gap-2">
+          <LinkButton
+            href="https://github.com/Antoni-Czaplicki/copilot-tracker"
+            rel="noreferrer"
+            target="_blank"
+            variant="outline"
+          >
+            <ExternalLink aria-hidden="true" data-icon="inline-start" />
+            GitHub
+          </LinkButton>
+          <LinkButton href="/api/auth/github">Log in with GitHub</LinkButton>
+        </div>
       </section>
 
       <section className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
