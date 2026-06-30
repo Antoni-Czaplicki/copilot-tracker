@@ -1,5 +1,5 @@
 import { DashboardOverview } from "@/components/dashboard-overview";
-import { LinkButton } from "@/components/ui/button";
+import { AnchorButton, LinkButton } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
 import {
   Card,
@@ -54,6 +54,18 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           </CardHeader>
         </Card>
       ) : null}
+      {authError === "failed" ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Azure DevOps login failed</CardTitle>
+            <CardDescription>
+              Try logging in again. If it keeps failing, check that the Azure
+              app registration has Azure DevOps delegated permissions and that
+              your account belongs to the configured organization.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      ) : null}
 
       <section className="mb-4 flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
         <div>
@@ -76,9 +88,9 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             <ExternalLink aria-hidden="true" data-icon="inline-start" />
             GitHub
           </LinkButton>
-          <LinkButton href="/api/auth/azure-devops">
+          <AnchorButton href="/api/auth/azure-devops">
             Log in with Azure DevOps
-          </LinkButton>
+          </AnchorButton>
         </div>
       </section>
 

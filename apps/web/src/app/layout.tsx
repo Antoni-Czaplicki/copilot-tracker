@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 import { NavLinkButton } from "@/components/nav-link-button";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Button, LinkButton } from "@/components/ui/button";
+import { AnchorButton, Button } from "@/components/ui/button";
 import { currentUser, isAdmin } from "@/lib/auth";
 import { leaderboardEnabled } from "@/lib/config";
 import { cn } from "@/lib/utils";
@@ -83,9 +83,9 @@ export default async function RootLayout({
                     </Button>
                   </form>
                 ) : (
-                  <LinkButton href="/api/auth/azure-devops">
+                  <AnchorButton href="/api/auth/azure-devops">
                     Log in with Azure DevOps
-                  </LinkButton>
+                  </AnchorButton>
                 )}
               </nav>
             </header>

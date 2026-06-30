@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { GithubLoginEditor } from "@/components/github-login-editor";
 import { RequestSessionsGrid } from "@/components/request-sessions-grid";
 import { Badge } from "@/components/ui/badge";
-import { LinkButton } from "@/components/ui/button";
+import { AnchorButton, LinkButton } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -417,9 +417,9 @@ function GithubBilling({
       </CardHeader>
       <CardContent className="grid gap-4">
         <section className="flex flex-wrap items-center gap-2">
-          <LinkButton href="/api/admin/github-billing/sync" variant="secondary">
+          <AnchorButton href="/api/admin/github-billing/sync" variant="secondary">
             Sync now
-          </LinkButton>
+          </AnchorButton>
         </section>
         <div className="overflow-x-auto">
           <Table>

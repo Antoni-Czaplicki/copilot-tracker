@@ -70,4 +70,20 @@ function LinkButton({
   );
 }
 
-export { Button, LinkButton, buttonVariants };
+function AnchorButton({
+  className,
+  variant = "default",
+  size = "default",
+  ...props
+}: React.AnchorHTMLAttributes<HTMLAnchorElement> &
+  VariantProps<typeof buttonVariants> & { href: string }) {
+  return (
+    <a
+      data-slot="anchor-button"
+      className={cn(buttonVariants({ variant, size, className }))}
+      {...props}
+    />
+  );
+}
+
+export { AnchorButton, Button, LinkButton, buttonVariants };
