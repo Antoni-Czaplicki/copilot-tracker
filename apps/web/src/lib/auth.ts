@@ -1,3 +1,4 @@
+import { Buffer } from "node:buffer";
 import { cookies } from "next/headers";
 import type { NextRequest } from "next/server";
 
@@ -32,6 +33,7 @@ export interface AzureDevOpsUser {
 
 const sessionCookieName = "copilot_tracker_session";
 const oauthStateCookieName = "copilot_tracker_oauth_state";
+const oauthCodeVerifierCookieName = "copilot_tracker_oauth_code_verifier";
 
 export function sessionCookie() {
   return sessionCookieName;
@@ -39,6 +41,10 @@ export function sessionCookie() {
 
 export function oauthStateCookie() {
   return oauthStateCookieName;
+}
+
+export function oauthCodeVerifierCookie() {
+  return oauthCodeVerifierCookieName;
 }
 
 export function secureCookieOptions(maxAge: number) {
@@ -129,22 +135,43 @@ export async function authenticateIngestRequest(
   return upsertAzureDevOpsUser(azureUser);
 }
 
-export async function exchangeAzureDevOpsCode(code: string) {
+export async function createOauthPkceChallenge() {
+  const codeVerifier = base64UrlEncode(
+    crypto.getRandomValues(new Uint8Array(32)),
+  );
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(codeVerifier),
+  );
+
+  return {
+    codeVerifier,
+    codeChallenge: base64UrlEncode(new Uint8Array(digest)),
+  };
+}
+
+export async function exchangeAzureDevOpsCode(
+  code: string,
+  codeVerifier: string,
+) {
   const oauthConfig = requireAzureDevOpsOAuthConfig();
+  const body = new URLSearchParams({
+    client_id: oauthConfig.clientId,
+    client_secret: oauthConfig.clientSecret,
+    code,
+    code_verifier: codeVerifier,
+    grant_type: "authorization_code",
+    redirect_uri: oauthConfig.redirectUri,
+    scope: azureDevOpsScope(),
+  });
+
   const response = await fetchWithTimeout(oauthConfig.tokenUrl, {
     method: "POST",
     headers: {
       accept: "application/json",
       "content-type": "application/x-www-form-urlencoded",
     },
-    body: new URLSearchParams({
-      client_id: oauthConfig.clientId,
-      client_secret: oauthConfig.clientSecret,
-      code,
-      grant_type: "authorization_code",
-      redirect_uri: oauthConfig.redirectUri,
-      scope: azureDevOpsScope(),
-    }),
+    body,
   });
 
   if (!response.ok) {
@@ -374,6 +401,10 @@ function accountUriContainsOrg(value: string | undefined, expectedOrg: string) {
       .map((part) => part.toLowerCase())
       .includes(expectedOrg);
   }
+}
+
+function base64UrlEncode(bytes: Uint8Array) {
+  return Buffer.from(bytes).toString("base64url");
 }
 
 async function fetchWithTimeout(

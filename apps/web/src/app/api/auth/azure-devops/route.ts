@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 
-import { oauthStateCookie, secureCookieOptions } from "@/lib/auth";
+import {
+  createOauthPkceChallenge,
+  oauthCodeVerifierCookie,
+  oauthStateCookie,
+  secureCookieOptions,
+} from "@/lib/auth";
 import {
   MissingAzureDevOpsOAuthConfigError,
   appBaseUrl,
@@ -8,7 +13,7 @@ import {
   requireAzureDevOpsOAuthConfig,
 } from "@/lib/config";
 
-export function GET() {
+export async function GET() {
   let oauthConfig: ReturnType<typeof requireAzureDevOpsOAuthConfig>;
   try {
     oauthConfig = requireAzureDevOpsOAuthConfig();
@@ -23,6 +28,7 @@ export function GET() {
   }
 
   const state = crypto.randomUUID();
+  const pkce = await createOauthPkceChallenge();
   const url = new URL(oauthConfig.authorizeUrl);
   url.searchParams.set("client_id", oauthConfig.clientId);
   url.searchParams.set("response_type", "code");
@@ -30,9 +36,14 @@ export function GET() {
   url.searchParams.set("response_mode", "query");
   url.searchParams.set("scope", azureDevOpsScope());
   url.searchParams.set("state", state);
+  url.searchParams.set("code_challenge", pkce.codeChallenge);
+  url.searchParams.set("code_challenge_method", "S256");
 
   const response = NextResponse.redirect(url);
   response.cookies.set(oauthStateCookie(), state, {
+    ...secureCookieOptions(10 * 60),
+  });
+  response.cookies.set(oauthCodeVerifierCookie(), pkce.codeVerifier, {
     ...secureCookieOptions(10 * 60),
   });
   return response;

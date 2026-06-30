@@ -16,6 +16,8 @@ export const dynamic = "force-dynamic";
 interface HomePageProps {
   searchParams?: Promise<{
     auth?: string;
+    auth_code?: string;
+    auth_description?: string;
     taskPage?: string;
   }>;
 }
@@ -40,6 +42,11 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   }
 
   const authError = parameters?.auth;
+  const authErrorCode = formatAuthMessage(parameters?.auth_code, 80);
+  const authErrorDescription = formatAuthMessage(
+    parameters?.auth_description,
+    600,
+  );
 
   return (
     <main className="grid gap-4">
@@ -58,10 +65,16 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         <Card>
           <CardHeader>
             <CardTitle>Azure DevOps login failed</CardTitle>
-            <CardDescription>
-              Try logging in again. If it keeps failing, check that the Azure
-              app registration has Azure DevOps delegated permissions and that
-              your account belongs to the configured organization.
+            <CardDescription className="grid gap-2">
+              <div>
+                Try logging in again. If it keeps failing, check that the Azure
+                app registration has Azure DevOps delegated permissions and
+                that your account belongs to the configured organization.
+              </div>
+              {authErrorCode ? <div>Error: {authErrorCode}</div> : null}
+              {authErrorDescription ? (
+                <div>Details: {authErrorDescription}</div>
+              ) : null}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -154,4 +167,17 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 function parsePage(value: string | undefined) {
   const page = Number(value);
   return Number.isInteger(page) && page > 0 ? page : 1;
+}
+
+function formatAuthMessage(value: string | undefined, maxLength: number) {
+  let sanitized = "";
+  for (const character of value ?? "") {
+    const code = character.codePointAt(0) ?? 0;
+    sanitized += code < 32 || code === 127 ? " " : character;
+  }
+
+  return sanitized
+    .replaceAll(/\s+/gu, " ")
+    .trim()
+    .slice(0, maxLength);
 }
