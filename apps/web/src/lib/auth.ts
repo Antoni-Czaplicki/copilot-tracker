@@ -31,6 +31,16 @@ export interface AzureDevOpsUser {
   avatarUrl: string | null;
 }
 
+export class AzureDevOpsTokenExchangeError extends Error {
+  public constructor(
+    public readonly code: string,
+    public readonly description: string,
+  ) {
+    super(description);
+    this.name = "AzureDevOpsTokenExchangeError";
+  }
+}
+
 const sessionCookieName = "copilot_tracker_session";
 const oauthStateCookieName = "copilot_tracker_oauth_state";
 const oauthCodeVerifierCookieName = "copilot_tracker_oauth_code_verifier";
@@ -175,7 +185,7 @@ export async function exchangeAzureDevOpsCode(
   });
 
   if (!response.ok) {
-    return null;
+    throw await toAzureDevOpsTokenExchangeError(response);
   }
 
   const payload = (await response.json()) as {
@@ -183,7 +193,15 @@ export async function exchangeAzureDevOpsCode(
     refresh_token?: string;
     expires_in?: number;
   };
-  return toAzureDevOpsSessionTokens(payload);
+  const tokens = toAzureDevOpsSessionTokens(payload);
+  if (!tokens) {
+    throw new AzureDevOpsTokenExchangeError(
+      "invalid_token_response",
+      "Azure DevOps token response did not include an access token.",
+    );
+  }
+
+  return tokens;
 }
 
 export async function readAzureDevOpsSessionAccessToken(
@@ -419,5 +437,25 @@ async function fetchWithTimeout(
     return await fetch(input, { ...init, signal: controller.signal });
   } finally {
     clearTimeout(timeout);
+  }
+}
+
+async function toAzureDevOpsTokenExchangeError(response: Response) {
+  const fallback = `Azure DevOps token endpoint returned HTTP ${response.status}.`;
+  try {
+    const payload = (await response.json()) as {
+      error?: unknown;
+      error_description?: unknown;
+    };
+    return new AzureDevOpsTokenExchangeError(
+      typeof payload.error === "string"
+        ? payload.error
+        : "token_exchange_failed",
+      typeof payload.error_description === "string"
+        ? payload.error_description
+        : fallback,
+    );
+  } catch {
+    return new AzureDevOpsTokenExchangeError("token_exchange_failed", fallback);
   }
 }

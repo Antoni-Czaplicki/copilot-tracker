@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 import {
+  AzureDevOpsTokenExchangeError,
   createUserSession,
   exchangeAzureDevOpsCode,
   expiredCookieOptions,
@@ -53,6 +54,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(
         new URL("/?auth=misconfigured", appBaseUrl()),
       );
+    }
+    if (error instanceof AzureDevOpsTokenExchangeError) {
+      const response = authFailureRedirect(error.code, error.description);
+      clearOauthCookies(response);
+      return response;
     }
 
     throw error;
