@@ -248,7 +248,7 @@ async function readResponseBody(response: Response): Promise<unknown> {
   }
 }
 
-function parseTrackerServerUrl(value: string): URL {
+export function parseTrackerServerUrl(value: string): URL {
   let url: URL;
   try {
     url = new URL(value);

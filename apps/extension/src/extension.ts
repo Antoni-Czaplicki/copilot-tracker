@@ -26,6 +26,7 @@ import {
   type AzureDevOpsWorkItem,
   TrackerClient,
   getTrackerConfig,
+  parseTrackerServerUrl,
 } from "./trackerClient";
 import {
   type CopilotChatRequest,
@@ -152,6 +153,14 @@ export function activate(context: vscode.ExtensionContext) {
       void refreshContext(context, client, "extension-started");
       void rebuildOtelSyncLifecycle(context, client);
       scheduleSync(context, client, 350);
+    }),
+  );
+  context.subscriptions.push(
+    vscode.window.onDidChangeActiveTextEditor((editor) => {
+      logInfo("Active editor changed", {
+        hasEditor: Boolean(editor),
+      });
+      void refreshContext(context, client);
     }),
   );
   context.subscriptions.push(
@@ -317,6 +326,7 @@ async function pickAzureDevOpsTask(
       }
 
       settled = true;
+      searchSequence += 1;
       if (searchTimer) {
         clearTimeout(searchTimer);
       }
@@ -337,6 +347,10 @@ async function pickAzureDevOpsTask(
     }
 
     function scheduleSearch(value: string) {
+      if (settled) {
+        return;
+      }
+
       const query = value.trim();
       if (searchTimer) {
         clearTimeout(searchTimer);
@@ -350,11 +364,15 @@ async function pickAzureDevOpsTask(
 
       const sequence = ++searchSequence;
       searchTimer = setTimeout(() => {
+        if (settled || sequence !== searchSequence) {
+          return;
+        }
+
         quickPick.busy = true;
         client
           .searchWorkItems(query)
           .then((workItems) => {
-            if (sequence !== searchSequence) {
+            if (settled || sequence !== searchSequence) {
               return;
             }
             quickPick.items = [
@@ -363,7 +381,7 @@ async function pickAzureDevOpsTask(
             ];
           })
           .catch((error: unknown) => {
-            if (sequence !== searchSequence) {
+            if (settled || sequence !== searchSequence) {
               return;
             }
             logWarn("Azure DevOps work item search failed", {
@@ -379,7 +397,7 @@ async function pickAzureDevOpsTask(
             ];
           })
           .finally(() => {
-            if (sequence === searchSequence) {
+            if (!settled && sequence === searchSequence) {
               quickPick.busy = false;
             }
           });
@@ -454,7 +472,34 @@ async function showContext(context: vscode.ExtensionContext) {
 }
 
 async function openDashboard(sessionId?: string) {
-  const url = new URL("/dashboard", getTrackerConfig().serverUrl);
+  let url: URL;
+  try {
+    url = new URL(
+      "/dashboard",
+      parseTrackerServerUrl(getTrackerConfig().serverUrl),
+    );
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Copilot Tracker server URL is invalid.";
+    logError("Could not open Copilot Tracker dashboard", error);
+    void vscode.window
+      .showErrorMessage(message, "Open Settings", "Show Logs")
+      .then((choice) => {
+        if (choice === "Open Settings") {
+          void vscode.commands.executeCommand(
+            "workbench.action.openSettings",
+            `${extensionId}.serverUrl`,
+          );
+        }
+        if (choice === "Show Logs") {
+          showLogs();
+        }
+      });
+    return;
+  }
+
   if (sessionId) {
     url.searchParams.set("sessionId", sessionId);
   }

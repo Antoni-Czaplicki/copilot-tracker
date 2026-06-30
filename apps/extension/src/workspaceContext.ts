@@ -112,8 +112,22 @@ export async function getRemoteUrl(cwd: string): Promise<string | null> {
 }
 
 export function getTaskFromBranch(branch: string): string | null {
-  const numberLike = branch.match(/\d+/);
-  return numberLike?.[0] ?? null;
+  const normalized = branch.trim();
+  if (!normalized || normalized.startsWith("detached-")) {
+    return null;
+  }
+
+  const prefixedWorkItem = normalized.match(
+    /(?:^|\/)[A-Za-z][A-Za-z0-9]+-(\d+)(?=$|[^0-9.])/u,
+  );
+  if (prefixedWorkItem) {
+    return prefixedWorkItem[1] ?? null;
+  }
+
+  const leadingSegmentNumber = normalized.match(
+    /(?:^|\/)(\d+)(?=$|[^0-9.])/u,
+  );
+  return leadingSegmentNumber?.[1] ?? null;
 }
 
 function createWorkspaceId(

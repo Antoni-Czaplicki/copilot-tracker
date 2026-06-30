@@ -21,7 +21,11 @@ suite("Extension Test Suite", () => {
     assert.strictEqual(getTaskFromBranch("124v2"), "124");
     assert.strictEqual(getTaskFromBranch("feature/124-login"), "124");
     assert.strictEqual(getTaskFromBranch("feature/ABC-123-login"), "123");
+    assert.strictEqual(getTaskFromBranch("bugfix/abc-456-login"), "456");
     assert.strictEqual(getTaskFromBranch("main"), null);
+    assert.strictEqual(getTaskFromBranch("detached-abc123"), null);
+    assert.strictEqual(getTaskFromBranch("feat/v2.1"), null);
+    assert.strictEqual(getTaskFromBranch("chore/dependency-1.2.3"), null);
   });
 
   test("Reads Copilot OTel invoke_agent request spans", async () => {
