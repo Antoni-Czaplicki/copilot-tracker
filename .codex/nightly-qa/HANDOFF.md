@@ -112,3 +112,9 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - `22d34f0 Record final nightly QA status` passed both GitHub Actions workflows.
 - Production health and Azure auth-start redirect checks still pass.
 - Remaining risks are unchanged: production build metadata/cache header are still not visible, provider-error callback behavior still appears stale, and signed-in production Azure E2E remains blocked by `invalid_client`.
+
+## 2026-07-01 08:06 CEST Continuation Update
+
+- `cf5ade1 Correct final nightly QA poll logs` passed both GitHub Actions workflows.
+- Added `pnpm smoke:production` plus `--allow-known-stale` mode to make deploy freshness checks repeatable.
+- Strict smoke mode currently fails production as expected because metadata/cache/provider-code freshness remain stale; known-stale mode passes with warnings.

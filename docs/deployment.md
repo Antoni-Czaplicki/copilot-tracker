@@ -76,6 +76,7 @@ client secret, tenant/account type, and redirect URI before debugging app code.
 Run these checks after each deploy:
 
 ```sh
+pnpm smoke:production
 curl -fsS https://copilot-tracker.antek.page/api/health
 curl -I https://copilot-tracker.antek.page/
 curl -I https://copilot-tracker.antek.page/api/auth/azure-devops
@@ -94,6 +95,12 @@ Expected results:
 - Provider-error callbacks should preserve a sanitized short `auth_code` such as
   `access_denied` or `invalid_client`, but must not reflect provider
   descriptions into public URLs or page text.
+
+`pnpm smoke:production` fails on stale deployment evidence such as unknown build
+metadata, missing `Cache-Control: no-store`, or old provider-error callback
+behavior. During investigation of a known stale deploy, use
+`pnpm smoke:production -- --allow-known-stale` to keep checking the hard health
+and OAuth redirect gates while reporting freshness problems as warnings.
 
 ## Local Container Smoke
 

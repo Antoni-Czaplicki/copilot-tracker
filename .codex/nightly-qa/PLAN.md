@@ -372,3 +372,12 @@
 - [x] Verify latest pushed commit CI status
 - [x] Run final production health/auth-start/provider-callback smoke
 - [x] Update handoff, deployment, status, and loop logs
+
+## Loop 41 - Production Smoke Verifier
+
+- [x] Re-sync latest `cf5ade1` CI and production state
+- [x] Inspect health/auth freshness source paths and deployment docs
+- [x] Add strict production smoke script with known-stale warning mode
+- [x] Document `pnpm smoke:production`
+- [x] Validate script syntax, strict failure behavior, known-stale warning mode, typecheck, lint, and full tests
+- [ ] Commit, push, smoke production, and poll CI

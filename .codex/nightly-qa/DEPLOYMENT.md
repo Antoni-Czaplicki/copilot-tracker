@@ -651,3 +651,10 @@
 - PASS: production Azure OAuth start redirect includes state, PKCE `S256`, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
 - STALE/LIMITATION: direct provider-error callback still redirects with `auth_code=provider_error`; deployed freshness remains unproven.
 - STALE/LIMITATION: production `/api/health` still reports `sha="unknown"`, `builtAt="unknown"`, and no visible `Cache-Control` header.
+
+## 2026-07-01 08:06 CEST Production Poll
+
+- PASS: GitHub Actions for `cf5ade1 Correct final nightly QA poll logs` completed successfully on both CI and Build extension workflows.
+- ADDED: `pnpm smoke:production` codifies the production smoke contract.
+- EXPECTED FAIL: strict `pnpm smoke:production` fails current production because build metadata/cache header/provider-code freshness are still stale.
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale` exits successfully while warning on those freshness gaps.

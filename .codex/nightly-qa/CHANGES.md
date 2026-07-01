@@ -1045,6 +1045,21 @@
 - PASS: `git diff --check`
 - PASS: GitHub Actions for `625a202 Cap extension server error messages` completed successfully on both CI and Build extension workflows.
 
+## 2026-07-01 - Production Smoke Verifier
+
+- Added `scripts/smoke-production.mjs` and `pnpm smoke:production` to codify production deploy checks for health, build metadata, cache control, Azure OAuth PKCE/scopes, and provider-error callback behavior.
+- Added `--allow-known-stale` mode so current production can be monitored without hiding known freshness warnings.
+- Updated deployment docs to point operators at the script.
+
+## Checks
+
+- PASS: `node --check scripts/smoke-production.mjs`
+- EXPECTED FAIL: `pnpm smoke:production` fails strict mode on current stale production
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale`
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (122 web tests + 26 extension VS Code tests)
+
 ## 2026-07-01 - Work Item Picker Id Bounds
 
 - Aligned web WorkItemPicker result normalization with backend and extension Azure DevOps work-item ID bounds.

@@ -1891,3 +1891,16 @@
 - PASS/PARTIAL: direct provider-error callback hides `error_description`, but still returns stale `auth_code=provider_error` instead of the newer preserved `access_denied` code.
 - STALE/LIMITATION: production `/api/health` still reports `sha="unknown"`, `builtAt="unknown"`, and no visible `Cache-Control` header.
 - Current HEAD observed as `22d34f0`; worktree was clean before this status correction.
+
+## 2026-07-01 08:06:15 CEST - Loop 41 Validation
+
+- PASS: latest pushed commit `cf5ade1 Correct final nightly QA poll logs` completed successfully on both CI and Build extension workflows.
+- Added `scripts/smoke-production.mjs` and `pnpm smoke:production` as a strict deploy smoke verifier for health, build metadata, cache control, Azure PKCE/scopes, and provider-error callback behavior.
+- Added `--allow-known-stale` mode so the current production deployment can still be monitored while freshness gaps are reported as warnings.
+- PASS: `node --check scripts/smoke-production.mjs`
+- EXPECTED FAIL: `pnpm smoke:production` fails strict mode on current production because build metadata/cache header/provider-code freshness are stale.
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale` exits successfully while warning on the known freshness gaps.
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (122 web tests + 26 extension VS Code tests)
+- Next: commit, push, smoke production, poll CI, and continue if needed.
