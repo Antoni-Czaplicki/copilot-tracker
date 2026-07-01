@@ -1,6 +1,17 @@
 import { readResponseError } from "./responseErrors";
 
 const maxAzureDevOpsWorkItemId = 2_147_483_647;
+const terminalWorkItemStates = new Set([
+  "accepted",
+  "canceled",
+  "cancelled",
+  "closed",
+  "complete",
+  "completed",
+  "done",
+  "removed",
+  "resolved",
+]);
 
 export interface WorkItemSearchItem {
   id: number;
@@ -23,6 +34,32 @@ export function emptyWorkItemSearchMessage(value: string) {
   return /^\d+$/u.test(value.trim())
     ? "No Azure DevOps match for this ID"
     : "No Azure DevOps matches";
+}
+
+export function sortWorkItemSearchItems(items: WorkItemSearchItem[]) {
+  return [...items].sort(
+    (left, right) =>
+      workItemStateRank(left.state) - workItemStateRank(right.state),
+  );
+}
+
+export function isTerminalWorkItemState(state: string | null) {
+  return workItemStateRank(state) > 0;
+}
+
+export function safeWorkItemUrl(url: string | null) {
+  if (!url) {
+    return null;
+  }
+
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "https:" || parsed.protocol === "http:"
+      ? parsed.toString()
+      : null;
+  } catch {
+    return null;
+  }
 }
 
 export function nextWorkItemActiveIndex({
@@ -107,6 +144,15 @@ function workItemFromValue(value: unknown): WorkItemSearchItem | null {
 
 function nullableString(value: unknown) {
   return typeof value === "string" ? value : null;
+}
+
+function workItemStateRank(state: string | null) {
+  if (!state) {
+    return 0;
+  }
+
+  const normalizedState = state.trim().toLowerCase();
+  return terminalWorkItemStates.has(normalizedState) ? 1 : 0;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

@@ -13,6 +13,7 @@ const {
   AzureDevOpsWorkItemsError,
   azureDevOpsWorkItemsClientStatus,
   buildWiqlQueries,
+  fetchAzureDevOpsWorkItemsByIds,
   searchAzureDevOpsWorkItems,
 } = await import("./azureDevOpsWorkItems");
 const workItemsRoute = await import("../app/api/azure-devops/work-items/route");
@@ -168,6 +169,38 @@ void test("searchAzureDevOpsWorkItems fetches numeric ids directly without WIQL"
   );
   assert.deepEqual(requestJson(requests[0]).ids, [17_198]);
   assert.equal(requestJson(requests[0]).errorPolicy, "Omit");
+});
+
+void test("fetchAzureDevOpsWorkItemsByIds fetches unique valid ids in caller order", async (context) => {
+  const requests = mockFetch(context, [
+    Response.json({
+      value: [
+        {
+          id: 42,
+          fields: {
+            "System.Title": "Second task",
+          },
+        },
+        {
+          id: 17_198,
+          fields: {
+            "System.Title": "First task",
+          },
+        },
+      ],
+    }),
+  ]);
+
+  const items = await fetchAzureDevOpsWorkItemsByIds({
+    accessToken: "access-token",
+    ids: [17_198, 0, 42, 17_198, 2_147_483_648],
+  });
+
+  assert.deepEqual(
+    items.map((item) => item.id),
+    [17_198, 42],
+  );
+  assert.deepEqual(requestJson(requests[0]).ids, [17_198, 42]);
 });
 
 void test("searchAzureDevOpsWorkItems promotes marked ids alongside text search results", async (context) => {

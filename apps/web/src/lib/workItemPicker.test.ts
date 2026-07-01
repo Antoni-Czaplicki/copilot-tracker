@@ -1,10 +1,14 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
+import type { WorkItemSearchItem } from "./workItemPicker";
 import {
   canSearchWorkItems,
   emptyWorkItemSearchMessage,
+  isTerminalWorkItemState,
   nextWorkItemActiveIndex,
+  safeWorkItemUrl,
+  sortWorkItemSearchItems,
   workItemsFromSearchPayload,
   workItemSearchErrorMessage,
 } from "./workItemPicker";
@@ -29,6 +33,37 @@ void test("emptyWorkItemSearchMessage distinguishes numeric ids from text querie
     emptyWorkItemSearchMessage("login"),
     "No Azure DevOps matches",
   );
+});
+
+void test("sortWorkItemSearchItems keeps terminal work items after active matches", () => {
+  const completed = workItem({ id: 1, state: "Completed" });
+  const active = workItem({ id: 2, state: "Active" });
+  const accepted = workItem({ id: 3, state: "Accepted" });
+  const proposed = workItem({ id: 4, state: "Proposed" });
+
+  assert.deepEqual(
+    sortWorkItemSearchItems([completed, active, accepted, proposed]).map(
+      (item) => item.id,
+    ),
+    [2, 4, 1, 3],
+  );
+});
+
+void test("isTerminalWorkItemState recognizes completed and accepted states", () => {
+  assert.equal(isTerminalWorkItemState("Completed"), true);
+  assert.equal(isTerminalWorkItemState("accepted"), true);
+  assert.equal(isTerminalWorkItemState("Active"), false);
+  assert.equal(isTerminalWorkItemState(null), false);
+});
+
+void test("safeWorkItemUrl allows browser URLs and rejects unsafe schemes", () => {
+  assert.equal(
+    safeWorkItemUrl("https://dev.azure.com/org/project/_workitems/edit/123"),
+    "https://dev.azure.com/org/project/_workitems/edit/123",
+  );
+  assert.equal(safeWorkItemUrl("javascript:alert(1)"), null);
+  assert.equal(safeWorkItemUrl("not a url"), null);
+  assert.equal(safeWorkItemUrl(null), null);
 });
 
 void test("nextWorkItemActiveIndex moves through listbox results within bounds", () => {
@@ -65,6 +100,22 @@ void test("nextWorkItemActiveIndex moves through listbox results within bounds",
     0,
   );
 });
+
+function workItem(
+  overrides: Partial<WorkItemSearchItem> & Pick<WorkItemSearchItem, "id">,
+): WorkItemSearchItem {
+  return {
+    id: overrides.id,
+    title: overrides.title ?? `Task ${overrides.id}`,
+    state: overrides.state ?? null,
+    type: overrides.type ?? null,
+    project: overrides.project ?? null,
+    assignedTo: overrides.assignedTo ?? null,
+    changedAt: overrides.changedAt ?? null,
+    tags: overrides.tags ?? null,
+    url: overrides.url ?? null,
+  };
+}
 
 void test("nextWorkItemActiveIndex clamps stale or invalid active indexes", () => {
   assert.equal(

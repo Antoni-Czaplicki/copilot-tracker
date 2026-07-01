@@ -1,29 +1,48 @@
 "use client";
 
-import { Search } from "lucide-react";
+import {
+  BookOpen,
+  Bug,
+  CircleCheck,
+  ClipboardList,
+  ExternalLink,
+  FileText,
+  Flag,
+  GitPullRequest,
+  ListTodo,
+  Search,
+  TestTube,
+  Wrench,
+} from "lucide-react";
 import { useEffect, useId, useMemo, useState } from "react";
 
 import type { WorkItemSearchItem } from "@/lib/workItemPicker";
 import {
   canSearchWorkItems,
   emptyWorkItemSearchMessage,
+  isTerminalWorkItemState,
   nextWorkItemActiveIndex,
+  safeWorkItemUrl,
+  sortWorkItemSearchItems,
   workItemsFromSearchPayload,
   workItemSearchErrorMessage,
 } from "@/lib/workItemPicker";
+import { cn } from "@/lib/utils";
 
-import { Button } from "./ui/button";
+import { AnchorButton } from "./ui/button";
 import { Input } from "./ui/input";
 
 interface WorkItemPickerProps {
   value: string;
   onChange: (value: string) => void;
+  knownWorkItem?: WorkItemSearchItem | null;
   placeholder?: string;
 }
 
 export function WorkItemPicker({
   value,
   onChange,
+  knownWorkItem = null,
   placeholder = "Search task id or title",
 }: WorkItemPickerProps) {
   const inputId = useId();
@@ -33,11 +52,20 @@ export function WorkItemPicker({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [resultQuery, setResultQuery] = useState("");
+  const [focused, setFocused] = useState(false);
+  const [editedSearch, setEditedSearch] = useState(false);
+  const [dismissedValue, setDismissedValue] = useState<string | null>(null);
+  const [selectedWorkItem, setSelectedWorkItem] =
+    useState<WorkItemSearchItem | null>(null);
   const normalizedValue = value.trim();
   const canSearch = canSearchWorkItems(normalizedValue);
-  const resultMatchesQuery = canSearch && resultQuery === normalizedValue;
-  const visibleWorkItems = resultMatchesQuery ? workItems : [];
-  const visibleState = canSearch
+  const searchActive =
+    focused && editedSearch && canSearch && dismissedValue !== normalizedValue;
+  const resultMatchesQuery = searchActive && resultQuery === normalizedValue;
+  const visibleWorkItems = resultMatchesQuery
+    ? sortWorkItemSearchItems(workItems)
+    : [];
+  const visibleState = searchActive
     ? resultMatchesQuery
       ? state
       : "loading"
@@ -45,7 +73,7 @@ export function WorkItemPicker({
   const expanded = visibleWorkItems.length > 0;
 
   useEffect(() => {
-    if (!canSearch) {
+    if (!searchActive) {
       return;
     }
 
@@ -85,7 +113,19 @@ export function WorkItemPicker({
       controller.abort();
       clearTimeout(timeout);
     };
-  }, [canSearch, normalizedValue]);
+  }, [normalizedValue, searchActive]);
+
+  const selectedWorkItemForValue =
+    selectedWorkItem && String(selectedWorkItem.id) === normalizedValue
+      ? selectedWorkItem
+      : knownWorkItem && String(knownWorkItem.id) === normalizedValue
+        ? knownWorkItem
+      : resultMatchesQuery
+        ? workItems.find((item) => String(item.id) === normalizedValue) ?? null
+        : null;
+  const selectedWorkItemUrl = safeWorkItemUrl(
+    selectedWorkItemForValue?.url ?? null,
+  );
 
   const statusText = useMemo(() => {
     if (visibleState === "loading") {
@@ -111,24 +151,41 @@ export function WorkItemPicker({
 
   function selectWorkItem(item: WorkItemSearchItem) {
     onChange(String(item.id));
+    setSelectedWorkItem(item);
+    setDismissedValue(String(item.id));
+    setEditedSearch(false);
     setWorkItems([]);
     setResultQuery("");
     setActiveIndex(0);
+    setState("idle");
   }
 
   return (
-    <div className="grid w-full min-w-0 gap-1.5 sm:min-w-[260px]">
+    <div
+      className="grid w-full min-w-0 gap-1.5 sm:min-w-[260px]"
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) {
+          setFocused(false);
+          setWorkItems([]);
+        }
+      }}
+      onFocus={() => {
+        setFocused(true);
+      }}
+    >
       <div className="relative">
         <Search className="text-muted-foreground pointer-events-none absolute top-2 left-2 size-3.5" />
         <Input
           aria-activedescendant={
-            expanded ? `${listboxId}-${visibleWorkItems[activeIndex]?.id}` : undefined
+            expanded
+              ? `${listboxId}-${visibleWorkItems[activeIndex]?.id}`
+              : undefined
           }
           aria-autocomplete="list"
           aria-controls={listboxId}
           aria-expanded={expanded}
           aria-haspopup="listbox"
-          className="pl-7"
+          className={cn("pl-7", selectedWorkItemUrl && "pr-8")}
           id={inputId}
           placeholder={placeholder}
           role="combobox"
@@ -177,9 +234,26 @@ export function WorkItemPicker({
           }}
           onChange={(event) => {
             const nextValue = event.target.value;
+            setDismissedValue(null);
+            setSelectedWorkItem(null);
+            setEditedSearch(true);
             onChange(nextValue);
           }}
         />
+        {selectedWorkItemUrl ? (
+          <AnchorButton
+            aria-label={`Open Azure DevOps work item ${selectedWorkItemForValue?.id}`}
+            className="absolute top-1 right-1"
+            href={selectedWorkItemUrl}
+            rel="noreferrer"
+            size="icon-xs"
+            target="_blank"
+            title={`Open work item ${selectedWorkItemForValue?.id} in Azure DevOps`}
+            variant="ghost"
+          >
+            <ExternalLink aria-hidden="true" />
+          </AnchorButton>
+        ) : null}
       </div>
       {statusText ? (
         <div
@@ -189,41 +263,137 @@ export function WorkItemPicker({
         >
           {statusText}
         </div>
+      ) : selectedWorkItemForValue ? (
+        <WorkItemSummary item={selectedWorkItemForValue} />
       ) : null}
       {visibleWorkItems.length > 0 ? (
         <div
           aria-labelledby={inputId}
-          className="border-border bg-background max-h-48 overflow-auto border"
+          className="border-border bg-background max-h-72 overflow-auto border shadow-sm"
           id={listboxId}
           role="listbox"
         >
-          {visibleWorkItems.map((item, index) => (
-            <Button
-              key={item.id}
-              aria-selected={index === activeIndex}
-              className="h-auto w-full justify-start whitespace-normal px-2 py-1.5 text-left"
-              id={`${listboxId}-${item.id}`}
-              role="option"
-              type="button"
-              variant={index === activeIndex ? "secondary" : "ghost"}
-              onClick={() => {
-                selectWorkItem(item);
-              }}
-            >
-              <span className="grid gap-0.5">
-                <span>
-                  <strong>{item.id}</strong> {item.title}
-                </span>
-                <span className="text-muted-foreground text-[11px]">
-                  {[item.type, item.state, item.project]
-                    .filter(Boolean)
-                    .join(" / ")}
-                </span>
-              </span>
-            </Button>
-          ))}
+          {visibleWorkItems.map((item, index) => {
+            const openUrl = safeWorkItemUrl(item.url);
+            const terminal = isTerminalWorkItemState(item.state);
+            const TypeIcon = workItemTypeIcon(item.type);
+            return (
+              <div
+                key={item.id}
+                aria-selected={index === activeIndex}
+                className={cn(
+                  "grid grid-cols-[1fr_auto] items-stretch gap-1 border-b last:border-b-0",
+                  index === activeIndex && "bg-secondary",
+                  terminal && "text-muted-foreground",
+                )}
+                id={`${listboxId}-${item.id}`}
+                role="option"
+                tabIndex={-1}
+                onMouseEnter={() => {
+                  setActiveIndex(index);
+                }}
+              >
+                <button
+                  className="flex min-w-0 items-start gap-2 px-2 py-1.5 text-left"
+                  type="button"
+                  onClick={() => {
+                    selectWorkItem(item);
+                  }}
+                >
+                  <TypeIcon
+                    aria-hidden="true"
+                    className={cn(
+                      "mt-0.5 size-3.5 shrink-0",
+                      terminal ? "text-muted-foreground" : "text-primary",
+                    )}
+                  />
+                  <span className="grid min-w-0 gap-0.5">
+                    <span className="break-words text-xs leading-snug">
+                      <strong className="text-foreground">{item.id}</strong>{" "}
+                      {item.title}
+                    </span>
+                    <span className="text-muted-foreground flex flex-wrap gap-x-1.5 gap-y-0.5 text-[11px]">
+                      {workItemMetadata(item).map((detail) => (
+                        <span key={detail}>{detail}</span>
+                      ))}
+                    </span>
+                  </span>
+                </button>
+                {openUrl ? (
+                  <AnchorButton
+                    aria-label={`Open Azure DevOps work item ${item.id}`}
+                    className="m-1 self-start"
+                    href={openUrl}
+                    rel="noreferrer"
+                    size="icon-xs"
+                    target="_blank"
+                    title={`Open work item ${item.id} in Azure DevOps`}
+                    variant="ghost"
+                  >
+                    <ExternalLink aria-hidden="true" />
+                  </AnchorButton>
+                ) : null}
+              </div>
+            );
+          })}
         </div>
       ) : null}
     </div>
   );
+}
+
+function WorkItemSummary({ item }: { item: WorkItemSearchItem }) {
+  const TypeIcon = workItemTypeIcon(item.type);
+  return (
+    <div className="text-muted-foreground flex min-w-0 items-start gap-1.5 text-[11px]">
+      <TypeIcon aria-hidden="true" className="mt-0.5 size-3 shrink-0" />
+      <span className="min-w-0 truncate">
+        {item.title}
+        {item.state ? ` · ${item.state}` : ""}
+      </span>
+    </div>
+  );
+}
+
+function workItemMetadata(item: WorkItemSearchItem) {
+  return [
+    item.type,
+    item.state,
+    item.project,
+    item.assignedTo ? `Assigned to ${item.assignedTo}` : null,
+    item.tags ? `Tags: ${item.tags}` : null,
+  ].filter(Boolean);
+}
+
+function workItemTypeIcon(type: string | null) {
+  const normalizedType = type?.trim().toLowerCase() ?? "";
+  if (normalizedType.includes("bug")) {
+    return Bug;
+  }
+  if (normalizedType.includes("user story") || normalizedType === "story") {
+    return BookOpen;
+  }
+  if (normalizedType.includes("feature")) {
+    return Flag;
+  }
+  if (normalizedType.includes("task")) {
+    return ListTodo;
+  }
+  if (normalizedType.includes("test")) {
+    return TestTube;
+  }
+  if (normalizedType.includes("pull request")) {
+    return GitPullRequest;
+  }
+  if (normalizedType.includes("issue")) {
+    return CircleCheck;
+  }
+  if (normalizedType.includes("change") || normalizedType.includes("chore")) {
+    return Wrench;
+  }
+  if (normalizedType.includes("document")) {
+    return FileText;
+  }
+
+  return ClipboardList;
 }

@@ -94,6 +94,24 @@ export async function searchAzureDevOpsWorkItems({
   return dedupeWorkItems([...directItems, ...wiqlItems]).slice(0, safeLimit);
 }
 
+export async function fetchAzureDevOpsWorkItemsByIds({
+  accessToken,
+  ids,
+  limit = maxWorkItemSearchLimit,
+}: {
+  accessToken: string;
+  ids: number[];
+  limit?: number;
+}): Promise<AzureDevOpsWorkItem[]> {
+  return fetchWorkItems(
+    accessToken,
+    uniqueNumbers(ids.filter((id) => isWorkItemId(id))).slice(
+      0,
+      safeSearchLimit(limit),
+    ),
+  );
+}
+
 async function searchWorkItems(
   accessToken: string,
   query: string,

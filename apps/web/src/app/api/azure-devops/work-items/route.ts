@@ -10,14 +10,18 @@ import {
 import {
   AzureDevOpsWorkItemsError,
   azureDevOpsWorkItemsClientStatus,
+  fetchAzureDevOpsWorkItemsByIds,
   searchAzureDevOpsWorkItems,
 } from "@/lib/azureDevOpsWorkItems";
 import { parseBearerToken } from "@/lib/authIdentity";
 import { readUserBySessionId } from "@/lib/store";
 
+const maxWorkItemIdsPerRequest = 50;
+
 export async function GET(request: NextRequest) {
   const query = request.nextUrl.searchParams.get("query")?.trim() ?? "";
-  if (query.length === 0) {
+  const ids = parseWorkItemIds(request.nextUrl.searchParams.get("ids"));
+  if (query.length === 0 && ids.length === 0) {
     return NextResponse.json({ workItems: [] });
   }
 
@@ -27,10 +31,13 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const workItems = await searchAzureDevOpsWorkItems({
-      accessToken,
-      query,
-    });
+    const workItems =
+      ids.length > 0
+        ? await fetchAzureDevOpsWorkItemsByIds({ accessToken, ids })
+        : await searchAzureDevOpsWorkItems({
+            accessToken,
+            query,
+          });
 
     return NextResponse.json({ workItems });
   } catch (error) {
@@ -43,6 +50,24 @@ export async function GET(request: NextRequest) {
 
     throw error;
   }
+}
+
+function parseWorkItemIds(value: string | null) {
+  if (!value) {
+    return [];
+  }
+
+  return [
+    ...new Set(
+      value
+        .split(",")
+        .map((id) => Number(id.trim()))
+        .filter(
+          (id) =>
+            Number.isSafeInteger(id) && id > 0 && id <= 2_147_483_647,
+        ),
+    ),
+  ].slice(0, maxWorkItemIdsPerRequest);
 }
 
 async function getAzureDevOpsAccessToken(request: NextRequest) {

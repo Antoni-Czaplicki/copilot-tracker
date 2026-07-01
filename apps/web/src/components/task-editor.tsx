@@ -4,6 +4,7 @@ import type { SyntheticEvent } from "react";
 import { useState } from "react";
 
 import { responseErrorMessage } from "@/lib/responseErrors";
+import type { WorkItemSearchItem } from "@/lib/workItemPicker";
 
 import { Button } from "./ui/button";
 import { WorkItemPicker } from "./work-item-picker";
@@ -11,12 +12,14 @@ import { WorkItemPicker } from "./work-item-picker";
 interface TaskEditorProps {
   requestRecordId: string;
   initialTask: string;
+  knownWorkItem?: WorkItemSearchItem | null;
   onSaved?: (task: string | null) => void;
 }
 
 export function TaskEditor({
   requestRecordId,
   initialTask,
+  knownWorkItem = null,
   onSaved,
 }: TaskEditorProps) {
   const [task, setTask] = useState(initialTask);
@@ -76,6 +79,7 @@ export function TaskEditor({
     <form className="grid min-w-[280px] gap-1.5" onSubmit={submit}>
       <div className="flex items-start gap-2">
         <WorkItemPicker
+          knownWorkItem={knownWorkItem}
           value={task}
           onChange={(value) => {
             setTask(value);
