@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { currentUser, isAdmin } from "@/lib/auth";
 import { cronSecret } from "@/lib/config";
+import { isCronAuthorized } from "@/lib/cronAuth";
 import { syncGithubCopilotBillingUsage } from "@/lib/githubBilling";
 import { parseBillingDate } from "@/lib/githubBillingDate";
 
@@ -10,10 +11,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   const configuredSecret = cronSecret();
-  const authorization = request.headers.get("authorization");
-  const cronAuthorized =
-    configuredSecret && authorization === `Bearer ${configuredSecret}`;
-  if (!cronAuthorized) {
+  if (!isCronAuthorized(configuredSecret, request.headers.get("authorization"))) {
     const user = await currentUser();
     if (!isAdmin(user)) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });

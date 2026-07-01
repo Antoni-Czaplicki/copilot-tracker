@@ -1223,3 +1223,33 @@
 - PASS: `pnpm test` (96 web tests + 23 extension VS Code tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - Next: commit, push, smoke production, and continue.
+
+## 2026-07-01 06:01:44 CEST - Loop 17 End
+
+- Committed and pushed Azure work-item status mapping coverage as `5447dd0 Add work item status mapping coverage`.
+- GitHub Actions for `5447dd0` are in progress.
+- PASS: production `/api/health` returns HTTP 200 with `ok=true` and `database.ok=true`.
+- LIMITATION: production `/api/health` still reports `version.sha="unknown"` and `builtAt="unknown"`.
+- PASS: sanitized production Azure OAuth start redirects to Microsoft with PKCE `S256`, state, client id, and required Azure DevOps scopes.
+- Next: continue with the next high-value gap and poll CI.
+
+## 2026-07-01 06:02:20 CEST - Loop 18 Start
+
+- Started cron authorization coverage for the GitHub billing sync endpoint while CI for `5447dd0` runs.
+- Finding: cron authorization compares the raw `Authorization` header string instead of reusing the hardened bearer parser.
+- Current git state: post-push QA logs modified; no source changes pending yet.
+- Next: extract `isCronAuthorized`, reuse bearer parsing, add direct tests, and validate.
+
+## 2026-07-01 06:03:46 CEST - Loop 18 Validation
+
+- PASS: GitHub Actions for `5447dd0 Add work item status mapping coverage` completed successfully on both CI and extension build workflows.
+- Extracted `isCronAuthorized` for GitHub billing sync cron access.
+- Reused the shared bearer parser so cron auth accepts canonical bearer casing/spacing while still failing closed for missing secrets, missing headers, malformed auth, wrong tokens, and extra token parts.
+- PASS: `pnpm --filter @copilot-tracker/web test` (99 tests)
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (99 web tests + 23 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- Next: commit, push, smoke production, and continue.

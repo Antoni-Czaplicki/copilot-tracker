@@ -142,4 +142,13 @@
 - [x] Extract Azure DevOps work-item client status mapping
 - [x] Add tests for 401/403/429 passthrough and generic 502 fallback
 - [x] Run focused web tests and broad validation
+- [x] Commit, push, and smoke production
+- [x] Verify CI completion for `5447dd0`
+
+## Loop 18 - Cron Authorization Coverage
+
+- [x] Extract GitHub billing sync cron bearer authorization helper
+- [x] Use shared bearer parsing for cron authorization
+- [x] Add tests for missing secret, missing header, exact token, whitespace/casing, and wrong token
+- [x] Run focused web tests and broad validation
 - [ ] Commit, push, and smoke production

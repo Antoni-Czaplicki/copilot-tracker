@@ -759,3 +759,18 @@
 - PASS: `pnpm -r lint`
 - PASS: `pnpm test` (96 web tests + 23 extension VS Code tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+
+## 2026-07-01 - GitHub Billing Cron Auth Coverage
+
+- Added `isCronAuthorized` and wired GitHub billing sync cron access through the shared bearer-token parser.
+- Added tests for missing cron secret, missing auth header, matching bearer token, whitespace/casing, wrong token, malformed auth, and extra bearer token parts.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web test` (99 tests)
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (99 web tests + 23 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env

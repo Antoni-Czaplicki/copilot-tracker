@@ -408,3 +408,15 @@
 ## 2026-07-01 06:00 CEST CI Poll
 
 - PASS: GitHub Actions for `2906354 Validate GitHub login JSON payloads` completed successfully on both CI and extension build workflows.
+
+## 2026-07-01 06:01 CEST Production Poll
+
+- PUSHED: `5447dd0 Add work item status mapping coverage`.
+- IN PROGRESS: GitHub Actions for `5447dd0` started after push.
+- PASS: production `/api/health` returned HTTP 200 with `ok=true` and `database.ok=true`.
+- LIMITATION: production `/api/health` still reports `sha="unknown"` and `builtAt="unknown"`.
+- PASS: production Azure OAuth start redirect includes state, PKCE `S256`, client id, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
+
+## 2026-07-01 06:03 CEST CI Poll
+
+- PASS: GitHub Actions for `5447dd0 Add work item status mapping coverage` completed successfully on both CI and extension build workflows.
