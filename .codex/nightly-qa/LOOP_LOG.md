@@ -260,3 +260,15 @@
 - This preserves unchanged-upload skipping while ensuring server URL changes upload historical records to the new destination.
 - Validation passed: `pnpm --filter ./apps/extension test` reported 9 passing tests.
 - Next: inspect diff, commit/push server-scoped cache, then poll CI/production.
+
+## 2026-07-01 03:45:06 CEST - Loop 3 Progress
+
+- Committed and pushed server-scoped OTel upload cache as `819393f Scope OTel upload cache by server`.
+- Validation before commit: `pnpm --filter ./apps/extension test` passed with 9 tests.
+- Next: poll CI/production and continue remaining gaps.
+
+## 2026-07-01 03:49:26 CEST - Loop 3 Progress
+
+- Removed local OS username from extension tracker events; events now use generic `vscode-extension` while the backend stamps authenticated identity.
+- Validation passed: `pnpm --filter ./apps/extension test` reported 9 passing tests.
+- Next: inspect diff, commit/push event privacy, then poll CI/production.

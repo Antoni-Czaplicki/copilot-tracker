@@ -1,4 +1,3 @@
-import * as os from "node:os";
 import * as vscode from "vscode";
 
 import {
@@ -1088,7 +1087,7 @@ async function sendEvent(
     eventId: crypto.randomUUID(),
     eventType,
     timestamp: new Date().toISOString(),
-    user: os.userInfo().username,
+    user: "vscode-extension",
     vscodeVersion: vscode.version,
     extensionVersion: context.extension.packageJSON.version,
     payload,

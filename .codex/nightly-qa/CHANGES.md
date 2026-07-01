@@ -37,6 +37,15 @@
 
 - PASS: `pnpm --filter ./apps/extension test`
 
+## 2026-07-01 - Extension Event User Privacy
+
+- Stopped sending the local OS username in extension tracker events.
+- New events use a generic `vscode-extension` client label while the backend continues stamping authenticated Azure DevOps user identity.
+
+## Checks
+
+- PASS: `pnpm --filter ./apps/extension test`
+
 ## 2026-07-01 - Azure DevOps Work-Item Query Hardening
 
 - Exported and tested the Azure DevOps WIQL query builder.

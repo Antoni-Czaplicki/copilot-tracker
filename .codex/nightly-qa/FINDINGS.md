@@ -50,3 +50,4 @@
 4. [FIXED in `91d2a7a`] Leaderboard exposes all signed-in developers' leaderboard and login mapping data to any signed-in user.
 5. [FIXED in `d260639`] Extension info logs and context UI include raw local paths, remote URLs, and storage paths.
 6. [PARTIAL] Web auth tests now cover callback code sanitization; PKCE/state cookies, callback route branches, session creation, profile/org checks, and work-item status mapping still need route/integration coverage.
+7. [FIXED] Extension tracker events sent local OS username even though the backend already stamps authenticated user identity.
