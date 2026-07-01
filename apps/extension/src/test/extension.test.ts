@@ -159,6 +159,10 @@ suite("Extension Test Suite", () => {
       parseTrackerServerUrl("http://localhost:3737").origin,
       "http://localhost:3737",
     );
+    assert.strictEqual(
+      parseTrackerServerUrl("http://[::1]:3737").origin,
+      "http://[::1]:3737",
+    );
 
     for (const invalidUrl of [
       "not-a-url",

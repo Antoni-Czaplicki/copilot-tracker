@@ -12,6 +12,7 @@
 8. [P2] Missing extension tests for client network failures, auth flow, search picker race, multi-root context, partial token cost UI, and restart sync behavior.
 9. [FIXED] OTel upload cache must be scoped by tracker server so switching server URL uploads unchanged historical records to the new destination.
 10. [FIXED] Extension server URL validation accepted path segments that are silently ignored by absolute API/dashboard URL construction.
+11. [FIXED] Extension rejected IPv6 localhost server URLs such as `http://[::1]:3737` even though they are local dev origins.
 
 ## Web UX
 

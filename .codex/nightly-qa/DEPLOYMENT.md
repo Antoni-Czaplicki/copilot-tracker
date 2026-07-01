@@ -62,3 +62,7 @@
 - PASS: production `/api/health` returned OK with database ready.
 - LIMITATION: production `/api/health` still reports `version.sha="unknown"`, so exact deployed commit remains unprovable from the app.
 - PASS: sanitized production Azure OAuth start still redirects to Microsoft with state, PKCE `S256`, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
+
+## 2026-07-01 03:28 CEST CI Poll
+
+- PASS: GitHub Actions for `1dbdf10 Add admin export coverage` completed successfully on both CI and extension build workflows.

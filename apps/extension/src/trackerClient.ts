@@ -285,7 +285,7 @@ export function parseTrackerServerUrl(value: string): URL {
 function isLocalServerUrl(url: URL) {
   return (
     url.protocol === "http:" &&
-    ["localhost", "127.0.0.1", "::1"].includes(url.hostname)
+    ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname)
   );
 }
 

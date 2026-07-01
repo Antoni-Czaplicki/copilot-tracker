@@ -161,3 +161,4 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | API-153 | API/Backend | PASS | Admin request CSV export escapes commas, quotes, and newlines correctly | Automated | Added `adminExport` node:test coverage; web tests passed |
 | API-154 | API/Backend | PASS | Admin request CSV export excludes captured-only placeholder rows | Automated | Added `adminExport` node:test coverage; web tests passed |
 | API-155 | API/Backend | PASS | Admin GitHub billing CSV export emits billing rows without depending on request data | Automated | Added `adminExport` node:test coverage; web tests passed |
+| EXT-156 | Extension | PASS | Tracker server URL validation treats IPv6 localhost `http://[::1]:3737` as a safe local origin | Automated | Added parser regression assertion; extension tests passed |

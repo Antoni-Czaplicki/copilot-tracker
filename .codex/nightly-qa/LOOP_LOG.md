@@ -324,3 +324,19 @@
 - Validation passed: `pnpm --filter @copilot-tracker/web test` now reports 19 tests, plus web lint, typecheck, and placeholder production build with the current env names.
 - Note: an initial build attempt used obsolete placeholder env names and failed expected `NEXT_PUBLIC_APP_URL` HTTPS validation; rerun with the live env contract passed.
 - Next: inspect diff, commit/push admin export coverage, then poll CI/production again.
+
+## 2026-07-01 03:27:25 CEST - Loop 3 Progress
+
+- Committed and pushed admin export coverage as `1dbdf10 Add admin export coverage`.
+- Local tree is clean after push.
+- GitHub Actions for `1dbdf10` are in progress; prior `da1e800` CI and extension build passed.
+- Production health still returns OK with database ready and `version.sha="unknown"`.
+- Next: continue the next non-auth-blocked improvement while CI runs.
+
+## 2026-07-01 03:28:37 CEST - Loop 3 Progress
+
+- GitHub Actions for `1dbdf10` completed successfully on both CI and extension build workflows.
+- Confirmed Node reports IPv6 localhost hostnames as `[::1]`, while extension URL validation only allowed `::1`.
+- Fixed extension tracker server URL validation to treat `http://[::1]:3737` as a local origin.
+- Validation passed: `pnpm --filter ./apps/extension test` reported 10 passing tests.
+- Next: inspect diff, commit/push IPv6 localhost fix, then poll CI/production.

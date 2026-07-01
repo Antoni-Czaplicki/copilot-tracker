@@ -69,6 +69,15 @@
 
 - PASS: `pnpm --filter ./apps/extension test`
 
+## 2026-07-01 - Extension IPv6 Localhost Server URL
+
+- Fixed tracker server URL validation so `http://[::1]:3737` is treated as a local development server.
+- Added a parser regression assertion for IPv6 localhost.
+
+## Checks
+
+- PASS: `pnpm --filter ./apps/extension test`
+
 ## 2026-07-01 - Extension Event User Privacy
 
 - Stopped sending the local OS username in extension tracker events.
