@@ -473,3 +473,18 @@
 - PASS: `pnpm --filter @copilot-tracker/web test` (47 tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm test` (47 web tests + 14 extension VS Code tests)
+
+## 2026-07-01 - Azure Profile and Org Lookup Robustness
+
+- Replaced trusted casts on Azure profile/org membership JSON with defensive object/string readers.
+- Made malformed Azure profile JSON return `null` from `fetchAzureDevOpsUser`.
+- Made malformed Azure org-membership JSON return `false` from the membership check.
+- Added tests for profile mapping and org membership via both account name and account URI.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web test` (51 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (51 web tests + 14 extension VS Code tests)

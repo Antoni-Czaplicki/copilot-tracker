@@ -228,36 +228,33 @@ export async function fetchAzureDevOpsUser(
     return null;
   }
 
-  const profile = (await profileResponse.json()) as {
-    id?: string;
-    displayName?: string;
-    emailAddress?: string;
-    publicAlias?: string;
-    coreAttributes?: Record<string, { value?: string | null }>;
-  };
-  if (!profile.id) {
+  const profile = await readJsonObject(profileResponse);
+  const profileId = readStringField(profile, "id");
+  if (!profile || !profileId) {
     return null;
   }
 
   const isMember = await validateAzureDevOpsOrgMembership(
     accessToken,
-    profile.id,
+    profileId,
   );
   if (!isMember) {
     return null;
   }
 
   const email =
-    profile.emailAddress ??
-    profile.coreAttributes?.Email?.value ??
-    profile.coreAttributes?.Mail?.value ??
+    readStringField(profile, "emailAddress") ??
+    readCoreAttributeValue(profile, "Email") ??
+    readCoreAttributeValue(profile, "Mail") ??
     null;
-  const login = email ?? profile.publicAlias ?? profile.displayName ?? profile.id;
+  const displayName = readStringField(profile, "displayName");
+  const login =
+    email ?? readStringField(profile, "publicAlias") ?? displayName ?? profileId;
 
   return {
-    id: profile.id,
+    id: profileId,
     login,
-    name: profile.displayName ?? null,
+    name: displayName,
     email,
     avatarUrl: null,
   };
@@ -284,13 +281,19 @@ async function validateAzureDevOpsOrgMembership(
     return false;
   }
 
-  const payload = (await response.json()) as {
-    value?: { accountName?: string; accountUri?: string }[];
-  };
+  const payload = await readJsonObject(response);
+  if (!payload || !Array.isArray(payload.value)) {
+    return false;
+  }
+
   const expectedOrg = azureDevOpsOrg().toLowerCase();
-  return (payload.value ?? []).some((account) => {
-    const accountName = account.accountName?.toLowerCase();
-    const accountUri = account.accountUri;
+  return payload.value.some((account) => {
+    if (!isRecord(account)) {
+      return false;
+    }
+
+    const accountName = readStringField(account, "accountName")?.toLowerCase();
+    const accountUri = readStringField(account, "accountUri") ?? undefined;
     return (
       accountName === expectedOrg ||
       accountUriContainsOrg(accountUri, expectedOrg)
@@ -361,6 +364,49 @@ function accountUriContainsOrg(value: string | undefined, expectedOrg: string) {
       .map((part) => part.toLowerCase())
       .includes(expectedOrg);
   }
+}
+
+async function readJsonObject(response: Response) {
+  try {
+    const payload: unknown = await response.json();
+    return isRecord(payload) ? payload : null;
+  } catch {
+    return null;
+  }
+}
+
+function readStringField(
+  value: Record<string, unknown> | null,
+  key: string,
+) {
+  const field = value?.[key];
+  if (typeof field !== "string") {
+    return null;
+  }
+
+  const trimmed = field.trim();
+  return trimmed || null;
+}
+
+function readCoreAttributeValue(
+  profile: Record<string, unknown>,
+  key: string,
+) {
+  const coreAttributes = profile.coreAttributes;
+  if (!isRecord(coreAttributes)) {
+    return null;
+  }
+
+  const attribute = coreAttributes[key];
+  if (!isRecord(attribute)) {
+    return null;
+  }
+
+  return readStringField(attribute, "value");
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
 async function fetchWithTimeout(

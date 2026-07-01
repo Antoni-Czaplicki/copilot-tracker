@@ -186,3 +186,6 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | DEP-178 | Deployment | PASS | Health build metadata prefers explicit values, falls back to common source metadata, and reports `unknown` only when metadata is absent/invalid | Automated | Added `readBuildInfo` web tests; web tests passed |
 | AUTH-179 | Auth | PASS | Disabled auth mode uses a stable local-dev admin identity shape | Automated | Added `localDevUserIdentity` coverage; web tests passed |
 | AUTH-180 | Auth | PASS | Bearer auth parsing accepts canonical headers and rejects missing, empty, Basic, and malformed bearer values | Automated | Added `parseBearerToken` coverage and reused parser in ingest/work-item paths; web tests passed |
+| AUTH-181 | Auth | PASS | Azure profile fetch maps id, display name, email/core attributes, and public alias safely | Automated | Added mocked `fetchAzureDevOpsUser` coverage; web tests passed |
+| AUTH-182 | Auth | PASS | Azure org membership accepts matching accountName and accountUri forms | Automated | Added mocked membership coverage for account name and URI; web tests passed |
+| AUTH-183 | Auth | PASS | Azure profile/org lookup returns null on malformed upstream JSON instead of throwing | Automated | Added malformed profile and malformed membership JSON tests; web tests passed |

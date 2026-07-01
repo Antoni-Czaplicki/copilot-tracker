@@ -65,3 +65,4 @@
 7. [FIXED] Extension tracker events sent local OS username even though the backend already stamps authenticated user identity.
 8. [FIXED] Login failure UI showed stable OAuth codes but did not give safe, actionable hints for common Azure failures such as `invalid_client`.
 9. [FIXED] Malformed or empty `Authorization: Bearer` headers could reach Azure user/profile lookup instead of failing locally.
+10. [FIXED] Malformed Azure profile or organization-membership JSON could throw during auth lookup instead of failing closed.

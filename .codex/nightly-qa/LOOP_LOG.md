@@ -655,3 +655,25 @@
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm test` (47 web tests + 14 extension VS Code tests)
 - Next: inspect diff, commit, push, and continue.
+
+## 2026-07-01 04:36:47 CEST - Loop 3 Progress
+
+- Committed and pushed auth identity/bearer parsing coverage as `80a3c2b Harden auth bearer parsing`.
+- GitHub Actions for `80a3c2b` are queued/in progress.
+- PASS: production `/api/health` returns OK with database ready.
+- LIMITATION: production `/api/health` still reports `version.sha="unknown"` and `builtAt="unknown"`.
+- PASS: sanitized production Azure OAuth start still redirects to Microsoft with PKCE `S256`, state, client id, and required Azure DevOps scopes.
+- Next: poll CI and continue with route/API gaps that do not require live Azure login.
+
+## 2026-07-01 04:38:40 CEST - Loop 3 Validation
+
+- PASS: GitHub Actions for `80a3c2b Harden auth bearer parsing` completed successfully on both CI and extension build workflows.
+- Hardened Azure profile/org membership parsing so malformed JSON returns null/false instead of throwing out of auth lookup.
+- Added tests for Azure profile mapping, org membership by account name, org membership by account URI, malformed profile JSON, and malformed org-membership JSON.
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web test` (51 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (51 web tests + 14 extension VS Code tests)
+- NOTE: final pass reran after trimming Azure string fields and fixing the lint-preferred logical fallback.
+- Next: inspect diff, commit, push, and continue.
