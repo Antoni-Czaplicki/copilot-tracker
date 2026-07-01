@@ -306,3 +306,21 @@
 - Unsupported export types now return 400 without reading all export data.
 - Validation passed: web lint, typecheck, and placeholder production build.
 - Next: inspect diff, commit/push admin export validation order, then poll CI/production.
+
+## 2026-07-01 03:22:18 CEST - Loop 3 Progress
+
+- Local system clock check reports 03:22 CEST; using system clock timestamps from here while preserving earlier headings as written.
+- Committed and pushed admin export validation-order hardening as `da1e800 Validate admin export type before loading data`.
+- Post-push polling: GitHub Actions for `da1e800` are in progress; prior `d70c981` CI and extension build completed successfully.
+- Production health still returns OK with database ready, but build metadata remains `sha=unknown`.
+- Sanitized Azure redirect check still passes: Microsoft host, state present, PKCE `S256`, and required scopes present.
+- Next: continue the next non-auth-blocked route/integration gap while CI finishes.
+
+## 2026-07-01 03:25:27 CEST - Loop 3 Progress
+
+- GitHub Actions for `da1e800` completed successfully on both CI and extension build workflows.
+- Extracted admin export CSV/type helpers into `apps/web/src/lib/adminExport.ts`.
+- Added pure tests for export type parsing, request CSV quoting, captured-only placeholder filtering, and GitHub billing CSV export rows.
+- Validation passed: `pnpm --filter @copilot-tracker/web test` now reports 19 tests, plus web lint, typecheck, and placeholder production build with the current env names.
+- Note: an initial build attempt used obsolete placeholder env names and failed expected `NEXT_PUBLIC_APP_URL` HTTPS validation; rerun with the live env contract passed.
+- Next: inspect diff, commit/push admin export coverage, then poll CI/production again.

@@ -157,3 +157,7 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | EXT-149 | Extension | PASS | Tracker events do not include the local OS username in the client-supplied `user` field | Automated compile/lint | Uses generic extension label; `pnpm --filter ./apps/extension test` passed |
 | EXT-150 | Extension | PASS | Tracker server URL validation allows HTTPS/local origins and rejects paths, credentials, query, fragment, and non-local HTTP | Automated | Added parser regression assertions; `pnpm --filter ./apps/extension test` passed |
 | API-151 | API/Backend | PASS | Admin export rejects unsupported export types before loading export data | Code review + build | Web lint/typecheck/build passed |
+| API-152 | API/Backend | PASS | Admin export type parser accepts only known export types | Automated | Added `adminExport` node:test coverage; web tests passed |
+| API-153 | API/Backend | PASS | Admin request CSV export escapes commas, quotes, and newlines correctly | Automated | Added `adminExport` node:test coverage; web tests passed |
+| API-154 | API/Backend | PASS | Admin request CSV export excludes captured-only placeholder rows | Automated | Added `adminExport` node:test coverage; web tests passed |
+| API-155 | API/Backend | PASS | Admin GitHub billing CSV export emits billing rows without depending on request data | Automated | Added `adminExport` node:test coverage; web tests passed |

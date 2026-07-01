@@ -47,6 +47,18 @@
 - PASS: `pnpm --filter @copilot-tracker/web typecheck`
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env and build metadata
 
+## 2026-07-01 - Admin Export Test Coverage
+
+- Extracted admin export CSV/type helpers into `apps/web/src/lib/adminExport.ts` so export behavior can be tested without a Next route harness.
+- Added coverage for export type parsing, CSV quoting, captured-only placeholder filtering, and GitHub billing export rows.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web test`
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web build` with current placeholder production env names
+
 ## 2026-07-01 - Extension Server URL Validation
 
 - Tightened `parseTrackerServerUrl` so the extension only accepts safe server origins.

@@ -55,3 +55,10 @@
 - PASS: login remains a document-navigation link to `/api/auth/azure-devops`.
 - BLOCKED: following the real auth flow still returns to `/?auth=failed&auth_code=invalid_client`.
 - PASS: the visible login failure UI shows a stable `invalid_client` code and does not expose provider descriptions or secret values.
+
+## 2026-07-01 03:25 CEST CI/Production Poll
+
+- PASS: GitHub Actions for `da1e800 Validate admin export type before loading data` completed successfully on both CI and extension build workflows.
+- PASS: production `/api/health` returned OK with database ready.
+- LIMITATION: production `/api/health` still reports `version.sha="unknown"`, so exact deployed commit remains unprovable from the app.
+- PASS: sanitized production Azure OAuth start still redirects to Microsoft with state, PKCE `S256`, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
