@@ -80,3 +80,4 @@
 9. [FIXED] Malformed or empty `Authorization: Bearer` headers could reach Azure user/profile lookup instead of failing locally.
 10. [FIXED] Malformed Azure profile or organization-membership JSON could throw during auth lookup instead of failing closed.
 11. [FIXED] Malformed successful Azure token responses could surface as generic callback failures instead of typed token-exchange failures.
+12. [FIXED] Azure session-token parsing and near-expiry refresh decisions were private auth branches without direct edge-case coverage.

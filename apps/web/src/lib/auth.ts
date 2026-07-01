@@ -11,6 +11,10 @@ import {
   requireAzureDevOpsOAuthConfig,
 } from "./config";
 import { localDevUserIdentity, parseBearerToken } from "./authIdentity";
+import {
+  azureDevOpsSessionTokensFromPayload,
+  isAzureDevOpsTokenNearExpiry,
+} from "./authSessionTokens";
 import type { AzureDevOpsSessionTokens, StoredUser } from "./store";
 import {
   clearSessionAzureDevOpsTokens,
@@ -139,7 +143,7 @@ export async function exchangeAzureDevOpsCode(
   }
 
   const payload = await readJsonObject(response);
-  const tokens = toAzureDevOpsSessionTokens(payload);
+  const tokens = azureDevOpsSessionTokensFromPayload(payload);
   if (!tokens) {
     throw new AzureDevOpsTokenExchangeError(
       "invalid_token_response",
@@ -158,7 +162,7 @@ export async function readAzureDevOpsSessionAccessToken(
     return null;
   }
 
-  if (!isTokenNearExpiry(tokens.expiresAt)) {
+  if (!isAzureDevOpsTokenNearExpiry(tokens.expiresAt)) {
     return tokens.accessToken;
   }
 
@@ -200,7 +204,9 @@ async function refreshAzureDevOpsAccessToken(refreshToken: string) {
   }
 
   const payload = await readJsonObject(response);
-  return toAzureDevOpsSessionTokens(payload, refreshToken);
+  return azureDevOpsSessionTokensFromPayload(payload, {
+    fallbackRefreshToken: refreshToken,
+  });
 }
 
 export async function fetchAzureDevOpsUser(
@@ -307,37 +313,6 @@ async function upsertAzureDevOpsUser(
     githubLogin: existing?.githubLogin ?? null,
     role: admins.has(azureUser.login.toLowerCase()) ? "admin" : "user",
   });
-}
-
-function toAzureDevOpsSessionTokens(
-  payload: Record<string, unknown> | null,
-  fallbackRefreshToken: string | null = null,
-): AzureDevOpsSessionTokens | null {
-  const accessToken = readStringField(payload, "access_token");
-  if (!accessToken) {
-    return null;
-  }
-
-  const expiresIn = payload?.expires_in;
-  const expiresInSeconds =
-    typeof expiresIn === "number" && Number.isFinite(expiresIn) && expiresIn > 0
-      ? expiresIn
-      : 3600;
-
-  return {
-    accessToken,
-    refreshToken: readStringField(payload, "refresh_token") ?? fallbackRefreshToken,
-    expiresAt: new Date(Date.now() + expiresInSeconds * 1000).toISOString(),
-  };
-}
-
-function isTokenNearExpiry(expiresAt: string | null) {
-  if (!expiresAt) {
-    return true;
-  }
-
-  const expiry = Date.parse(expiresAt);
-  return Number.isNaN(expiry) || expiry <= Date.now() + 60_000;
 }
 
 function accountUriContainsOrg(value: string | undefined, expectedOrg: string) {

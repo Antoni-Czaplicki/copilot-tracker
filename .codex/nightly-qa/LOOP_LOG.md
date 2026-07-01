@@ -1101,3 +1101,33 @@
 - PASS: `pnpm --filter ./apps/extension lint`
 - PASS: `git diff --check`
 - Next: commit, push, production smoke, then continue.
+
+## 2026-07-01 05:41:43 CEST - Loop 13 End
+
+- Committed and pushed extension package license as `ef40fc3 Add extension package license`.
+- GitHub Actions for `ef40fc3` are in progress.
+- PASS: production `/api/health` returns HTTP 200 with `ok=true` and `database.ok=true`.
+- LIMITATION: production `/api/health` still reports `version.sha="unknown"` and `builtAt="unknown"`.
+- PASS: sanitized production Azure OAuth start redirects to Microsoft with PKCE `S256`, state, client id, and required Azure DevOps scopes.
+- Next: continue with the next high-value gap and poll CI.
+
+## 2026-07-01 05:45:49 CEST - Loop 14 Start
+
+- PASS: GitHub Actions for `ef40fc3 Add extension package license` completed successfully on both CI and extension build workflows.
+- Production metadata gap reviewed again: repo docs and Docker/compose contracts already expose explicit build args/runtime env, and Dokploy public docs show build-time args are configurable but no official auto-injected commit SHA is guaranteed.
+- Current git state: post-push QA logs modified; no source changes pending yet.
+- Next: extract Azure DevOps session-token parsing/expiry helpers and cover refresh-token fallback/near-expiry behavior directly.
+
+## 2026-07-01 05:47:33 CEST - Loop 14 Validation
+
+- Extracted Azure DevOps session-token parsing and near-expiry checks into `authSessionTokens`.
+- Added tests for token trimming, refresh-token fallback, missing/blank/non-string access-token rejection, invalid `expires_in` fallback, and 60-second near-expiry behavior.
+- PASS: `pnpm --filter @copilot-tracker/web test` (86 tests)
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (86 web tests + 23 extension VS Code tests)
+- PASS: `git diff --check`
+- Next: commit, push, smoke production, and continue.

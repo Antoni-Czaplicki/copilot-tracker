@@ -233,3 +233,4 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | EXT-225 | Extension | PASS | OTel request task resolver handles unsorted task-history input defensively | Automated | Resolver now sorts a copy internally; extension tests passed |
 | DEP-226 | Deployment | PASS | VS Code extension packages into a VSIX after refactors | Manual command | `pnpm --filter ./apps/extension package` passed; generated artifact removed |
 | DEP-227 | Deployment | PASS | Extension VSIX package includes a local MIT license file without `vsce` missing-license warning | Manual command | Added `apps/extension/LICENSE`; package command passed and warning disappeared |
+| AUTH-228 | Auth | PASS | Azure session-token payload parsing trims tokens, rejects invalid access tokens, preserves refresh-token fallback, defaults invalid expiry, and refreshes near-expiry tokens | Automated | Extracted `authSessionTokens`; web tests passed |

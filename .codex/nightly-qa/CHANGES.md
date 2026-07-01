@@ -699,3 +699,18 @@
 - PASS: `pnpm --filter ./apps/extension test` (23 tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm test` (81 web tests + 23 extension VS Code tests)
+
+## 2026-07-01 - Azure Session Token Helper Coverage
+
+- Extracted Azure DevOps session-token payload parsing and near-expiry checks into `authSessionTokens`.
+- Added regression coverage for trimmed token payloads, invalid access tokens, refresh-token fallback during refresh, invalid `expires_in` defaults, and 60-second near-expiry refresh behavior.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web test` (86 tests)
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (86 web tests + 23 extension VS Code tests)

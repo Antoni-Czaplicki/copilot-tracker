@@ -107,4 +107,12 @@
 - [x] Add package-local extension LICENSE
 - [x] Rerun extension package command
 - [x] Verify warning is gone and validate
+- [x] Commit, push, and smoke production
+- [x] Verify CI completion for `ef40fc3`
+
+## Loop 14 - Azure Session Token Helpers
+
+- [x] Extract Azure DevOps session-token parsing/expiry helpers
+- [x] Add tests for access-token validation, refresh-token fallback, default expiry, and near-expiry behavior
+- [x] Run focused web tests and broad validation
 - [ ] Commit, push, and smoke production

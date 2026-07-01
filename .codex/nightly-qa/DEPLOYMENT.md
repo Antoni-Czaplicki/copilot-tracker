@@ -359,3 +359,16 @@
 - PASS: `pnpm --filter ./apps/extension package` produced a VSIX containing `LICENSE.txt`.
 - PASS: previous `vsce` missing-license warning is gone.
 - CLEANUP: removed the generated `copilot-tracker-0.0.1.vsix` artifact from the worktree.
+
+## 2026-07-01 05:41 CEST Production Poll
+
+- PUSHED: `ef40fc3 Add extension package license`.
+- IN PROGRESS: GitHub Actions for `ef40fc3` started after push.
+- PASS: production `/api/health` returned HTTP 200 with `ok=true` and `database.ok=true`.
+- LIMITATION: production `/api/health` still reports `sha="unknown"` and `builtAt="unknown"`.
+- PASS: production Azure OAuth start redirect includes state, PKCE `S256`, client id, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
+
+## 2026-07-01 05:45 CEST CI Poll
+
+- PASS: GitHub Actions for `ef40fc3 Add extension package license` completed successfully on both CI and extension build workflows.
+- LIMITATION: production `/api/health` still reports `version.sha="unknown"` and `builtAt="unknown"` until deploy build metadata is configured.
