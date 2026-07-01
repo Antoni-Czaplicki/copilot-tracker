@@ -75,10 +75,12 @@
 ## 2026-07-01 - Extension Test Suite Cleanup
 
 - Replaced the placeholder VS Code sample test with a real cost-estimation regression for known model input/output token pricing.
+- Updated root `pnpm test` to run both the web `node:test` suite and the extension VS Code test suite.
 
 ## Checks
 
 - PASS: `pnpm --filter ./apps/extension test`
+- PASS: `pnpm test`
 
 ## 2026-07-01 - Admin Export Validation Order
 

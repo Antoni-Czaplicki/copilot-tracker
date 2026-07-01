@@ -444,3 +444,19 @@
 - Updated the command with `NEXT_PUBLIC_APP_URL`, Azure placeholder values, and `COPILOT_TRACKER_TOKEN_ENCRYPTION_KEY`.
 - Validation passed: ran the documented `pnpm build` command successfully.
 - Next: inspect diff, commit/push README build command alignment, then continue.
+
+## 2026-07-01 03:54:01 CEST - Loop 3 Progress
+
+- Committed and pushed README build command fix as `c4a3e1c Fix README build command`.
+- Local tree is clean after push.
+- GitHub Actions for `6991f4a` completed successfully on both CI and extension build workflows.
+- GitHub Actions for `c4a3e1c` are in progress.
+- Production health still returns OK with database ready and `version.sha="unknown"`.
+- Next: continue the next non-auth-blocked improvement while CI runs.
+
+## 2026-07-01 03:55:11 CEST - Loop 3 Progress
+
+- GitHub Actions for `c4a3e1c` completed successfully on both CI and extension build workflows.
+- Updated root `pnpm test` to run the web regression suite before the extension VS Code suite.
+- Validation passed: `pnpm test` ran 22 web tests and 10 extension tests successfully.
+- Next: inspect diff, commit/push root test script coverage, then continue.

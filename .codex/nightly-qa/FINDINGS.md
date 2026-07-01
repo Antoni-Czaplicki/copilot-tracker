@@ -14,6 +14,7 @@
 10. [FIXED] Extension server URL validation accepted path segments that are silently ignored by absolute API/dashboard URL construction.
 11. [FIXED] Extension rejected IPv6 localhost server URLs such as `http://[::1]:3737` even though they are local dev origins.
 12. [FIXED] Extension test suite still contained the default placeholder sample test.
+13. [FIXED] Root `pnpm test` only ran extension tests and skipped the web regression suite.
 
 ## Web UX
 

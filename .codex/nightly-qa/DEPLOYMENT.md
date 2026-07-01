@@ -97,3 +97,11 @@
 
 - PASS: updated README full-build command with production-safe placeholder env values.
 - PASS: ran the documented `pnpm build` command successfully.
+
+## 2026-07-01 03:54 CEST CI Poll
+
+- PASS: GitHub Actions for `6991f4a Align README task and API docs` completed successfully on both CI and extension build workflows.
+
+## 2026-07-01 03:55 CEST CI Poll
+
+- PASS: GitHub Actions for `c4a3e1c Fix README build command` completed successfully on both CI and extension build workflows.

@@ -12,7 +12,7 @@
     "dev:web": "pnpm --filter @copilot-tracker/web dev",
     "format": "prettier . --write",
     "lint": "pnpm -r lint",
-    "test": "pnpm --filter ./apps/extension test",
+    "test": "pnpm test:web && pnpm --filter ./apps/extension test",
     "test:web": "pnpm --filter @copilot-tracker/web test",
     "typecheck": "pnpm -r typecheck"
   },
