@@ -32,7 +32,7 @@
 ## Deployment
 
 1. [P1] No tracked Dokploy deployment manifest/workflow or production deploy contract.
-2. [P1] Drizzle config falls back to localhost `DATABASE_URL`, which can mask production migration misconfiguration.
+2. [FIXED locally, commit pending] Drizzle config falls back to localhost `DATABASE_URL`, which can mask production migration misconfiguration.
 3. [FIXED locally, commit pending] CI lacks `pnpm --filter @copilot-tracker/web build`.
 4. [P2] Local compose only starts Postgres; app service/health/restart behavior is not modeled.
 5. [FIXED locally, commit pending] README references missing `apps/web/.env.example`.

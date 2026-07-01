@@ -66,3 +66,10 @@
 - Implemented token payload integer bounds to prevent PostgreSQL integer overflow failures.
 - Validated with web typecheck, lint, and placeholder production build.
 - Next: commit/push token bounds and poll CI/production.
+
+## 2026-07-01 02:20:45 CEST - Loop 1 Progress
+
+- Committed and pushed token integer bounds as `93dd101 Validate token integer bounds`.
+- Implemented Drizzle migration env contract: no silent localhost `DATABASE_URL` fallback.
+- Validated with web typecheck, lint, and placeholder production build.
+- Next: commit/push Drizzle contract and poll CI/production.

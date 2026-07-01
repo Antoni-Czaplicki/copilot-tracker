@@ -59,6 +59,17 @@
 - PASS: `pnpm --filter @copilot-tracker/web lint`
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env and build metadata
 
+## 2026-07-01 - Drizzle Migration Env Contract
+
+- Removed the silent localhost `DATABASE_URL` fallback from `apps/web/drizzle.config.ts`.
+- Drizzle migrations now fail fast with a clear error when `DATABASE_URL` is absent.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env and build metadata
+
 ## 2026-07-01 - Request Grid Task Editing UX
 
 - Made single-request task editing reachable in `RequestSessionsGrid` by rendering the existing `TaskEditor` in the task column.
