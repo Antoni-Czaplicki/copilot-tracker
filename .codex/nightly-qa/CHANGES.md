@@ -543,3 +543,16 @@
 - PASS: `pnpm --filter @copilot-tracker/web test` (66 tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm test` (66 web tests + 14 extension VS Code tests)
+
+## 2026-07-01 - Extension Current-Session Token Stats Coverage
+
+- Extracted current-session token aggregation from `extension.ts` into a tested `sessionTokenStats` module.
+- Added tests for no completed token totals returning null.
+- Added tests for latest tokenized session selection, aggregate input/output/total tokens, incomplete-token request counting, and lower-bound cost calculation.
+
+## Checks
+
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS: `pnpm --filter ./apps/extension lint`
+- PASS: `pnpm --filter ./apps/extension test` (16 tests)
+- PASS: `pnpm test` (66 web tests + 16 extension VS Code tests)

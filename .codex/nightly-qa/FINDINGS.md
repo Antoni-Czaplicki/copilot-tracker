@@ -15,6 +15,7 @@
 11. [FIXED] Extension rejected IPv6 localhost server URLs such as `http://[::1]:3737` even though they are local dev origins.
 12. [FIXED] Extension test suite still contained the default placeholder sample test.
 13. [FIXED] Root `pnpm test` only ran extension tests and skipped the web regression suite.
+14. [PARTIAL] Extension current-session token stat aggregation is now covered; rendered status bar tooltip behavior still needs an integration/UI test.
 
 ## Web UX
 

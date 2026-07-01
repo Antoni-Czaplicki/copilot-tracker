@@ -759,3 +759,24 @@
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm test` (66 web tests + 14 extension VS Code tests)
 - Next: inspect diff, commit, push, and continue.
+
+## 2026-07-01 04:53:39 CEST - Loop 3 Progress
+
+- Committed and pushed GitHub billing date parser coverage as `b78a488 Add billing date coverage`.
+- GitHub Actions for `b78a488` are in progress.
+- PASS: production `/api/health` returns OK with database ready.
+- LIMITATION: production `/api/health` still reports `version.sha="unknown"` and `builtAt="unknown"`.
+- PASS: sanitized production Azure OAuth start still redirects to Microsoft with PKCE `S256`, state, client id, and required Azure DevOps scopes.
+- Next: poll CI and continue with the next high-value gap.
+
+## 2026-07-01 04:55:43 CEST - Loop 3 Validation
+
+- PASS: GitHub Actions for `b78a488 Add billing date coverage` completed successfully on both CI and extension build workflows.
+- Extracted current-session token stat calculation from `extension.ts` into `sessionTokenStats`.
+- Added extension tests for null stats when no completed token totals exist and aggregation of the latest tokenized session with incomplete rows counted as lower-bound data.
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS: `pnpm --filter ./apps/extension lint`
+- PASS: `pnpm --filter ./apps/extension test` (16 tests)
+- PASS: `pnpm test` (66 web tests + 16 extension VS Code tests)
+- NOTE: final root test reran after replacing a floating-point artifact assertion with a rounded cost assertion.
+- Next: inspect diff, commit, push, and continue.

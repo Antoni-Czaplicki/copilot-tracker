@@ -20,12 +20,15 @@ import {
   readCopilotOtelRequests,
   resolveOtelFilePath,
 } from "./otel";
-import { estimateRequestsCostUsd } from "./pricing";
 import {
   planRequestUpload,
   readRequestUploadState,
   writeRequestUploadState,
 } from "./requestUploadCache";
+import {
+  type SessionTokenStats,
+  currentSessionTokenStats,
+} from "./sessionTokenStats";
 import {
   type AzureDevOpsWorkItem,
   TrackerClient,
@@ -66,17 +69,6 @@ let lastSyncError: string | null = null;
 let syncInProgress = false;
 let syncQueued = false;
 let otelLifecycleDisposables: vscode.Disposable[] = [];
-
-interface SessionTokenStats {
-  sessionId: string;
-  sessionTitle: string | null;
-  requestCount: number;
-  incompleteTokenRequestCount: number;
-  inputTokens: number;
-  outputTokens: number;
-  totalTokens: number;
-  estimatedUsd: number;
-}
 
 export function activate(context: vscode.ExtensionContext) {
   const outputChannel = initializeLogger();
@@ -975,51 +967,6 @@ function requestUploadScope(serverUrl: string) {
   } catch {
     return serverUrl;
   }
-}
-
-function currentSessionTokenStats(
-  requests: CopilotChatRequest[],
-): SessionTokenStats | null {
-  const latestRequest = [...requests]
-    .filter((request) => request.totalTokens !== null)
-    .sort((a, b) => requestTimestamp(b) - requestTimestamp(a))[0];
-  if (!latestRequest) {
-    return null;
-  }
-
-  const sessionRequests = requests.filter(
-    (request) => request.sessionId === latestRequest.sessionId,
-  );
-  return {
-    sessionId: latestRequest.sessionId,
-    sessionTitle: latestRequest.sessionTitle,
-    requestCount: sessionRequests.length,
-    incompleteTokenRequestCount: sessionRequests.filter(
-      (request) =>
-        request.inputTokens === null ||
-        request.outputTokens === null ||
-        request.totalTokens === null,
-    ).length,
-    inputTokens: sessionRequests.reduce(
-      (total, request) => total + (request.inputTokens ?? 0),
-      0,
-    ),
-    outputTokens: sessionRequests.reduce(
-      (total, request) => total + (request.outputTokens ?? 0),
-      0,
-    ),
-    totalTokens: sessionRequests.reduce(
-      (total, request) => total + (request.totalTokens ?? 0),
-      0,
-    ),
-    estimatedUsd: estimateRequestsCostUsd(sessionRequests),
-  };
-}
-
-function requestTimestamp(request: CopilotChatRequest) {
-  return timestampOrZero(
-    request.requestCompletedAt ?? request.requestStartedAt ?? request.capturedAt,
-  );
 }
 
 function formatNumber(value: number) {

@@ -19,6 +19,7 @@ import {
 } from "../trackerClient";
 import type { AzureDevOpsTokenOptions } from "../azureDevOpsAuth";
 import type { CopilotChatRequest, WorkspaceContext } from "../types";
+import { currentSessionTokenStats } from "../sessionTokenStats";
 import { getTaskFromBranch } from "../workspaceContext";
 
 suite("Extension Test Suite", () => {
@@ -187,6 +188,66 @@ suite("Extension Test Suite", () => {
     ]) {
       assert.throws(() => parseTrackerServerUrl(invalidUrl));
     }
+  });
+
+  test("Current session token stats return null without completed token totals", () => {
+    assert.strictEqual(
+      currentSessionTokenStats([
+        createChatRequest({
+          inputTokens: 25,
+          outputTokens: null,
+          totalTokens: null,
+        }),
+      ]),
+      null,
+    );
+  });
+
+  test("Current session token stats aggregate latest tokenized session", () => {
+    const stats = currentSessionTokenStats([
+      createChatRequest({
+        sessionId: "older-session",
+        sessionTitle: "Older session",
+        requestCompletedAt: "2026-07-01T09:00:00.000Z",
+        inputTokens: 1_000_000,
+        outputTokens: 1_000_000,
+        totalTokens: 2_000_000,
+      }),
+      createChatRequest({
+        sessionId: "latest-session",
+        sessionTitle: "Latest session",
+        requestCompletedAt: "2026-07-01T10:00:00.000Z",
+        inputTokens: 1_000_000,
+        outputTokens: 1_000_000,
+        totalTokens: 2_000_000,
+      }),
+      createChatRequest({
+        sessionId: "latest-session",
+        sessionTitle: "Latest session",
+        requestCompletedAt: "2026-07-01T10:01:00.000Z",
+        inputTokens: 500_000,
+        outputTokens: null,
+        totalTokens: null,
+      }),
+      createChatRequest({
+        sessionId: "newer-incomplete-session",
+        sessionTitle: "Incomplete",
+        requestCompletedAt: "2026-07-01T11:00:00.000Z",
+        inputTokens: 10,
+        outputTokens: null,
+        totalTokens: null,
+      }),
+    ]);
+
+    assert.ok(stats);
+    assert.strictEqual(stats.sessionId, "latest-session");
+    assert.strictEqual(stats.sessionTitle, "Latest session");
+    assert.strictEqual(stats.requestCount, 2);
+    assert.strictEqual(stats.incompleteTokenRequestCount, 1);
+    assert.strictEqual(stats.inputTokens, 1_500_000);
+    assert.strictEqual(stats.outputTokens, 1_000_000);
+    assert.strictEqual(stats.totalTokens, 2_000_000);
+    assert.strictEqual(stats.estimatedUsd.toFixed(3), "0.475");
   });
 
   test("TrackerClient searches work items with interactive work-item auth", async () => {

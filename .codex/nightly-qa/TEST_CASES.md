@@ -204,3 +204,5 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | API-196 | API/Backend | PASS | GitHub billing sync date parser accepts valid dates and leap days | Automated | Added `parseBillingDate` coverage; web tests passed |
 | API-197 | API/Backend | PASS | GitHub billing sync date parser treats missing date as default-date request | Automated | Added `parseBillingDate` coverage; web tests passed |
 | API-198 | API/Backend | PASS | GitHub billing sync date parser rejects malformed and impossible dates | Automated | Added `parseBillingDate` coverage; web tests passed |
+| EXT-199 | Extension | PASS | Current session token stats return null when no completed total-token request exists | Automated | Extracted `sessionTokenStats`; extension tests passed |
+| EXT-200 | Extension | PASS | Current session token stats choose the latest tokenized session and aggregate incomplete rows as lower-bound data | Automated | Extracted `sessionTokenStats`; extension tests passed |
