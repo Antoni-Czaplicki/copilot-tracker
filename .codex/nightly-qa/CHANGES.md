@@ -383,3 +383,16 @@
 - PASS: `pnpm --filter @copilot-tracker/web test` (24 tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm test` (24 web tests + 10 extension VS Code tests)
+
+## 2026-07-01 - Auth Cookie and PKCE Helper Coverage
+
+- Split auth cookie policy and OAuth PKCE challenge generation into focused helper modules while keeping existing `auth.ts` exports stable.
+- Added web `node:test` coverage for secure cookie scheme selection, malformed URL fallback, expired-cookie removal attributes, S256 PKCE format, and fresh verifier generation.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web test` (30 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (30 web tests + 10 extension VS Code tests)

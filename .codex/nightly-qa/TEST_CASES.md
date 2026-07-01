@@ -94,11 +94,11 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | API-085 | API/Backend | PENDING | Disabled auth mode short-circuits API auth cleanly across endpoints | Automated | |
 | API-086 | API/Backend | PENDING | Events and chat batch reject missing workspaceId | Automated | |
 | API-087 | API/Backend | PENDING | Concurrent upsert/read does not produce invalid tokenSource state | Automated | Edge |
-| AUTH-088 | Auth | PENDING | `secureCookieOptions` chooses secure based on app URL scheme | Automated | |
-| AUTH-089 | Auth | PENDING | `expiredCookieOptions` emits removal-safe attributes | Automated | |
+| AUTH-088 | Auth | PASS | `secureCookieOptions` chooses secure based on app URL scheme | Automated | Added auth cookie policy coverage; web tests passed |
+| AUTH-089 | Auth | PASS | `expiredCookieOptions` emits removal-safe attributes | Automated | Added auth cookie policy coverage; web tests passed |
 | AUTH-090 | Auth | PENDING | Disabled mode `currentUser` returns local-dev admin | Automated | |
 | AUTH-091 | Auth | PENDING | Ingest auth missing/garbled Bearer returns null | Automated | |
-| AUTH-092 | Auth | PENDING | PKCE challenge outputs URL-safe verifier/challenge pair | Automated | |
+| AUTH-092 | Auth | PASS | PKCE challenge outputs URL-safe verifier/challenge pair | Automated | Added S256 PKCE coverage; web tests passed |
 | AUTH-093 | Auth | PENDING | Token exchange error response maps to `AzureDevOpsTokenExchangeError` | Automated | |
 | AUTH-094 | Auth | PENDING | OAuth start missing config redirects `/?auth=misconfigured` | Automated | |
 | AUTH-095 | Auth | PENDING | OAuth start sets PKCE cookies with 10-minute expiry | Automated | |

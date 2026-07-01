@@ -485,3 +485,30 @@
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm test` (24 web tests + 10 extension VS Code tests)
 - Next: inspect diff, commit, push, and keep polling deployment/CI.
+
+## 2026-07-01 04:01:41 CEST - Loop 3 Progress
+
+- Committed and pushed dashboard focused-session pagination as `c67f8fa Preserve dashboard session focus in pagination`.
+- GitHub Actions started for `c67f8fa` (CI and extension build in progress).
+- Production `/api/health` remains OK with DB ready; build metadata still reports `sha="unknown"` and `builtAt="unknown"`.
+- Local tree is clean immediately after push.
+- Next: poll checks and continue with the next non-auth-blocked gap.
+
+## 2026-07-01 04:02:43 CEST - Loop 3 Progress
+
+- Starting the next focused improvement while `c67f8fa` checks run.
+- Selected auth helper coverage because production Azure login is externally blocked but local cookie security and PKCE behavior are controllable.
+- Plan: split cookie-security and PKCE helpers into small testable modules, keep existing `auth.ts` exports stable, and add direct `node:test` coverage.
+
+## 2026-07-01 04:04:55 CEST - Loop 3 Progress
+
+- Split auth cookie policy and OAuth PKCE challenge generation into testable helper modules while preserving the existing `auth.ts` export surface.
+- Added tests for secure-cookie scheme selection, malformed URL fallback, removal-safe expired cookie attributes, PKCE verifier/challenge format, and fresh PKCE generation.
+- First validation pass caught an unused import and env-backed test setup; both were fixed.
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web test` (30 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (30 web tests + 10 extension VS Code tests)
+- PASS: GitHub Actions for `c67f8fa Preserve dashboard session focus in pagination` completed successfully.
+- Next: inspect diff, commit, push, and continue.

@@ -1,10 +1,8 @@
-import { Buffer } from "node:buffer";
 import { cookies } from "next/headers";
 import type { NextRequest } from "next/server";
 
 import {
   adminAzureDevOpsLogins,
-  appBaseUrl,
   authMode,
   azureDevOpsAccountsUrl,
   azureDevOpsOrg,
@@ -22,6 +20,9 @@ import {
   updateSessionAzureDevOpsTokens,
   upsertUser,
 } from "./store";
+
+export { expiredCookieOptions, secureCookieOptions } from "./authCookies";
+export { createOauthPkceChallenge } from "./oauthPkce";
 
 export interface AzureDevOpsUser {
   id: string;
@@ -55,26 +56,6 @@ export function oauthStateCookie() {
 
 export function oauthCodeVerifierCookie() {
   return oauthCodeVerifierCookieName;
-}
-
-export function secureCookieOptions(maxAge: number) {
-  return {
-    httpOnly: true,
-    maxAge,
-    path: "/",
-    sameSite: "lax" as const,
-    secure: shouldUseSecureCookies(),
-  };
-}
-
-export function expiredCookieOptions() {
-  return {
-    httpOnly: true,
-    maxAge: 0,
-    path: "/",
-    sameSite: "lax" as const,
-    secure: shouldUseSecureCookies(),
-  };
 }
 
 export async function currentUser(): Promise<StoredUser | null> {
@@ -143,21 +124,6 @@ export async function authenticateIngestRequest(
   }
 
   return upsertAzureDevOpsUser(azureUser);
-}
-
-export async function createOauthPkceChallenge() {
-  const codeVerifier = base64UrlEncode(
-    crypto.getRandomValues(new Uint8Array(32)),
-  );
-  const digest = await crypto.subtle.digest(
-    "SHA-256",
-    new TextEncoder().encode(codeVerifier),
-  );
-
-  return {
-    codeVerifier,
-    codeChallenge: base64UrlEncode(new Uint8Array(digest)),
-  };
 }
 
 export async function exchangeAzureDevOpsCode(
@@ -395,14 +361,6 @@ function isTokenNearExpiry(expiresAt: string | null) {
   return Number.isNaN(expiry) || expiry <= Date.now() + 60_000;
 }
 
-function shouldUseSecureCookies() {
-  try {
-    return new URL(appBaseUrl()).protocol === "https:";
-  } catch {
-    return process.env.NODE_ENV === "production";
-  }
-}
-
 function accountUriContainsOrg(value: string | undefined, expectedOrg: string) {
   if (!value) {
     return false;
@@ -419,10 +377,6 @@ function accountUriContainsOrg(value: string | undefined, expectedOrg: string) {
       .map((part) => part.toLowerCase())
       .includes(expectedOrg);
   }
-}
-
-function base64UrlEncode(bytes: Uint8Array) {
-  return Buffer.from(bytes).toString("base64url");
 }
 
 async function fetchWithTimeout(
