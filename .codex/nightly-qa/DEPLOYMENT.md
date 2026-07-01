@@ -34,7 +34,7 @@
 - PASS: `/api/azure-devops/work-items?query=123` returned auth-gated status.
 - PASS: `/api/admin/export?type=bogus` returned auth-gated status for unauthenticated request.
 - PASS: Chrome verified live homepage title/copy and the login link remains a document-navigation anchor to `/api/auth/azure-devops`.
-- LIMITATION: `/api/health` reports `version.sha="unknown"` because the Dokploy/Docker build is not passing `COPILOT_TRACKER_BUILD_SHA`; exact deployed commit cannot be proven from production yet.
+- LIMITATION: `/api/health` reports `version.sha="unknown"` because the Dokploy/Docker build is not passing `COPILOT_TRACKER_BUILD_SHA`; exact deployed commit cannot be proven from production yet. README now documents the build metadata variables to configure.
 
 ## 2026-07-01 02:36 CEST Chrome Auth Flow
 

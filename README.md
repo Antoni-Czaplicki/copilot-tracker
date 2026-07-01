@@ -92,6 +92,15 @@ values in your shell or compose environment and run:
 docker compose up --build app
 ```
 
+For production deploys, pass the current commit and build time into the Docker
+build/runtime environment so `/api/health` can report the exact deployed
+revision:
+
+```sh
+COPILOT_TRACKER_BUILD_SHA=$(git rev-parse --short HEAD)
+COPILOT_TRACKER_BUILD_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+```
+
 ## Azure DevOps Login
 
 Create a Microsoft Entra app registration with Azure DevOps delegated access and set:
