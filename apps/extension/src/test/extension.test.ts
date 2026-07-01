@@ -12,7 +12,12 @@ import {
   readRequestUploadState,
   writeRequestUploadState,
 } from "../requestUploadCache";
-import { parseTrackerServerUrl } from "../trackerClient";
+import {
+  TrackerClient,
+  TrackerClientError,
+  parseTrackerServerUrl,
+} from "../trackerClient";
+import type { AzureDevOpsTokenOptions } from "../azureDevOpsAuth";
 import type { CopilotChatRequest, WorkspaceContext } from "../types";
 import { getTaskFromBranch } from "../workspaceContext";
 
@@ -182,6 +187,136 @@ suite("Extension Test Suite", () => {
     ]) {
       assert.throws(() => parseTrackerServerUrl(invalidUrl));
     }
+  });
+
+  test("TrackerClient searches work items with interactive work-item auth", async () => {
+    await withTrackerServerUrl("http://localhost:3737", async () => {
+      const tokenCalls: AzureDevOpsTokenOptions[] = [];
+      const fetchMock = installFetchMock([
+        Response.json({
+          workItems: [
+            {
+              id: 123,
+              title: "Fix login",
+              state: "Active",
+              type: "Bug",
+              project: "Project",
+              assignedTo: "A Person",
+              changedAt: "2026-07-01T00:00:00.000Z",
+              url: "https://dev.azure.com/example/project/_workitems/edit/123",
+            },
+          ],
+        }),
+      ]);
+
+      try {
+        const client = new TrackerClient(async (options) => {
+          tokenCalls.push(options ?? {});
+          return "access-token";
+        }, new MemoryMemento());
+
+        const items = await client.searchWorkItems("login task");
+
+        assert.deepStrictEqual(tokenCalls, [
+          { interactive: true, workItemAccess: true },
+        ]);
+        assert.strictEqual(items.length, 1);
+        assert.strictEqual(items[0]?.id, 123);
+        assert.strictEqual(fetchMock.requests.length, 1);
+        assert.strictEqual(
+          String(fetchMock.requests[0]?.input),
+          "http://localhost:3737/api/azure-devops/work-items?query=login+task",
+        );
+        assert.strictEqual(
+          requestHeader(fetchMock.requests[0], "authorization"),
+          "Bearer access-token",
+        );
+      } finally {
+        fetchMock.restore();
+      }
+    });
+  });
+
+  test("TrackerClient blocks remote syncs when no token is available", async () => {
+    await withTrackerServerUrl("https://tracker.example.com", async () => {
+      const fetchMock = installFetchMock([]);
+
+      try {
+        const client = new TrackerClient(
+          async () => null,
+          new MemoryMemento(),
+        );
+
+        await assert.rejects(
+          client.sendChatRequests([createChatRequest()]),
+          (error: unknown) =>
+            error instanceof TrackerClientError &&
+            error.code === "not_authenticated",
+        );
+        assert.strictEqual(fetchMock.requests.length, 0);
+      } finally {
+        fetchMock.restore();
+      }
+    });
+  });
+
+  test("TrackerClient surfaces server JSON error messages", async () => {
+    await withTrackerServerUrl("http://localhost:3737", async () => {
+      const fetchMock = installFetchMock([
+        Response.json({ error: "bad payload" }, { status: 400 }),
+      ]);
+
+      try {
+        const client = new TrackerClient(
+          async () => null,
+          new MemoryMemento(),
+        );
+
+        await assert.rejects(
+          client.sendChatRequests([createChatRequest()]),
+          (error: unknown) =>
+            error instanceof TrackerClientError &&
+            error.code === "http_400" &&
+            error.status === 400 &&
+            error.message === "bad payload",
+        );
+        assert.strictEqual(fetchMock.requests.length, 1);
+      } finally {
+        fetchMock.restore();
+      }
+    });
+  });
+
+  test("TrackerClient surfaces network failures after retries", async () => {
+    await withTrackerServerUrl("http://localhost:3737", async () => {
+      const fetchMock = installThrowingFetchMock(
+        new Error("socket down"),
+        (input) => String(input).includes("/api/chat-requests/batch"),
+      );
+
+      try {
+        const client = new TrackerClient(
+          async () => null,
+          new MemoryMemento(),
+        );
+
+        await assert.rejects(
+          client.sendChatRequests([createChatRequest()]),
+          (error: unknown) =>
+            error instanceof TrackerClientError &&
+            error.code === "network_error" &&
+            error.message === "socket down",
+        );
+        assert.strictEqual(
+          fetchMock.requests.filter((request) =>
+            String(request.input).includes("/api/chat-requests/batch"),
+          ).length,
+          3,
+        );
+      } finally {
+        fetchMock.restore();
+      }
+    });
   });
 
   test("Reads Copilot OTel invoke_agent request spans", async () => {
@@ -540,6 +675,94 @@ class MemoryMemento {
   public async update(key: string, value: unknown): Promise<void> {
     this.values.set(key, value);
   }
+
+  public keys(): readonly string[] {
+    return [...this.values.keys()];
+  }
+}
+
+async function withTrackerServerUrl<T>(
+  serverUrl: string,
+  run: () => Promise<T>,
+): Promise<T> {
+  const config = vscode.workspace.getConfiguration("copilot-tracker");
+  const previousGlobalValue = config.inspect<string>("serverUrl")?.globalValue;
+  await config.update(
+    "serverUrl",
+    serverUrl,
+    vscode.ConfigurationTarget.Global,
+  );
+  try {
+    return await run();
+  } finally {
+    await config.update(
+      "serverUrl",
+      previousGlobalValue,
+      vscode.ConfigurationTarget.Global,
+    );
+  }
+}
+
+function installFetchMock(responses: Response[]) {
+  const originalFetch = globalThis.fetch;
+  const requests: CapturedFetch[] = [];
+
+  globalThis.fetch = async (input, init) => {
+    requests.push({ input, init });
+    await Promise.resolve();
+    const response = responses.shift();
+    if (!response) {
+      throw new Error("Unexpected fetch call");
+    }
+    return response;
+  };
+
+  return {
+    requests,
+    restore() {
+      globalThis.fetch = originalFetch;
+    },
+  };
+}
+
+function installThrowingFetchMock(
+  error: Error,
+  shouldThrow: (input: Parameters<typeof fetch>[0]) => boolean,
+) {
+  const originalFetch = globalThis.fetch;
+  const requests: CapturedFetch[] = [];
+
+  globalThis.fetch = async (input, init) => {
+    requests.push({ input, init });
+    await Promise.resolve();
+    if (shouldThrow(input)) {
+      throw error;
+    }
+    return Response.json({});
+  };
+
+  return {
+    requests,
+    restore() {
+      globalThis.fetch = originalFetch;
+    },
+  };
+}
+
+function requestHeader(request: CapturedFetch | undefined, name: string) {
+  if (request === undefined) {
+    assert.fail("request should be captured");
+  }
+  const headers = request.init?.headers;
+  if (!headers || headers instanceof Headers || Array.isArray(headers)) {
+    assert.fail("request headers should be a plain object");
+  }
+  return headers[name];
+}
+
+interface CapturedFetch {
+  input: Parameters<typeof fetch>[0];
+  init?: Parameters<typeof fetch>[1];
 }
 
 function createResourceSpanRecord(spans: unknown[]) {

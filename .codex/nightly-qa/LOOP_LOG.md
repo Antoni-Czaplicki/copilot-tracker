@@ -586,3 +586,25 @@
 - PASS: `pnpm test` (41 web tests + 10 extension VS Code tests)
 - PASS: GitHub Actions for `0a093ad Add Azure token exchange coverage` completed successfully.
 - Next: inspect diff, commit, push, and continue.
+
+## 2026-07-01 04:21:07 CEST - Loop 3 Progress
+
+- Committed and pushed work-item search coverage as `15d76ee Add Azure work item search coverage`.
+- GitHub Actions for `15d76ee` are queued/in progress for CI and extension build.
+- Production `/api/health` remains OK with DB ready; build metadata still reports `sha="unknown"` and `builtAt="unknown"`.
+- Local tree is clean immediately after push.
+- Next: poll checks while selecting the next non-auth-blocked improvement.
+
+## 2026-07-01 04:22:25 CEST - Loop 3 Progress
+
+- Starting extension `TrackerClient` coverage.
+- Plan: add VS Code extension tests for work-item search auth options/request parsing, remote server unauthenticated rejection, and HTTP error body surfacing.
+
+## 2026-07-01 04:26:02 CEST - Loop 3 Progress
+
+- Added extension `TrackerClient` tests for interactive work-item auth/search requests, remote-server no-token blocking, server JSON error surfacing, and network retry failure surfacing.
+- First network test pass exposed background extension traffic sharing the global fetch mock; narrowed the throwing mock to the chat-request endpoint and let unrelated background calls succeed.
+- PASS: `pnpm --filter ./apps/extension test` (14 tests)
+- PASS: `pnpm test` (41 web tests + 14 extension VS Code tests)
+- PASS: GitHub Actions for `15d76ee Add Azure work item search coverage` completed successfully.
+- Next: inspect diff, commit, push, and continue.

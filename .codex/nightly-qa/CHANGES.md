@@ -435,3 +435,13 @@
 - PASS: `pnpm --filter @copilot-tracker/web test` (41 tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm test` (41 web tests + 10 extension VS Code tests)
+
+## 2026-07-01 - Extension TrackerClient Coverage
+
+- Added VS Code extension tests for TrackerClient work-item search auth options/request parsing, remote-server no-token blocking, server JSON error messages, and network retry failure messages.
+- Expanded the in-memory memento test double to implement `keys()`.
+
+## Checks
+
+- PASS: `pnpm --filter ./apps/extension test` (14 tests)
+- PASS: `pnpm test` (41 web tests + 14 extension VS Code tests)

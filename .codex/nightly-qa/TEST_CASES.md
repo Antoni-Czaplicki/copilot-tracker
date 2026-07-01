@@ -179,3 +179,7 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | API-171 | API/Backend | PASS | Azure DevOps work-item search maps WIQL ids through batch field responses | Automated | Added mocked work-item search coverage; web tests passed |
 | API-172 | API/Backend | PASS | Azure DevOps work-item search falls back to the second text WIQL query after a 400 | Automated | Added fallback query coverage; web tests passed |
 | API-173 | API/Backend | PASS | Azure DevOps work-item search maps repeated 429 responses to a typed rate-limit error | Automated | Added mocked rate-limit coverage; web tests passed |
+| EXT-174 | Extension | PASS | TrackerClient work-item search requests use interactive work-item auth and parse returned items | Automated | Added VS Code extension test; extension tests passed |
+| EXT-175 | Extension | PASS | TrackerClient blocks remote server sync when no token is available | Automated | Added VS Code extension test; extension tests passed |
+| EXT-176 | Extension | PASS | TrackerClient surfaces JSON error messages from non-2xx server responses | Automated | Added VS Code extension test; extension tests passed |
+| EXT-177 | Extension | PASS | TrackerClient retries network failures and surfaces `network_error` after final failure | Automated | Added VS Code extension test; extension tests passed |

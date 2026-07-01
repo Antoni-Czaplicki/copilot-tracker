@@ -9,7 +9,7 @@
 5. [FIXED in `053541f`] Cost display looks exact even when token capture is partial or missing.
 6. [PARTIAL] OTel sync still reparses full files, but unchanged request records are no longer resent across syncs/restarts unless stable metadata changes.
 7. [FIXED in `815ae6f`] Legacy global selected-task fallback can leak stale manual overrides across workspaces.
-8. [P2] Missing extension tests for client network failures, auth flow, search picker race, multi-root context, partial token cost UI, and restart sync behavior.
+8. [P2] Missing extension tests for auth flow, search picker race, multi-root context, partial token cost UI, and restart sync behavior; TrackerClient network/HTTP failure coverage is now present.
 9. [FIXED] OTel upload cache must be scoped by tracker server so switching server URL uploads unchanged historical records to the new destination.
 10. [FIXED] Extension server URL validation accepted path segments that are silently ignored by absolute API/dashboard URL construction.
 11. [FIXED] Extension rejected IPv6 localhost server URLs such as `http://[::1]:3737` even though they are local dev origins.
