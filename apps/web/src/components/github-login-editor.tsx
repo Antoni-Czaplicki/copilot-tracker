@@ -3,6 +3,8 @@
 import type { SyntheticEvent } from "react";
 import { useState } from "react";
 
+import { githubLoginMutationErrorMessage } from "@/lib/githubLogin";
+
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 
@@ -19,18 +21,27 @@ export function GithubLoginEditor({
   const [state, setState] = useState<"idle" | "saving" | "saved" | "error">(
     "idle",
   );
+  const [message, setMessage] = useState<string | null>(null);
 
   async function submit(event: SyntheticEvent<HTMLFormElement>) {
     event.preventDefault();
     setState("saving");
+    setMessage(null);
     try {
       const response = await fetch(endpoint, {
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ githubLogin }),
       });
-      setState(response.ok ? "saved" : "error");
+      if (!response.ok) {
+        setMessage(await githubLoginMutationErrorMessage(response));
+        setState("error");
+        return;
+      }
+
+      setState("saved");
     } catch {
+      setMessage("Failed to save GitHub username.");
       setState("error");
     }
   }
@@ -67,7 +78,7 @@ export function GithubLoginEditor({
           className="text-destructive text-xs font-bold"
           role="status"
         >
-          Failed
+          {message ?? "Failed to save GitHub username."}
         </span>
       ) : null}
     </form>

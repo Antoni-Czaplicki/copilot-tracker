@@ -925,3 +925,36 @@
 - PASS: GitHub Actions for `12eb414 Add request session grid coverage` completed successfully on both CI and extension build workflows.
 - PASS: `git diff --check`
 - Next: commit, push, production smoke, then continue.
+
+## 2026-07-01 05:20:43 CEST - Loop 6 End
+
+- Committed and pushed extension status formatting coverage as `80f9933 Add extension status formatting coverage`.
+- GitHub Actions for `80f9933` are in progress.
+- PASS: production `/api/health` returns HTTP 200 with `ok=true` and `database.ok=true`.
+- LIMITATION: production `/api/health` still reports `version.sha="unknown"` and `builtAt="unknown"`.
+- PASS: sanitized production Azure OAuth start redirects to Microsoft with PKCE `S256`, state, client id, and required Azure DevOps scopes.
+- Next: continue with the next high-value gap and poll CI.
+
+## 2026-07-01 05:21:25 CEST - Loop 7 Start
+
+- Started a focused web UX slice for GitHub username mapping feedback.
+- Finding: the editor receives safe server validation errors, such as invalid GitHub username text, but currently renders only a generic `Failed` label.
+- Current git state: post-push QA logs modified from Loop 6; no new code changes yet.
+- Next: add a tested response-error helper and wire the editor to display the safe server message.
+
+## 2026-07-01 05:22:42 CEST - Loop 7 Validation
+
+- Added a tested GitHub-login mutation error-message helper that uses safe server `error` text and falls back for empty/non-JSON responses.
+- Updated the GitHub username editor to show the safe server validation message instead of a generic `Failed` label.
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web test` (81 tests)
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS: `pnpm --filter ./apps/extension test` (18 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (81 web tests + 18 extension VS Code tests)
+- PASS: GitHub Actions for `80f9933 Add extension status formatting coverage` completed successfully on both CI and extension build workflows.
+- PASS: `git diff --check`
+- Next: commit, push, production smoke, then continue.

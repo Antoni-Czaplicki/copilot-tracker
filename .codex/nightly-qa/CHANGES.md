@@ -628,3 +628,19 @@
 - PASS: `pnpm --filter ./apps/extension test` (18 tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm test` (79 web tests + 18 extension VS Code tests)
+
+## 2026-07-01 - GitHub Username Mapping Feedback
+
+- Added a reusable GitHub-login mutation error-message helper.
+- Updated the GitHub username editor to display safe server validation messages, such as invalid username guidance, instead of only showing `Failed`.
+- Added tests for JSON server errors, empty errors, and non-JSON failure responses.
+
+## Checks
+
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS: `pnpm --filter ./apps/extension test` (18 tests)
+- PASS: `pnpm --filter @copilot-tracker/web test` (81 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (81 web tests + 18 extension VS Code tests)

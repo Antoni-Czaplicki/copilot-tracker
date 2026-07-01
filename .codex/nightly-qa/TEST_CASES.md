@@ -222,3 +222,5 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | UI-214 | Web | PASS | Focused session anchor ids remain stable for punctuation and spaces | Automated | Extracted session grid model coverage; web tests passed |
 | EXT-215 | Extension | PASS | Status bar task and token text formats short/long task ids, standard numbers, compact token totals, and small costs | Automated | Extracted `statusFormatting`; extension tests passed |
 | EXT-216 | Extension | PASS | Session estimated cost tooltip marks cost as a lower bound when any request has incomplete token data | Automated | Extracted `statusFormatting`; extension tests passed |
+| UI-217 | Web | PASS | GitHub username editor can surface safe server validation errors | Automated | Added GitHub-login mutation error-message coverage; web tests passed |
+| UI-218 | Web | PASS | GitHub username editor falls back to a generic error for empty or non-JSON failures | Automated | Added GitHub-login mutation error-message coverage; web tests passed |

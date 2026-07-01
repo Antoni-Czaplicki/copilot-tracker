@@ -283,3 +283,15 @@
 ## 2026-07-01 05:19 CEST CI Poll
 
 - PASS: GitHub Actions for `12eb414 Add request session grid coverage` completed successfully on both CI and extension build workflows.
+
+## 2026-07-01 05:20 CEST Production Poll
+
+- PUSHED: `80f9933 Add extension status formatting coverage`.
+- IN PROGRESS: GitHub Actions for `80f9933` started after push.
+- PASS: production `/api/health` returned HTTP 200 with `ok=true` and `database.ok=true`.
+- LIMITATION: production `/api/health` still reports `sha="unknown"` and `builtAt="unknown"`.
+- PASS: production Azure OAuth start redirect includes state, PKCE `S256`, client id, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
+
+## 2026-07-01 05:22 CEST CI Poll
+
+- PASS: GitHub Actions for `80f9933 Add extension status formatting coverage` completed successfully on both CI and extension build workflows.

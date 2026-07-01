@@ -53,4 +53,12 @@
 - [x] Add task truncation tests
 - [x] Add session token number/cost formatting tests
 - [x] Run local validation
+- [x] Commit, push, and smoke production
+- [x] Verify CI completion for `80f9933`
+
+## Loop 7 - GitHub Username Mapping Feedback
+
+- [x] Add tested GitHub-login mutation error-message helper
+- [x] Show safe server validation errors in the editor
+- [x] Run local validation
 - [ ] Commit, push, and smoke production
