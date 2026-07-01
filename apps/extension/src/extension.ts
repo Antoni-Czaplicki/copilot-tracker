@@ -41,7 +41,9 @@ import {
   type TaskHistoryEntry,
   createTaskResolverFromHistory,
   getTaskHistorySource,
+  latestTaskHistoryForWorkspace,
   readTaskHistoryFromValue,
+  shouldRecordTaskHistoryEntry,
 } from "./taskHistory";
 import {
   type AzureDevOpsWorkItem,
@@ -663,29 +665,9 @@ async function recordTaskHistoryIfNeeded(
   next: WorkspaceContext,
   source: string,
 ) {
-  if (!next.selectedTask && !next.defaultTask) {
-    return;
-  }
-
-  if (
-    previous &&
-    previous.workspaceId === next.workspaceId &&
-    previous.branch === next.branch &&
-    previous.defaultTask === next.defaultTask &&
-    previous.selectedTask === next.selectedTask
-  ) {
-    return;
-  }
-
   const history = readTaskHistory(context);
-  const latest = history.at(-1);
-  if (
-    latest &&
-    latest.workspaceId === next.workspaceId &&
-    latest.branch === next.branch &&
-    latest.defaultTask === next.defaultTask &&
-    latest.selectedTask === next.selectedTask
-  ) {
+  const latest = latestTaskHistoryForWorkspace(history, next.workspaceId);
+  if (!shouldRecordTaskHistoryEntry(previous, next, latest)) {
     return;
   }
 

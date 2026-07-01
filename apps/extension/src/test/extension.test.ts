@@ -23,7 +23,9 @@ import {
 import { SingleFlightTaskQueue } from "../singleFlightTaskQueue";
 import {
   createTaskResolverFromHistory,
+  latestTaskHistoryForWorkspace,
   readTaskHistoryFromValue,
+  shouldRecordTaskHistoryEntry,
 } from "../taskHistory";
 import {
   TrackerClient,
@@ -205,7 +207,7 @@ suite("Extension Test Suite", () => {
     );
   });
 
-  test("Task history resolver falls back when manual selection was cleared", () => {
+  test("Task history resolver distinguishes branch defaults from explicit no-task clears", () => {
     const resolver = createTaskResolverFromHistory(
       [
         createTaskHistoryEntry({
@@ -239,12 +241,68 @@ suite("Extension Test Suite", () => {
     assert.deepStrictEqual(
       resolver(createOtelTaskRequest("2026-07-01T00:25:00.000Z")),
       {
-        branch: "fallback-branch",
-        defaultTask: "fallback-default",
-        selectedTask: "fallback-selected",
+        branch: null,
+        defaultTask: null,
+        selectedTask: null,
       },
     );
     assert.strictEqual(resolver(createOtelTaskRequest(null)), null);
+  });
+
+  test("Task history records task clears and finds latest entries per workspace", () => {
+    const previous = createWorkspaceContext({
+      branch: "feature/123-login",
+      defaultTask: "123",
+      selectedTask: "999",
+    });
+    const cleared = createWorkspaceContext({
+      branch: "main",
+      defaultTask: null,
+      selectedTask: null,
+    });
+    const latest = createTaskHistoryEntry({
+      branch: "feature/123-login",
+      defaultTask: "123",
+      selectedTask: "999",
+    });
+
+    assert.strictEqual(
+      shouldRecordTaskHistoryEntry(previous, cleared, latest),
+      true,
+    );
+    assert.strictEqual(
+      shouldRecordTaskHistoryEntry(undefined, cleared, undefined),
+      false,
+    );
+    assert.strictEqual(
+      shouldRecordTaskHistoryEntry(undefined, cleared, {
+        ...latest,
+        workspaceId: "other-workspace",
+      }),
+      false,
+    );
+    assert.strictEqual(
+      shouldRecordTaskHistoryEntry(undefined, cleared, latest),
+      true,
+    );
+    assert.deepStrictEqual(
+      latestTaskHistoryForWorkspace(
+        [
+          createTaskHistoryEntry({
+            workspaceId: "other-workspace",
+            selectedTask: "other",
+            timestamp: "2026-07-01T00:20:00.000Z",
+          }),
+          latest,
+          createTaskHistoryEntry({
+            selectedTask: null,
+            timestamp: "2026-07-01T00:30:00.000Z",
+          }),
+        ],
+        "workspace-id",
+      )?.selectedTask,
+      null,
+    );
   });
 
   test("Redacts local paths, repository remotes, and tokens from structured logs", () => {

@@ -866,3 +866,9 @@
 - LOCAL FIX PENDING DEPLOY: OTel lifecycle stability fix is implemented and verified in a locally installed VSIX. It must still be committed, pushed, and deployed/packaged from the repo.
 - PASS: local validation passed after the fix: typecheck, lint, placeholder-env web build, extension compile/test, workspace tests, and smoke tests.
 - REMAINING: `/api/health` still reports unknown build metadata/SHA, so exact deployed commit proof remains blocked until Dokploy build metadata is configured.
+
+## 2026-07-01 15:00 CEST Azure Callback Coverage Deploy
+
+- PASS: `6ed152d Cover Azure callback session outcomes` completed GitHub Actions CI and Build extension.
+- PASS: production eventually served exact SHA `6ed152d593bf39fc8aa14774641a3f793cec4a68` after waiting for Dokploy to finish building/rolling.
+- PASS: strict `pnpm smoke:production -- --expect-sha 6ed152d` passed: health/database OK, no-store health headers, Microsoft Azure OAuth redirect, PKCE S256, required Azure DevOps scopes, sanitized provider error code, diagnostic `auth_ref`, and no reflected provider description.

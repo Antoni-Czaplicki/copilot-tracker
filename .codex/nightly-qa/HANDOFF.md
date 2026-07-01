@@ -326,3 +326,11 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - Focused web checks pass: 146 web tests, web typecheck, and web lint.
 - Broad validation also passes: repo typecheck/lint, production-style web build, extension compile/test, smoke tests, root tests, diff check, and strict production smoke for deployed `d19e76c`.
 - Next: commit/push, verify CI and Dokploy deployment, then rerun strict production smoke for the new app commit.
+
+## 2026-07-01 15:01 CEST Extension Task History Fix
+
+- `6ed152d Cover Azure callback session outcomes` is pushed, CI-green, and live in production; strict smoke passes for that SHA.
+- Found and fixed an extension task attribution bug: clearing a manual task on a branch with no detected task id could leave later OTel requests assigned to the previous/current task.
+- Task history now records explicit no-task clears, resolves those historical entries as no task, and scopes latest-history duplicate checks by workspace.
+- Validation passes locally: extension compile, 31 extension tests, repo typecheck/lint, root tests, and production smoke for deployed `6ed152d`.
+- Next: commit/push the extension fix and verify GitHub Actions.

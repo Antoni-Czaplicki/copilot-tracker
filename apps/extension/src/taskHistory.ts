@@ -13,9 +13,14 @@ export interface TaskHistoryEntry {
   source: string;
 }
 
+type TaskHistorySnapshot = Pick<
+  TaskHistoryEntry,
+  "workspaceId" | "branch" | "defaultTask" | "selectedTask"
+>;
+
 export function createTaskResolverFromHistory(
   history: TaskHistoryEntry[],
-  fallback: WorkspaceContext,
+  _fallback: WorkspaceContext,
 ): RequestTaskResolver {
   const sortedHistory = sortTaskHistory(history);
 
@@ -44,12 +49,50 @@ export function createTaskResolverFromHistory(
     }
 
     return {
-      branch: match.branch ?? fallback.branch,
-      defaultTask: match.defaultTask ?? fallback.defaultTask,
-      selectedTask:
-        match.selectedTask ?? match.defaultTask ?? fallback.selectedTask,
+      branch: match.branch,
+      defaultTask: match.defaultTask,
+      selectedTask: match.selectedTask ?? match.defaultTask,
     };
   };
+}
+
+export function latestTaskHistoryForWorkspace(
+  history: TaskHistoryEntry[],
+  workspaceId: string,
+): TaskHistoryEntry | undefined {
+  for (let index = history.length - 1; index >= 0; index -= 1) {
+    const entry = history[index];
+    if (entry?.workspaceId === workspaceId) {
+      return entry;
+    }
+  }
+
+  return undefined;
+}
+
+export function shouldRecordTaskHistoryEntry(
+  previous: WorkspaceContext | undefined,
+  next: WorkspaceContext,
+  latest: TaskHistoryEntry | undefined,
+): boolean {
+  const previousForWorkspace =
+    previous?.workspaceId === next.workspaceId ? previous : undefined;
+  const latestForWorkspace =
+    latest?.workspaceId === next.workspaceId ? latest : undefined;
+
+  if (previousForWorkspace && sameTaskSnapshot(previousForWorkspace, next)) {
+    return false;
+  }
+
+  if (latestForWorkspace && sameTaskSnapshot(latestForWorkspace, next)) {
+    return false;
+  }
+
+  return (
+    hasTask(next) ||
+    Boolean(previousForWorkspace && hasTask(previousForWorkspace)) ||
+    Boolean(latestForWorkspace && hasTask(latestForWorkspace))
+  );
 }
 
 export function readTaskHistoryFromValue(value: unknown): TaskHistoryEntry[] {
@@ -85,6 +128,22 @@ function sortTaskHistory(history: TaskHistoryEntry[]) {
   return [...history].sort(
     (a, b) => timestampOrZero(a.timestamp) - timestampOrZero(b.timestamp),
   );
+}
+
+function sameTaskSnapshot(
+  first: TaskHistorySnapshot,
+  second: TaskHistorySnapshot,
+) {
+  return (
+    first.workspaceId === second.workspaceId &&
+    first.branch === second.branch &&
+    first.defaultTask === second.defaultTask &&
+    first.selectedTask === second.selectedTask
+  );
+}
+
+function hasTask(snapshot: TaskHistorySnapshot) {
+  return Boolean(snapshot.selectedTask || snapshot.defaultTask);
 }
 
 function timestampOrZero(value: string | null | undefined) {

@@ -591,3 +591,14 @@
 - [x] Poll CI
 - [x] Verify Dokploy deployment and strict production smoke after Reload
 - [x] Update logs and continue next gap
+
+## Loop 60 - Extension Task History Clear Semantics
+
+- [x] Inspect extension branch/task selection, task history, OTel attribution, and upload-cache paths
+- [x] Identify stale attribution bug after clearing a manual task on branches without detected task ids
+- [x] Record explicit no-task clears in task history
+- [x] Resolve explicit no-task history entries as no task instead of falling back to the current selected task
+- [x] Add extension tests for branch-default behavior, explicit no-task clears, and latest history per workspace
+- [x] Run focused extension compile/test
+- [x] Run repo typecheck/lint and root tests
+- [ ] Commit, push, and verify CI/package workflow

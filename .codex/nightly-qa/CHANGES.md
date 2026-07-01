@@ -1399,3 +1399,19 @@
 - PASS: `pnpm test`
 - PASS: `git diff --check`
 - PASS: strict `pnpm smoke:production -- --expect-sha d19e76c`
+
+## 2026-07-01 - Extension Task History Clear Semantics
+
+- Fixed task-history recording so clearing a manual task on a branch without a detected task id writes an explicit no-task entry when the same workspace previously had a task.
+- Changed historical task resolution so a matched no-task history entry resolves to `selectedTask: null` instead of falling back to the current selected task.
+- Added latest-history lookup scoped by workspace so multi-root or workspace switches do not use another workspace's newest entry for duplicate/clear decisions.
+- Added extension regression tests for default branch task resolution, explicit no-task clears, and latest history per workspace.
+
+## Checks
+
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS: `pnpm --filter ./apps/extension test` (31 tests)
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test`
+- PASS: strict `pnpm smoke:production -- --expect-sha 6ed152d`

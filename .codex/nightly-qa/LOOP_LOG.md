@@ -2352,3 +2352,23 @@
 - PASS: `git diff --check`.
 - PASS: strict production smoke still passes for deployed app commit `d19e76c`.
 - NEXT: commit/push, then verify CI, Dokploy deployment, and production smoke for the new app commit.
+
+## 2026-07-01 15:00:41 CEST - Loop 59 Deploy Closeout And Loop 60 Extension Task Focus
+
+- PUSHED: `6ed152d Cover Azure callback session outcomes`.
+- PASS: GitHub Actions `CI` completed successfully for `6ed152d`.
+- PASS: GitHub Actions `Build extension` completed successfully for `6ed152d`.
+- PASS: production eventually rolled to `6ed152d` after waiting for Dokploy to finish the build/rollout.
+- PASS: strict `pnpm smoke:production -- --expect-sha 6ed152d` passed.
+- FOCUS: after the user asked to prioritize extension task/branch correctness, inspected extension workspace context, task history, branch-change prompt, OTel attribution, and upload-cache code.
+- FOUND: clearing a manual task on a branch with no detected default task skipped task-history recording, so later OTel requests could keep the previous task.
+- FOUND: explicit historical no-task entries resolved through the current fallback selected task, which could incorrectly assign cleared requests to a newer/current task.
+- IMPLEMENTED: task history now records explicit no-task clears when the previous or latest same-workspace history had a task.
+- IMPLEMENTED: task resolver now treats a historical no-task entry as no task instead of falling back to current task.
+- ADDED: extension tests for branch-default null manual selection, explicit no-task clears, and latest history lookup scoped per workspace.
+- PASS: `pnpm --filter ./apps/extension compile`.
+- PASS: `pnpm --filter ./apps/extension test` (31 tests).
+- PASS: `pnpm -r typecheck`.
+- PASS: `pnpm -r lint`.
+- PASS: root `pnpm test`.
+- NEXT: update logs, run diff check, commit/push the extension fix, and verify CI/package workflow.

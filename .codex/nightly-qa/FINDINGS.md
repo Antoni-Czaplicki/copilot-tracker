@@ -24,6 +24,7 @@
 20. [FIXED] Extension work-item search trusted successful server payload shape and could pass malformed work-item entries into picker rendering.
 21. [FIXED] Extension server JSON/string error bodies that were blank could surface empty messages instead of the HTTP-status fallback.
 22. [FIXED] Extension work-item result validation accepted non-positive or too-large integer IDs even though web/backend reject invalid Azure DevOps work-item IDs.
+23. [FIXED] Clearing a manual task on a branch with no detected task id did not write a no-task history entry, and historical no-task entries could fall back to the current task during OTel attribution.
 
 ## Web UX
 
