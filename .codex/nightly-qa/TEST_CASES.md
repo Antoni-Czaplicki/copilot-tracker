@@ -60,10 +60,10 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | API-052 | API/Backend | PENDING | Work-items API with empty query returns `{workItems: []}` | Automated | |
 | API-053 | API/Backend | PENDING | Work-items bearer path uses ingest token auth | Automated + mock headers | |
 | API-054 | API/Backend | PENDING | Work-items session cookie path reads session token cache | Automated | |
-| API-055 | API/Backend | PENDING | Work-items route unauthorized when no token/session | Automated | |
+| API-055 | API/Backend | PASS | Work-items route unauthorized when no token/session | Automated | Production unauthenticated request returned auth-gated status |
 | API-056 | API/Backend | PENDING | Work-items upstream 401/403/429 mapped unchanged | Automated | |
 | API-057 | API/Backend | PENDING | Work-items other upstream errors map to 502 | Automated | |
-| API-058 | API/Backend | PENDING | Admin export non-admin returns 401 | Automated | |
+| API-058 | API/Backend | PASS | Admin export non-admin returns 401 | Automated | Production unauthenticated request returned 401 |
 | API-059 | API/Backend | PENDING | Admin export developers type has filename/content headers | Automated | |
 | API-060 | API/Backend | PENDING | Admin export tasks type includes cost and repo/branch columns | Automated | |
 | API-061 | API/Backend | PENDING | Admin export developer-tasks aggregates correctly | Automated | |
@@ -115,7 +115,7 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | AUTH-107 | Auth | PENDING | Invalid token expiry is treated as near-expiry and refreshes | Automated | |
 | AUTH-108 | Auth | PENDING | Token refresh fetch timeout aborts safely | Automated/integration | Edge |
 | UI-109 | Web | PENDING | Home page for logged-in user renders dashboard cards and task list | Playwright + fixture | |
-| UI-110 | Web | PENDING | Logged-out home renders auth CTAs and auth error states | Playwright | |
+| UI-110 | Web | PASS | Logged-out home renders auth CTAs and auth error states | Playwright | Chrome verified homepage CTA; production auth failure rendered safe URL state |
 | UI-111 | Web | PENDING | Home parses auth params and taskPage safely | Automated | |
 | UI-112 | Web | PENDING | `/dashboard` redirects to `/` if not logged in | Automated | |
 | UI-113 | Web | PENDING | `taskPage` clamps invalid/non-positive values to 1 | Automated | |
@@ -131,15 +131,15 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | UI-123 | Web | PASS | Admin export link changes with selected view and billing sync uses in-page action state | Automated | Admin billing sync button implemented; build/lint/typecheck passed |
 | UI-124 | Web | PENDING | Request grid pagination and empty messages render correctly | Automated | |
 | UI-125 | Web | PENDING | Token display differentiates missing vs partial Copilot OTel data | Automated | |
-| DEP-126 | Deployment | PENDING | Docker build runs shared then web build and includes runtime assets | Container build | |
+| DEP-126 | Deployment | BLOCKED | Docker build runs shared then web build and includes runtime assets | Container build | Docker daemon socket unavailable on this machine |
 | DEP-127 | Deployment | PENDING | Docker migration loop retries before exit and starts app on `:3737` | Manual + smoke | |
 | DEP-128 | Deployment | PENDING | Compose DB healthcheck transitions green before app connects | Compose smoke | |
 | DEP-129 | Deployment | PENDING | Missing DB connectivity fails predictably during migration attempts | Manual/chaos | |
 | DEP-130 | Deployment | PENDING | Required env vars/args are read and propagated | Config contract | |
-| DEP-131 | Deployment | PENDING | Default ports are consistent end-to-end | Automated | |
+| DEP-131 | Deployment | PASS | Default ports are consistent end-to-end | Automated | Local `next start` and compose config expose app port 3737 |
 | DEP-132 | Deployment | PENDING | Production OAuth start is reachable without localhost assumptions | Manual/browser | |
-| DEP-133 | Deployment | PENDING | CI includes web production build guardrail | Pipeline review | Finding target |
+| DEP-133 | Deployment | PASS | CI includes web production build guardrail | Pipeline review | CI workflow now includes web production build step; GitHub CI passed on subsequent commits |
 | DEP-134 | Deployment | PENDING | Extension packaging workflow compiles and packages VSIX | Workflow/manual | |
 | DEP-135 | Deployment | PENDING | Extension tests run headless under Xvfb without flake | CI validation | |
 | DEP-136 | Deployment | PENDING | Schema migration is idempotent across container restarts | Integration | |
-| DEP-137 | Deployment | PASS | `/api/health` returns readiness status, DB status, build SHA, and timestamp | Local `next start` smoke | Returned 503 with DB unavailable and build metadata present |
+| DEP-137 | Deployment | PASS | `/api/health` returns readiness status, DB status, build SHA, and timestamp | Local and production smoke | Local returned 503 with DB unavailable; production returned 200 with DB ready |
