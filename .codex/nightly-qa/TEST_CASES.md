@@ -155,3 +155,4 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | DEP-147 | Deployment | PASS | Docker build context excludes local Codex QA logs and docs define production smoke checks | Config/docs review | `.dockerignore` excludes `.codex`; `docker compose config` passed |
 | UI-148 | Web | PASS | WorkItemPicker hides stale results and shows searching state while a new debounced query is pending | Code review + build | Web test/lint/typecheck/build passed |
 | EXT-149 | Extension | PASS | Tracker events do not include the local OS username in the client-supplied `user` field | Automated compile/lint | Uses generic extension label; `pnpm --filter ./apps/extension test` passed |
+| EXT-150 | Extension | PASS | Tracker server URL validation allows HTTPS/local origins and rejects paths, credentials, query, fragment, and non-local HTTP | Automated | Added parser regression assertions; `pnpm --filter ./apps/extension test` passed |

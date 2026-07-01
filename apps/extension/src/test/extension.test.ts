@@ -11,6 +11,7 @@ import {
   readRequestUploadState,
   writeRequestUploadState,
 } from "../requestUploadCache";
+import { parseTrackerServerUrl } from "../trackerClient";
 import type { CopilotChatRequest, WorkspaceContext } from "../types";
 import { getTaskFromBranch } from "../workspaceContext";
 
@@ -147,6 +148,28 @@ suite("Extension Test Suite", () => {
       ),
       { version: 1, entries: {} },
     );
+  });
+
+  test("Validates tracker server URLs as safe origins", () => {
+    assert.strictEqual(
+      parseTrackerServerUrl("https://copilot-tracker.example.com").origin,
+      "https://copilot-tracker.example.com",
+    );
+    assert.strictEqual(
+      parseTrackerServerUrl("http://localhost:3737").origin,
+      "http://localhost:3737",
+    );
+
+    for (const invalidUrl of [
+      "not-a-url",
+      "http://copilot-tracker.example.com",
+      "https://user:pass@copilot-tracker.example.com",
+      "https://copilot-tracker.example.com/base",
+      "https://copilot-tracker.example.com?token=value",
+      "https://copilot-tracker.example.com#fragment",
+    ]) {
+      assert.throws(() => parseTrackerServerUrl(invalidUrl));
+    }
   });
 
   test("Reads Copilot OTel invoke_agent request spans", async () => {

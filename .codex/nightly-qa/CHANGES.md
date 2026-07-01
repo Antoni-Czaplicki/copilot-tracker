@@ -37,6 +37,16 @@
 
 - PASS: `pnpm --filter ./apps/extension test`
 
+## 2026-07-01 - Extension Server URL Validation
+
+- Tightened `parseTrackerServerUrl` so the extension only accepts safe server origins.
+- Server URLs with paths, credentials, query strings, fragments, malformed values, or non-local HTTP now fail clearly instead of being partially ignored.
+- Added regression tests for valid HTTPS/local origins and invalid URL shapes.
+
+## Checks
+
+- PASS: `pnpm --filter ./apps/extension test`
+
 ## 2026-07-01 - Extension Event User Privacy
 
 - Stopped sending the local OS username in extension tracker events.

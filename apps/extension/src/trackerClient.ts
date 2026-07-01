@@ -259,10 +259,16 @@ export function parseTrackerServerUrl(value: string): URL {
     );
   }
 
-  if (url.username || url.password || url.search || url.hash) {
+  if (
+    url.username ||
+    url.password ||
+    url.search ||
+    url.hash ||
+    url.pathname !== "/"
+  ) {
     throw new TrackerClientError(
       "invalid_server_url",
-      "Copilot Tracker server URL must not contain credentials, query, or fragment values.",
+      "Copilot Tracker server URL must be an origin without path, credentials, query, or fragment values.",
     );
   }
 

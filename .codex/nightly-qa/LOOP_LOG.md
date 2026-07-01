@@ -286,3 +286,10 @@
 - Verified the visible failure UI remains safe: stable code only, no provider description or secret values.
 - Closed the Chrome tab/session.
 - Next: continue non-auth-blocked improvements while latest CI runs.
+
+## 2026-07-01 04:00:12 CEST - Loop 3 Progress
+
+- Tightened extension tracker server URL validation to accept only safe origins.
+- URLs with path, credentials, query, fragment, malformed values, or non-local HTTP now fail explicitly instead of being silently normalized/ignored.
+- Validation passed: `pnpm --filter ./apps/extension test` reported 10 passing tests.
+- Next: inspect diff, commit/push server URL validation, then poll CI/production.
