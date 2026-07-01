@@ -295,6 +295,15 @@
 - PASS/WARN: strict production smoke against `f90a5b0` failed only the expected SHA check because production still served the previous verified `23e4df9` build; health, database, auth redirect, PKCE, scopes, provider-error handling, and cache headers still passed.
 - NEXT: the next code-bearing deploy should supersede this log-only lag and be verified by strict production smoke.
 
+## 2026-07-01 14:22 CEST Work-Item Search Deploy Verified
+
+- PUSHED: `6477f9c Improve Azure DevOps work-item search`.
+- PASS: GitHub Actions `CI` and `Build extension` completed successfully for `6477f9c`.
+- PASS: Dokploy deployment log showed `apps/web/src/generated/buildInfo.generated.ts` was written with the `6477f9c` SHA before `next build`, and the Docker build completed.
+- WARN/FIXED OPERATIONALLY: after the deployment was marked done, production still reported `23e4df9`; using Dokploy app `Reload` switched production to `6477f9c`.
+- PASS: strict `pnpm smoke:production -- --expect-sha 6477f9c` passed after Reload.
+- PASS: live dashboard picker verification passed for deployed numeric and text empty states.
+
 ## 2026-07-01 04:43 CEST Production Poll
 
 - PUSHED: `97ce2f9 Harden Azure token responses`.

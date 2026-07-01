@@ -490,7 +490,7 @@
 - [x] Verify signed-in `/api/azure-devops/work-items?query=test` returns HTTP 200
 - [x] Update status, deployment, handoff, findings, changes, loop log, and test cases
 - [x] Add Docker build-info fallback so Dockerfile builds can self-stamp SHA/build time
-- [ ] Test visible dashboard work-item search with a known matching work-item query
+- [x] Test visible dashboard work-item search state with signed-in session; matching-result verification is data-blocked because safe live probes returned zero Azure DevOps matches
 
 ## Loop 52 - Real VS Code Usage QA And Admin Config
 
@@ -556,6 +556,6 @@
 - [x] Implement backend substring fallback after empty words-search results
 - [x] Improve numeric work-item empty-state wording
 - [x] Run web tests, typecheck, lint, production-style build, repo typecheck/lint, smoke tests, extension tests, root tests, and diff check
-- [ ] Commit/push the work-item search UX/API change
-- [ ] Poll CI, Dokploy, production smoke, and live dashboard search after deploy
-- [ ] Update logs, findings, test cases, and handoff
+- [x] Commit/push the work-item search UX/API change
+- [x] Poll CI, Dokploy, production smoke, and live dashboard search after deploy
+- [x] Update logs, findings, test cases, and handoff

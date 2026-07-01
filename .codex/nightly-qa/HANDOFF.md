@@ -293,3 +293,10 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - Live signed-in dashboard search returned HTTP 200 with zero matches for safe probe queries, so a true Azure DevOps matching-result test is data-blocked for now.
 - Implemented and locally verified a focused improvement: text search now falls back from empty words-query results to substring WIQL, and numeric empty states identify that Azure DevOps has no match for the ID.
 - Next: commit/push this work-item search change, then verify CI, Dokploy, strict production smoke, and the deployed dashboard picker status.
+
+## 2026-07-01 14:22 CEST Work-Item Search Live
+
+- `6477f9c Improve Azure DevOps work-item search` is pushed, CI-green, built by Dokploy, and live in production.
+- Strict production smoke passes for `6477f9c` after using Dokploy app `Reload`; the initial Dokploy "done" state still served `23e4df9`, so stale deploy detection is doing its job.
+- Live signed-in dashboard verification passed: numeric task `124` shows `No Azure DevOps match for this ID`, and text query `login` shows `No Azure DevOps matches`.
+- Remaining operational follow-up: understand why this Dokploy build needed a manual Reload after a successful Dockerfile build, or document Reload as the fallback when strict smoke catches stale production.

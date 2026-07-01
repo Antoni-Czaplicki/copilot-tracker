@@ -82,6 +82,7 @@
 10. [FIXED] `pnpm audit --prod --audit-level moderate` reported vulnerable `postcss <8.5.10` through Next; existing package-level overrides were ignored by pnpm 11. Security overrides now live in `pnpm-workspace.yaml`, the lockfile resolves Next to `postcss@8.5.15`, and audit passes.
 11. [FIXED after VPS recovery] Production now shows `role="alert"` auth failure semantics, visible health no-store headers, and provider-error callback `auth_code=access_denied`; exact deployed commit proof remains blocked by unknown build metadata under deployment finding 7.
 12. [FIXED] `/api/health` freshness relied only on route response headers; source now also configures explicit Next route headers and broader no-store/no-cache directives for browser and intermediary caches.
+13. [PARTIAL] Dokploy Dockerfile deployment for `6477f9c` built the correct image and marked the deployment done, but production kept serving the previous image until a manual Dokploy app Reload. Strict smoke caught the stale rollout; investigate Dokploy/service restart settings or treat Reload as the safe operational fallback when this recurs.
 
 ## Auth / Security / Privacy
 

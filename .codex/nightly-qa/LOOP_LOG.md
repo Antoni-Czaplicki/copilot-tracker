@@ -2284,3 +2284,15 @@
 - IMPLEMENTED: numeric empty-state copy now says there is no Azure DevOps match for the ID instead of the generic "No matches".
 - PASS: `pnpm --filter @copilot-tracker/web test` (142 tests), web typecheck, web lint, production-style web build, `pnpm test:smoke`, repo typecheck/lint, extension tests, root `pnpm test`, and `git diff --check`.
 - NEXT: commit/push the work-item search change, poll CI/Dokploy, and verify the deployed dashboard search status.
+
+## 2026-07-01 14:22:33 CEST - Loop 56 Deployment And Live UI Closeout
+
+- PUSHED: `6477f9c Improve Azure DevOps work-item search`.
+- PASS: GitHub Actions `CI` completed successfully for `6477f9c`.
+- PASS: GitHub Actions `Build extension` completed successfully for `6477f9c`.
+- PASS: Dokploy deployment for `6477f9c` completed; deployment log showed the generated build-info module was written with the `6477f9c` SHA and the web build compiled successfully.
+- WARN/FIXED OPERATIONALLY: after Dokploy marked the deployment done, production still served previous SHA `23e4df9`; using Dokploy app `Reload` restarted/recreated the service and production immediately served `6477f9c`.
+- PASS: strict `pnpm smoke:production -- --expect-sha 6477f9c` passed after the reload.
+- PASS: live signed-in Chrome dashboard showed numeric picker status `No Azure DevOps match for this ID` for task `124`, and text query `login` showed `No Azure DevOps matches`.
+- PASS: dashboard tab was reloaded back to the persisted task value `124` after the text-query check.
+- NEXT: investigate whether Dokploy can be configured to roll the service automatically after successful Dockerfile builds, or continue the next highest-value QA gap if this was a one-off deploy quirk.
