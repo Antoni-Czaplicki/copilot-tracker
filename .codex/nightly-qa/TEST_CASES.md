@@ -150,3 +150,4 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | AUTH-142 | Auth | PASS | Auth callback code sanitizer removes control characters, collapses whitespace, and truncates long codes | Automated | Extracted helper and added web `node:test` coverage |
 | UI-143 | Web | PASS | GitHub username normalization trims `@`, accepts valid handles, and rejects invalid handles | Automated | Added web `node:test` coverage |
 | UI-144 | Web | PASS | Estimated cost calculation prices known aliases, counts unpriced requests, and formats small USD values | Automated | Added web `node:test` coverage |
+| EXT-145 | Extension | PASS | OTel upload cache skips unchanged records across syncs while reuploading stable metadata changes | Automated | Added request upload signature cache tests; `pnpm --filter ./apps/extension test` passed |

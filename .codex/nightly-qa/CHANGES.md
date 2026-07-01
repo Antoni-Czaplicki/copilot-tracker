@@ -51,6 +51,18 @@
 - PASS: `pnpm --filter @copilot-tracker/web typecheck`
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env and build metadata
 
+## 2026-07-01 - Extension OTel Upload Cache
+
+- Added a per-workspace request upload signature cache for Copilot OTel syncs.
+- Excluded volatile `capturedAt` from signatures so repeated reads of the same OTel records do not repost unchanged batches.
+- Kept stable metadata such as selected task, token counts, model fields, and session title in the signature so real changes still reupload.
+- Persisted cache state after successful upload/no-op and capped tracked request signatures to the latest 5,000 records.
+- Added extension tests for unchanged-record skipping, metadata-change reupload, and per-workspace cache storage.
+
+## Checks
+
+- PASS: `pnpm --filter ./apps/extension test`
+
 ## 2026-07-01 - Admin Billing Sync UX
 
 - Replaced the admin GitHub billing sync raw endpoint link with an in-page client action.

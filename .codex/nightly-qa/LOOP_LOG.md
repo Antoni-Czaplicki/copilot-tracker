@@ -181,3 +181,23 @@
 - Broader verification passed after the web test harness: `pnpm -r typecheck`, `pnpm -r lint`, and `pnpm --filter ./apps/extension test`.
 - Previous slice validation also passed: `pnpm --filter @copilot-tracker/web test` and placeholder production web build.
 - Next: inspect diff, commit/push, then poll CI and production.
+
+## 2026-07-01 03:03:03 CEST - Loop 2 Progress
+
+- Committed and pushed web domain test harness as `87a7372 Add web domain test harness`.
+- Latest local checks before commit: web test/lint/typecheck/build, repo typecheck/lint, and extension tests all passed.
+- Next: poll GitHub Actions and production; continue with remaining route/integration/deployment gaps.
+
+## 2026-07-01 03:08:30 CEST - Loop 2 Progress
+
+- Added extension OTel upload signature cache to skip reposting unchanged request records across syncs/restarts.
+- Cache signatures ignore volatile `capturedAt` but include stable metadata so task/session/token changes still upload.
+- Added extension tests for unchanged-record skipping, metadata-change reupload, and per-workspace cache state.
+- Validation passed: `pnpm --filter ./apps/extension test` reported 9 passing tests.
+- Next: run broader repo checks, commit/push, then poll CI/production.
+
+## 2026-07-01 03:10:09 CEST - Loop 2 Progress
+
+- Broader checks passed after the OTel upload cache: `pnpm -r typecheck`, `pnpm -r lint`, and `pnpm test:web`.
+- Extension tests for the changed slice already passed with 9 tests.
+- Next: inspect diff, commit/push, then poll CI/production.

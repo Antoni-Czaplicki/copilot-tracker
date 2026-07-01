@@ -6,7 +6,12 @@ import * as vscode from "vscode";
 
 import { formatLogDetails } from "../logger";
 import { readCopilotOtelRequests } from "../otel";
-import type { WorkspaceContext } from "../types";
+import {
+  planRequestUpload,
+  readRequestUploadState,
+  writeRequestUploadState,
+} from "../requestUploadCache";
+import type { CopilotChatRequest, WorkspaceContext } from "../types";
 import { getTaskFromBranch } from "../workspaceContext";
 
 suite("Extension Test Suite", () => {
@@ -55,6 +60,72 @@ suite("Extension Test Suite", () => {
     assert.doesNotMatch(formatted, /\/Users\/example/);
     assert.doesNotMatch(formatted, /private-org/);
     assert.doesNotMatch(formatted, /secret-token-value/);
+  });
+
+  test("Upload cache skips unchanged requests and reuploads metadata changes", () => {
+    const initialRequest = createChatRequest({
+      requestRecordId: "otel:trace-cache-1",
+      capturedAt: "2026-07-01T00:00:00.000Z",
+    });
+    const firstPlan = planRequestUpload([initialRequest], {
+      version: 1,
+      entries: {},
+    });
+
+    assert.strictEqual(firstPlan.requestsToUpload.length, 1);
+    assert.strictEqual(firstPlan.skippedUnchangedRequestCount, 0);
+
+    const unchangedPlan = planRequestUpload(
+      [
+        createChatRequest({
+          requestRecordId: "otel:trace-cache-1",
+          capturedAt: "2026-07-01T00:05:00.000Z",
+        }),
+      ],
+      firstPlan.nextState,
+    );
+
+    assert.strictEqual(unchangedPlan.requestsToUpload.length, 0);
+    assert.strictEqual(unchangedPlan.skippedUnchangedRequestCount, 1);
+
+    const changedPlan = planRequestUpload(
+      [
+        createChatRequest({
+          requestRecordId: "otel:trace-cache-1",
+          capturedAt: "2026-07-01T00:10:00.000Z",
+          selectedTask: "456",
+        }),
+      ],
+      firstPlan.nextState,
+    );
+
+    assert.strictEqual(changedPlan.requestsToUpload.length, 1);
+    assert.strictEqual(changedPlan.requestsToUpload[0]?.selectedTask, "456");
+  });
+
+  test("Upload cache state is stored per workspace", async () => {
+    const store = new MemoryMemento();
+    const workspaceContext = createWorkspaceContext();
+    const state = {
+      version: 1 as const,
+      entries: {
+        "otel:trace-cache-1": "signature-1",
+      },
+    };
+
+    await writeRequestUploadState(store, workspaceContext, state);
+
+    assert.deepStrictEqual(
+      readRequestUploadState(store, workspaceContext),
+      state,
+    );
+    assert.deepStrictEqual(
+      readRequestUploadState(store, {
+        ...workspaceContext,
+        workspaceId: "other-workspace",
+      }),
+      { version: 1, entries: {} },
+    );
   });
 
   test("Reads Copilot OTel invoke_agent request spans", async () => {
@@ -371,6 +442,48 @@ function createWorkspaceContext(): WorkspaceContext {
     defaultTask: null,
     selectedTask: null,
   };
+}
+
+function createChatRequest(
+  overrides: Partial<CopilotChatRequest> = {},
+): CopilotChatRequest {
+  return {
+    ...createWorkspaceContext(),
+    requestRecordId: "otel:trace-cache",
+    requestId: "trace-cache",
+    responseId: "span-cache",
+    sessionId: "session-cache",
+    sessionTitle: "Cache test",
+    sessionCreatedAt: null,
+    requestStartedAt: "2026-07-01T00:00:00.000Z",
+    requestCompletedAt: "2026-07-01T00:00:30.000Z",
+    modelId: "gpt-5-nano",
+    resolvedModel: "gpt-5-nano",
+    modelName: null,
+    modelVendor: null,
+    modelFamily: null,
+    inputTokens: 10,
+    outputTokens: 20,
+    totalTokens: 30,
+    tokenSource: "copilot-otel",
+    promptTokenDetails: [],
+    toolCallRoundCount: 1,
+    stopReasons: ["stop"],
+    capturedAt: "2026-07-01T00:00:31.000Z",
+    ...overrides,
+  };
+}
+
+class MemoryMemento {
+  private readonly values = new Map<string, unknown>();
+
+  public get<T>(key: string): T | undefined {
+    return this.values.get(key) as T | undefined;
+  }
+
+  public async update(key: string, value: unknown): Promise<void> {
+    this.values.set(key, value);
+  }
 }
 
 function createResourceSpanRecord(spans: unknown[]) {

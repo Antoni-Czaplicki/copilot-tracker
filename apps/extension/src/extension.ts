@@ -23,6 +23,11 @@ import {
 } from "./otel";
 import { estimateRequestsCostUsd } from "./pricing";
 import {
+  planRequestUpload,
+  readRequestUploadState,
+  writeRequestUploadState,
+} from "./requestUploadCache";
+import {
   type AzureDevOpsWorkItem,
   TrackerClient,
   getTrackerConfig,
@@ -918,7 +923,22 @@ async function performCopilotSessionSync(
         (request) => request.totalTokens === null,
       ).length,
     });
-    await client.sendChatRequests(requests);
+    const uploadPlan = planRequestUpload(
+      requests,
+      readRequestUploadState(context.globalState, workspaceContext),
+    );
+    logInfo("OTel session sync upload selection completed", {
+      requestCount: requests.length,
+      changedRequestCount: uploadPlan.requestsToUpload.length,
+      skippedUnchangedRequestCount: uploadPlan.skippedUnchangedRequestCount,
+      trackedRequestCount: uploadPlan.trackedRequestCount,
+    });
+    await client.sendChatRequests(uploadPlan.requestsToUpload);
+    await writeRequestUploadState(
+      context.globalState,
+      workspaceContext,
+      uploadPlan.nextState,
+    );
     lastSessionStats = currentSessionTokenStats(requests);
     lastSyncStats = {
       requestCount: requests.length,

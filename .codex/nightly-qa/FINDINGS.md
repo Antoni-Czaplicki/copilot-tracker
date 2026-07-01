@@ -7,7 +7,7 @@
 3. [FIXED in `39568ea`] `openDashboard` can throw on malformed `serverUrl` instead of showing a friendly error.
 4. [FIXED in `39568ea`] Multi-workspace context can stay stale until polling after active editor changes.
 5. [FIXED in `053541f`] Cost display looks exact even when token capture is partial or missing.
-6. [P2] OTel sync reparses/resends full files on each cycle/restart.
+6. [PARTIAL] OTel sync still reparses full files, but unchanged request records are no longer resent across syncs/restarts unless stable metadata changes.
 7. [FIXED in `815ae6f`] Legacy global selected-task fallback can leak stale manual overrides across workspaces.
 8. [P2] Missing extension tests for client network failures, auth flow, search picker race, multi-root context, partial token cost UI, and restart sync behavior.
 
