@@ -1,12 +1,22 @@
-export async function readJsonObjectPayload(request: {
+interface JsonReadableRequest {
   json: () => Promise<unknown>;
-}): Promise<Record<string, unknown> | null> {
+}
+
+export async function readJsonPayload(
+  request: JsonReadableRequest,
+): Promise<unknown> {
   try {
-    const body = await request.json();
-    return isRecord(body) ? body : null;
+    return await request.json();
   } catch {
     return null;
   }
+}
+
+export async function readJsonObjectPayload(request: {
+  json: () => Promise<unknown>;
+}): Promise<Record<string, unknown> | null> {
+  const body = await readJsonPayload(request);
+  return isRecord(body) ? body : null;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

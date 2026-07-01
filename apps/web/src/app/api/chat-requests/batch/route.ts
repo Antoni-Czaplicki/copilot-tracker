@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 import { authenticateIngestRequest } from "@/lib/auth";
+import { readJsonPayload } from "@/lib/jsonPayload";
 import { chatRequestBatchSchema } from "@/lib/payloadSchemas";
 import { upsertChatRequests } from "@/lib/store";
 
@@ -11,7 +12,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  const payload = chatRequestBatchSchema.safeParse(await readJson(request));
+  const payload = chatRequestBatchSchema.safeParse(
+    await readJsonPayload(request),
+  );
   if (!payload.success) {
     return NextResponse.json(
       { error: "invalid request batch" },
@@ -30,13 +33,4 @@ export async function POST(request: NextRequest) {
     },
     { status: 202 },
   );
-}
-
-async function readJson(request: NextRequest): Promise<unknown> {
-  try {
-    const payload: unknown = await request.json();
-    return payload;
-  } catch {
-    return null;
-  }
 }

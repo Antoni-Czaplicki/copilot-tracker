@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { readJsonObjectPayload } from "./jsonPayload";
+import { readJsonObjectPayload, readJsonPayload } from "./jsonPayload";
+
+void test("readJsonPayload returns any parsed JSON value", async () => {
+  assert.deepEqual(await readJsonPayload(jsonRequest([1, "two"])), [1, "two"]);
+  assert.equal(await readJsonPayload(jsonRequest("github-user")), "github-user");
+});
 
 void test("readJsonObjectPayload returns parsed JSON objects", async () => {
   assert.deepEqual(await readJsonObjectPayload(jsonRequest({ ok: true })), {
@@ -11,7 +16,7 @@ void test("readJsonObjectPayload returns parsed JSON objects", async () => {
 
 void test("readJsonObjectPayload rejects malformed JSON", async () => {
   assert.equal(
-    await readJsonObjectPayload({
+    await readJsonPayload({
       json: async () => {
         await Promise.resolve();
         throw new SyntaxError("invalid JSON");

@@ -59,6 +59,7 @@
 10. [FIXED] Chat request batch token normalization and duplicate merge behavior were embedded in the database store without direct coverage.
 11. [FIXED] GitHub billing sync trusted `usageItems` and `timePeriod` response shapes from GitHub, which could crash or store invalid dates on malformed successful responses.
 12. [FIXED] GitHub billing response date parsing accepted numerically bounded but impossible calendar dates such as February 31.
+13. [FIXED] Event/chat-request routes duplicated malformed JSON fallback logic instead of sharing the tested JSON payload reader.
 
 ## Deployment
 

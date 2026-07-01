@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 import { currentUser, isAdmin } from "@/lib/auth";
+import { readJsonPayload } from "@/lib/jsonPayload";
 import { taskAssignmentSchema } from "@/lib/payloadSchemas";
 import { updateChatRequestTasks } from "@/lib/store";
 
@@ -11,7 +12,7 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  const payload = taskAssignmentSchema.safeParse(await readJson(request));
+  const payload = taskAssignmentSchema.safeParse(await readJsonPayload(request));
   if (!payload.success) {
     return NextResponse.json(
       { error: "invalid task assignment" },
@@ -38,13 +39,4 @@ export async function PATCH(request: NextRequest) {
   });
 
   return NextResponse.json({ ok: true, updated });
-}
-
-async function readJson(request: NextRequest): Promise<unknown> {
-  try {
-    const payload: unknown = await request.json();
-    return payload;
-  } catch {
-    return null;
-  }
 }

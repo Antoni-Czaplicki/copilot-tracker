@@ -227,4 +227,15 @@
 - [x] Reject impossible response time-period dates
 - [x] Add regression coverage
 - [x] Run focused and broad validation
+- [x] Commit, push, and smoke production
+- [ ] Verify CI completion for `8256b76`
+
+## Loop 27 - Shared Route JSON Parsing
+
+- [x] Inspect ingest/update route JSON parsing
+- [x] Add shared `readJsonPayload` helper
+- [x] Reuse helper in events, chat request batch, bulk update, and single update routes
+- [x] Add JSON helper regression coverage
+- [x] Fix lint warning found during validation
+- [x] Run focused and broad validation
 - [ ] Commit, push, and smoke production

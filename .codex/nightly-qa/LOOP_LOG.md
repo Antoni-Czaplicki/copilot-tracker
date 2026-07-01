@@ -1471,3 +1471,33 @@
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm --filter ./apps/extension compile`
 - Next: commit, push, smoke production, and continue.
+
+## 2026-07-01 06:37:03 CEST - Loop 26 End
+
+- Committed and pushed GitHub billing impossible-date guard as `8256b76 Reject impossible GitHub billing dates`.
+- GitHub Actions for `8256b76` are in progress.
+- PASS: production `/api/health` returns HTTP 200 with `ok=true` and `database.ok=true`.
+- STALE/LIMITATION: production `/api/health` still reports `version.sha="unknown"`, `builtAt="unknown"`, and no visible `Cache-Control` header.
+- PASS: sanitized production Azure OAuth start redirects to Microsoft with PKCE `S256`, state, client id, and required Azure DevOps scopes.
+- Current git state after push: clean.
+- Next: start the next loop and continue while CI/deploy catches up.
+
+## 2026-07-01 06:37:31 CEST - Loop 27 Start
+
+- Previous pushed commit: `8256b76 Reject impossible GitHub billing dates`; GitHub Actions were still in progress at the prior poll.
+- Current blocker remains external Azure OAuth `invalid_client`, unavailable Docker daemon, and unproven production commit metadata/cache-header freshness.
+- Next: inspect ingest/update route helper behavior for a small, meaningful regression test or hardening improvement.
+
+## 2026-07-01 06:40:02 CEST - Loop 27 Validation
+
+- Added shared `readJsonPayload` helper and refactored `readJsonObjectPayload` through it.
+- Reused `readJsonPayload` in `/api/events`, `/api/chat-requests/batch`, `/api/chat-requests/bulk`, and `/api/chat-requests/[requestRecordId]`.
+- Added coverage that `readJsonPayload` preserves parsed arrays/scalars for schema validation and returns `null` for malformed JSON.
+- FIXED DURING VALIDATION: lint warned that `unknown | null` was redundant; changed the return type to `unknown`.
+- PASS: `pnpm --filter @copilot-tracker/web test` (109 tests)
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (109 web tests + 25 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`
+- Next: commit, push, smoke production, and continue.

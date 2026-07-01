@@ -876,3 +876,18 @@
 - PASS: `pnpm test` (108 web tests + 25 extension VS Code tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm --filter ./apps/extension compile`
+
+## 2026-07-01 - Shared Route JSON Payload Parsing
+
+- Added shared `readJsonPayload` and reused it in event ingest, chat request batch ingest, bulk task update, and single task update routes.
+- Refactored `readJsonObjectPayload` to use the shared helper.
+- Added regression coverage for parsed non-object JSON values and malformed JSON fallback.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web test` (109 tests)
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (109 web tests + 25 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`
