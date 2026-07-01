@@ -1133,6 +1133,7 @@
 - Added short `auth_ref` values to Azure OAuth failure redirects so browser failures can be matched to server logs without exposing provider details.
 - Added structured `azure_oauth_callback_failed` server-side warning events with redacted provider descriptions, callback stages, and state/PKCE presence diagnostics.
 - Added homepage rendering for the safe diagnostic reference.
+- Added production smoke coverage for provider-error callback `auth_ref` so deployed diagnostics can be checked automatically.
 - Documented that detailed auth diagnostics belong in Dokploy/server logs, not public URLs or page text.
 
 ## Checks
@@ -1145,5 +1146,5 @@
 - PASS: `pnpm test` (7 smoke tests + 125 web tests + 26 extension VS Code tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm --filter ./apps/extension compile`
-- PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 7d88d23`
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 0d1bab4`
 - PASS: `git diff --check`

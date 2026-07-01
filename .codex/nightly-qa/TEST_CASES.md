@@ -306,3 +306,4 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | AUTH-298 | Auth/API | PASS | Provider-error callbacks redirect with safe `auth_ref` and log a matching redacted server-side event | Automated | Expanded auth route coverage; web/root tests passed |
 | AUTH-299 | Auth/API | PASS | OAuth state/PKCE failures log diagnostic booleans without raw code, state, verifier, or cookies | Automated | Expanded auth route coverage; web/root tests passed |
 | UI-300 | Web | PASS | Public auth failure page can display a safe diagnostic reference without provider descriptions | Code review + build | Added `auth_ref` rendering; typecheck/lint/root tests/build passed |
+| DEP-301 | Deployment | PASS | Production smoke verifier checks provider-error callback `auth_ref` freshness | Automated + live prod | Local smoke tests passed; live production currently warns `auth_ref` missing until diagnostics deploy |

@@ -419,6 +419,7 @@
 - [x] Add redacted structured Azure OAuth callback failure log events for Dokploy/server logs
 - [x] Add client-safe `auth_ref` failure URL/page display for correlating browser failures to server logs
 - [x] Add tests for diagnostic references, log redaction, provider-error logging, and OAuth state diagnostics
+- [x] Add production smoke assertion for provider-error callback `auth_ref`
 - [x] Document auth diagnostics/logging contract
 - [x] Run typecheck, lint, root tests, production web build, extension compile, live known-stale smoke, and diff check
 - [ ] Commit, push, smoke production, poll CI, and verify deployed auth_ref/log behavior

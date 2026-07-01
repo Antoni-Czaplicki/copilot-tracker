@@ -126,6 +126,12 @@ async function smokeProviderErrorCallback() {
       redirectUrl.searchParams.get("auth_code"),
     )})`,
   );
+  assertFresh(
+    /^[0-9a-f]{16}$/.test(redirectUrl.searchParams.get("auth_ref") ?? ""),
+    `provider-error callback includes diagnostic auth_ref (got ${formatValue(
+      redirectUrl.searchParams.get("auth_ref"),
+    )})`,
+  );
   assertHard(
     !redirectUrl.searchParams.has("error_description"),
     "provider-error callback does not reflect error_description",

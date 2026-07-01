@@ -18,6 +18,10 @@ test("production smoke verifier passes a fresh deployment", async () => {
       result.stdout,
       /PASS provider-error callback preserves sanitized auth_code=access_denied/,
     );
+    assert.match(
+      result.stdout,
+      /PASS provider-error callback includes diagnostic auth_ref/,
+    );
     assert.equal(result.stderr, "");
   });
 });
@@ -91,6 +95,10 @@ test("production smoke verifier fails strict mode on stale deployment evidence",
       result.stdout,
       /FAIL provider-error callback preserves sanitized auth_code=access_denied/,
     );
+    assert.match(
+      result.stdout,
+      /FAIL provider-error callback includes diagnostic auth_ref/,
+    );
     assert.equal(result.stderr, "");
   });
 });
@@ -120,6 +128,10 @@ test("production smoke verifier can warn for known stale deployment evidence", a
     assert.match(
       result.stdout,
       /WARN provider-error callback preserves sanitized auth_code=access_denied/,
+    );
+    assert.match(
+      result.stdout,
+      /WARN provider-error callback includes diagnostic auth_ref/,
     );
     assert.equal(result.stderr, "");
   });
@@ -189,6 +201,9 @@ async function withSmokeServer({ fresh }, callback) {
         "auth_code",
         fresh ? "access_denied" : "provider_error",
       );
+      if (fresh) {
+        redirectUrl.searchParams.set("auth_ref", "1234567890abcdef");
+      }
       response.writeHead(307, { location: redirectUrl.toString() });
       response.end();
       return;

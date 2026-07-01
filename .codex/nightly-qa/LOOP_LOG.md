@@ -2003,3 +2003,18 @@
 - PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 7d88d23`
 - PASS: `git diff --check`
 - Next: commit/push, poll CI, deploy, and verify the real Chrome `invalid_client` flow logs a matching Dokploy `authRef`.
+
+## 2026-07-01 09:19:57 CEST - Loop 45 Smoke Follow-Up
+
+- PASS: `0d1bab4 Add redacted auth diagnostics` completed successfully on both GitHub Actions workflows.
+- Added production smoke assertion for provider-error callback `auth_ref`.
+- PASS: `node --check scripts/smoke-production.mjs`
+- PASS: `pnpm test:smoke` (7 tests)
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (7 smoke tests + 125 web tests + 26 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 0d1bab4` now warns that production lacks `auth_ref` until deploy catches up.
+- PASS: `git diff --check`
+- Next: commit/push the smoke assertion, poll CI, then verify production `auth_ref` after deployment.

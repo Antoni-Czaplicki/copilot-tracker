@@ -710,3 +710,9 @@
 - ADDED: Azure OAuth callback failures now emit redacted structured `azure_oauth_callback_failed` warning events with `authRef`, stage, stable code, and safe diagnostic fields.
 - ADDED: public failure redirects now include only safe `auth_code` plus `auth_ref`; provider `error_description`, tokens, cookies, code verifiers, and secrets stay out of browser URLs/page text.
 - NEXT AFTER DEPLOY: reproduce the Chrome `invalid_client` flow, copy the public `auth_ref`, and find the matching JSON line in Dokploy logs.
+
+## 2026-07-01 09:19 CEST Auth Ref Smoke Prep
+
+- PASS: `0d1bab4 Add redacted auth diagnostics` completed successfully on GitHub Actions CI and Build extension workflows.
+- ADDED: production smoke now checks that provider-error callbacks include diagnostic `auth_ref`.
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 0d1bab4` passes but warns that production still lacks `auth_ref` until the diagnostics deployment is live.

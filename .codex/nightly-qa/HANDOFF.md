@@ -158,3 +158,9 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - Added redacted server-side Azure OAuth diagnostic logging plus public `auth_ref` correlation for matching browser failures to Dokploy logs.
 - No Dokploy MCP is exposed here; use Chrome for Dokploy UI/log inspection and Termius/SSH for VPS fixes.
 - After this deploy, rerun the Chrome login, grab `auth_ref` from the public URL/page, and confirm Dokploy logs have a matching `azure_oauth_callback_failed` JSON event with redacted provider details.
+
+## 2026-07-01 09:19 CEST Auth Ref Smoke Update
+
+- `0d1bab4 Add redacted auth diagnostics` passed both GitHub Actions workflows.
+- Production smoke now checks provider-error callback `auth_ref`; current production warns on missing `auth_ref`, which is expected until the diagnostics deployment is live.
+- Next verification after deploy: strict enough smoke should pass the `auth_ref` check, then Chrome login should expose an `auth_ref` that can be matched in Dokploy logs.

@@ -102,7 +102,8 @@ Expected results:
   `vso.profile`, and `vso.work`.
 - Provider-error callbacks should preserve a sanitized short `auth_code` such as
   `access_denied` or `invalid_client`, but must not reflect provider
-  descriptions into public URLs or page text.
+  descriptions into public URLs or page text. They should also include a short
+  `auth_ref` value that matches a redacted server-side diagnostic log event.
 
 `pnpm smoke:production` fails on stale deployment evidence such as unknown build
 metadata, wrong expected SHA, missing `Cache-Control: no-store`, or old
