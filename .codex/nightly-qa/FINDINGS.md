@@ -8,7 +8,7 @@
 4. [P2] Multi-workspace context can stay stale until polling after active editor changes.
 5. [FIXED locally, commit pending] Cost display looks exact even when token capture is partial or missing.
 6. [P2] OTel sync reparses/resends full files on each cycle/restart.
-7. [P3] Legacy global selected-task fallback can leak stale manual overrides across workspaces.
+7. [FIXED locally, commit pending] Legacy global selected-task fallback can leak stale manual overrides across workspaces.
 8. [P2] Missing extension tests for client network failures, auth flow, search picker race, multi-root context, partial token cost UI, and restart sync behavior.
 
 ## Web UX

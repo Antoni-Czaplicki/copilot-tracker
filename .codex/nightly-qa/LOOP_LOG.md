@@ -89,3 +89,10 @@
 - Implemented extension current-session tooltip changes so partial/missing token data is reflected as incomplete data and lower-bound cost.
 - Validated with extension compile/lint/test via `pnpm --filter ./apps/extension test`.
 - Next: commit/push extension cost display and poll CI/production.
+
+## 2026-07-01 02:27:00 CEST - Loop 1 Progress
+
+- Committed and pushed extension partial-token cost display as `053541f Clarify partial token cost display`.
+- Removed deprecated global selected-task fallback to prevent stale manual tasks leaking across workspaces.
+- Validated with extension compile/lint/test.
+- Next: commit/push workspace task isolation and poll CI/production.

@@ -36,6 +36,15 @@
 ## Checks
 
 - PASS: `pnpm --filter ./apps/extension test`
+
+## 2026-07-01 - Extension Workspace Task Isolation
+
+- Removed the deprecated global selected-task fallback from workspace context resolution so manual task overrides cannot leak into unrelated workspaces.
+- `setSelectedTask` still clears the legacy key when users choose a task, preserving forward cleanup.
+
+## Checks
+
+- PASS: `pnpm --filter ./apps/extension test`
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 
 ## 2026-07-01 - Deployment Health and Secret Contract

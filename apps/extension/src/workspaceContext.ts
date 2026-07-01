@@ -22,9 +22,9 @@ export async function buildWorkspaceContext(
     : null;
   const defaultTask = branch ? getTaskFromBranch(branch) : null;
   const workspaceId = createWorkspaceId(workspacePath, repositoryRoot);
-  const manuallySelectedTask =
-    context.workspaceState.get<string>(selectedTaskStorageKey(workspaceId)) ??
-    context.workspaceState.get<string>(selectedTaskKey);
+  const manuallySelectedTask = context.workspaceState.get<string>(
+    selectedTaskStorageKey(workspaceId),
+  );
 
   return {
     workspaceId,

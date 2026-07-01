@@ -20,7 +20,7 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | EXT-012 | Extension | PENDING | `buildWorkspaceContext` resolves repository root, remote URL, branch, default task | Automated | |
 | EXT-013 | Extension | PASS | `getTaskFromBranch` handles numeric prefixes and branch-only fallback | Automated | Regression; `pnpm --filter ./apps/extension test` passed |
 | EXT-014 | Extension | PASS | Branch parsing ignores non-task branch formats (`main`, `feature/foo`, versions, detached hashes) | Automated | Covered by new unit assertions; `pnpm --filter ./apps/extension test` passed |
-| EXT-015 | Extension | PENDING | `setSelectedTask` persists per-workspace and later load reflects it | Automated | |
+| EXT-015 | Extension | PASS | `setSelectedTask` persists per-workspace and ignores deprecated global fallback leakage | Automated | Legacy global fallback removed; extension tests passed |
 | EXT-016 | Extension | PENDING | `refreshContext` fallback when remote URL unavailable and branch available | Automated | |
 | EXT-017 | Extension | PENDING | `maybePromptForBranchTask` prompt appears only when branch-based task changes from manual selection | Automated | Edge |
 | EXT-018 | Extension | PASS | Status bar text reflects current session token totals and handles zero-metrics/partial-capture state | Automated/manual | Partial token lower-bound display implemented; extension tests passed |
