@@ -782,6 +782,7 @@ suite("Extension Test Suite", () => {
               project: "Project",
               assignedTo: "A Person",
               changedAt: "2026-07-01T00:00:00.000Z",
+              tags: "auth; urgent",
               url: "https://dev.azure.com/example/project/_workitems/edit/123",
             },
           ],
@@ -826,6 +827,7 @@ suite("Extension Test Suite", () => {
               project: "Project",
               assignedTo: "A Person",
               changedAt: "2026-07-01T00:00:00.000Z",
+              tags: "auth; urgent",
               url: "https://dev.azure.com/example/project/_workitems/edit/123",
             },
             {
@@ -836,6 +838,7 @@ suite("Extension Test Suite", () => {
               project: "Project",
               assignedTo: null,
               changedAt: null,
+              tags: null,
               url: null,
             },
             {
@@ -846,6 +849,7 @@ suite("Extension Test Suite", () => {
               project: "Project",
               assignedTo: null,
               changedAt: null,
+              tags: null,
               url: null,
             },
             {
@@ -856,6 +860,7 @@ suite("Extension Test Suite", () => {
               project: "Project",
               assignedTo: null,
               changedAt: null,
+              tags: null,
               url: null,
             },
             "not-an-object",

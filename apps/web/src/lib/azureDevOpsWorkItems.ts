@@ -1,4 +1,8 @@
-import { azureDevOpsOrg, azureDevOpsWorkItemsUrl } from "./config";
+import {
+  azureDevOpsOrg,
+  azureDevOpsSearchUrl,
+  azureDevOpsWorkItemsUrl,
+} from "./config";
 
 export interface AzureDevOpsWorkItem {
   id: number;
@@ -8,6 +12,7 @@ export interface AzureDevOpsWorkItem {
   project: string | null;
   assignedTo: string | null;
   changedAt: string | null;
+  tags: string | null;
   url: string | null;
 }
 
@@ -19,6 +24,7 @@ const workItemFields = [
   "System.TeamProject",
   "System.AssignedTo",
   "System.ChangedDate",
+  "System.Tags",
 ];
 const defaultWorkItemSearchLimit = 20;
 const maxWorkItemSearchLimit = 50;
@@ -57,20 +63,75 @@ export async function searchAzureDevOpsWorkItems({
     return [];
   }
 
-  const workItemId = parseWorkItemId(normalizedQuery);
-  if (workItemId !== null) {
-    return fetchWorkItems(accessToken, [workItemId]);
+  const safeLimit = safeSearchLimit(limit);
+  const directIds = directWorkItemIdsFromQuery(normalizedQuery);
+  if (isExactWorkItemIdQuery(normalizedQuery)) {
+    return fetchWorkItems(accessToken, directIds.slice(0, safeLimit));
   }
   if (/^\d+$/u.test(normalizedQuery)) {
     return [];
   }
 
-  const ids = await queryWorkItemIds(accessToken, normalizedQuery, limit);
-  if (ids.length === 0) {
-    return [];
+  const directItems =
+    directIds.length > 0
+      ? await fetchWorkItems(accessToken, directIds.slice(0, safeLimit))
+      : [];
+  const searchItems = await searchWorkItems(
+    accessToken,
+    normalizedQuery,
+    safeLimit,
+  );
+  if (searchItems !== null && searchItems.length > 0) {
+    return dedupeWorkItems([...directItems, ...searchItems]).slice(0, safeLimit);
   }
 
-  return fetchWorkItems(accessToken, ids);
+  const ids = await queryWorkItemIds(accessToken, normalizedQuery, safeLimit);
+  if (ids.length === 0) {
+    return directItems;
+  }
+
+  const wiqlItems = await fetchWorkItems(accessToken, ids);
+  return dedupeWorkItems([...directItems, ...wiqlItems]).slice(0, safeLimit);
+}
+
+async function searchWorkItems(
+  accessToken: string,
+  query: string,
+  limit: number,
+) {
+  const response = await fetchWithRetry(
+    new URL(
+      "_apis/search/workitemsearchresults?api-version=7.1",
+      `${azureDevOpsSearchUrl()}/`,
+    ),
+    {
+      method: "POST",
+      headers: azureDevOpsHeaders(accessToken),
+      body: JSON.stringify({
+        searchText: query,
+        "$skip": 0,
+        "$top": limit,
+        filters: null,
+        includeFacets: false,
+      }),
+    },
+  );
+
+  if (!response.ok) {
+    if (
+      response.status === 400 ||
+      response.status === 403 ||
+      response.status === 404
+    ) {
+      return null;
+    }
+    throw toAzureDevOpsError(response);
+  }
+
+  return workItemsFromSearchPayload(
+    await readAzureDevOpsJson(response),
+    limit,
+  );
 }
 
 async function queryWorkItemIds(
@@ -150,7 +211,28 @@ function parseWorkItemId(query: string) {
   return id;
 }
 
+function isExactWorkItemIdQuery(query: string) {
+  return parseWorkItemId(query) !== null;
+}
+
+function directWorkItemIdsFromQuery(query: string) {
+  const exactId = parseWorkItemId(query);
+  if (exactId !== null) {
+    return [exactId];
+  }
+
+  return uniqueNumbers(
+    [...query.matchAll(/(?:\bAB#|#|\bid:)\s*(\d{1,10})\b/giu)]
+      .map((match) => parseWorkItemId(match[1] ?? ""))
+      .filter((id): id is number => id !== null),
+  );
+}
+
 async function fetchWorkItems(accessToken: string, ids: number[]) {
+  if (ids.length === 0) {
+    return [];
+  }
+
   const response = await fetchWithRetry(
     new URL(
       "_apis/wit/workitemsbatch?api-version=7.1",
@@ -171,7 +253,10 @@ async function fetchWorkItems(accessToken: string, ids: number[]) {
     throw toAzureDevOpsError(response);
   }
 
-  return workItemsFromBatchPayload(await readAzureDevOpsJson(response));
+  return orderWorkItemsByIds(
+    workItemsFromBatchPayload(await readAzureDevOpsJson(response)),
+    ids,
+  );
 }
 
 function workItemIdsFromWiqlPayload(payload: unknown, limit: number) {
@@ -195,21 +280,62 @@ function workItemsFromBatchPayload(payload: unknown) {
     .filter((item): item is AzureDevOpsWorkItem => item !== null);
 }
 
+function workItemsFromSearchPayload(payload: unknown, limit: number) {
+  if (!isRecord(payload) || !Array.isArray(payload.results)) {
+    return [];
+  }
+
+  return payload.results
+    .map((item) => toAzureDevOpsWorkItemFromSearchResult(item))
+    .filter((item): item is AzureDevOpsWorkItem => item !== null)
+    .slice(0, limit);
+}
+
+function toAzureDevOpsWorkItemFromSearchResult(value: unknown) {
+  if (!isRecord(value) || !isRecord(value.fields)) {
+    return null;
+  }
+
+  const fields = value.fields;
+  const id = readWorkItemId(readField(fields, "System.Id"));
+  if (id === null) {
+    return null;
+  }
+
+  const project =
+    readString(readField(fields, "System.TeamProject")) ??
+    (isRecord(value.project) ? readString(value.project.name) : null);
+
+  return {
+    id,
+    title: readString(readField(fields, "System.Title")) ?? `Work item ${id}`,
+    state: readString(readField(fields, "System.State")),
+    type: readString(readField(fields, "System.WorkItemType")),
+    project,
+    assignedTo: readIdentity(readField(fields, "System.AssignedTo")),
+    changedAt: readString(readField(fields, "System.ChangedDate")),
+    tags: readString(readField(fields, "System.Tags")),
+    url: project ? workItemWebUrl(project, id) : readString(value.url),
+  };
+}
+
 function toAzureDevOpsWorkItem(value: unknown) {
   if (!isRecord(value) || !isWorkItemId(value.id)) {
     return null;
   }
 
   const fields = isRecord(value.fields) ? value.fields : {};
-  const project = readString(fields["System.TeamProject"]);
+  const project = readString(readField(fields, "System.TeamProject"));
   return {
     id: value.id,
-    title: readString(fields["System.Title"]) ?? `Work item ${value.id}`,
-    state: readString(fields["System.State"]),
-    type: readString(fields["System.WorkItemType"]),
+    title:
+      readString(readField(fields, "System.Title")) ?? `Work item ${value.id}`,
+    state: readString(readField(fields, "System.State")),
+    type: readString(readField(fields, "System.WorkItemType")),
     project,
-    assignedTo: readIdentity(fields["System.AssignedTo"]),
-    changedAt: readString(fields["System.ChangedDate"]),
+    assignedTo: readIdentity(readField(fields, "System.AssignedTo")),
+    changedAt: readString(readField(fields, "System.ChangedDate")),
+    tags: readString(readField(fields, "System.Tags")),
     url: project ? workItemWebUrl(project, value.id) : readString(value.url),
   };
 }
@@ -256,6 +382,29 @@ function readString(value: unknown) {
   return typeof value === "string" && value.length > 0 ? value : null;
 }
 
+function readWorkItemId(value: unknown) {
+  if (isWorkItemId(value)) {
+    return value;
+  }
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  return parseWorkItemId(value);
+}
+
+function readField(fields: Record<string, unknown>, referenceName: string) {
+  if (referenceName in fields) {
+    return fields[referenceName];
+  }
+
+  const normalizedReferenceName = referenceName.toLowerCase();
+  const matchingKey = Object.keys(fields).find(
+    (key) => key.toLowerCase() === normalizedReferenceName,
+  );
+  return matchingKey === undefined ? undefined : fields[matchingKey];
+}
+
 function isWorkItemId(value: unknown): value is number {
   return (
     typeof value === "number" &&
@@ -271,6 +420,30 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function workItemWebUrl(project: string, id: number) {
   return `https://dev.azure.com/${encodeURIComponent(azureDevOpsOrg())}/${encodeURIComponent(project)}/_workitems/edit/${id}`;
+}
+
+function dedupeWorkItems(items: AzureDevOpsWorkItem[]) {
+  const seen = new Set<number>();
+  return items.filter((item) => {
+    if (seen.has(item.id)) {
+      return false;
+    }
+    seen.add(item.id);
+    return true;
+  });
+}
+
+function orderWorkItemsByIds(items: AzureDevOpsWorkItem[], ids: number[]) {
+  const indexById = new Map(ids.map((id, index) => [id, index]));
+  return [...items].sort(
+    (left, right) =>
+      (indexById.get(left.id) ?? Number.MAX_SAFE_INTEGER) -
+      (indexById.get(right.id) ?? Number.MAX_SAFE_INTEGER),
+  );
+}
+
+function uniqueNumbers(values: number[]) {
+  return [...new Set(values)];
 }
 
 async function fetchWithRetry(

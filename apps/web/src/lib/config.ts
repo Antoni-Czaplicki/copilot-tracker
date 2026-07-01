@@ -81,6 +81,10 @@ export function azureDevOpsWorkItemsUrl() {
   return `https://dev.azure.com/${encodeURIComponent(azureDevOpsOrg())}`;
 }
 
+export function azureDevOpsSearchUrl() {
+  return `https://almsearch.dev.azure.com/${encodeURIComponent(azureDevOpsOrg())}`;
+}
+
 export class MissingAzureDevOpsOAuthConfigError extends Error {
   constructor() {
     super(

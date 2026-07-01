@@ -38,33 +38,41 @@ void test("buildWiqlQueries escapes text queries and falls back to default limit
   assert.match(queries[1] ?? "", /CONTAINS 'can''t login'/);
 });
 
-void test("searchAzureDevOpsWorkItems fetches matching ids and maps batch fields", async (context) => {
+void test("searchAzureDevOpsWorkItems uses Azure Search and maps result fields", async (context) => {
   const requests = mockFetch(context, [
     Response.json({
-      workItems: [
-        { id: 123 },
-        { id: "ignored" },
-        { id: -1 },
-        { id: 2_147_483_648 },
-        { id: 456 },
-      ],
-    }),
-    Response.json({
-      value: [
+      results: [
         {
-          id: 123,
+          project: { name: "Main Project" },
           fields: {
-            "System.Title": "Fix login",
-            "System.State": "Active",
-            "System.WorkItemType": "Bug",
-            "System.TeamProject": "Main Project",
-            "System.AssignedTo": { displayName: "A Person" },
-            "System.ChangedDate": "2026-07-01T00:00:00.000Z",
+            "system.id": "123",
+            "system.title": "Fix login",
+            "system.state": "Active",
+            "system.workitemtype": "Bug",
+            "system.assignedto": "A Person",
+            "system.changeddate": "2026-07-01T00:00:00.000Z",
+            "system.tags": "auth; urgent",
           },
         },
         {
-          id: 456,
-          fields: {},
+          fields: {
+            "system.id": "ignored",
+          },
+        },
+        {
+          fields: {
+            "system.id": "-1",
+          },
+        },
+        {
+          fields: {
+            "system.id": "2147483648",
+          },
+        },
+        {
+          fields: {
+            "system.id": "456",
+          },
           url: "https://dev.azure.com/fallback/_apis/wit/workItems/456",
         },
       ],
@@ -86,6 +94,7 @@ void test("searchAzureDevOpsWorkItems fetches matching ids and maps batch fields
       project: "Main Project",
       assignedTo: "A Person",
       changedAt: "2026-07-01T00:00:00.000Z",
+      tags: "auth; urgent",
       url: "https://dev.azure.com/placeholder-org/Main%20Project/_workitems/edit/123",
     },
     {
@@ -96,28 +105,26 @@ void test("searchAzureDevOpsWorkItems fetches matching ids and maps batch fields
       project: null,
       assignedTo: null,
       changedAt: null,
+      tags: null,
       url: "https://dev.azure.com/fallback/_apis/wit/workItems/456",
     },
   ]);
-  assert.equal(requests.length, 2);
+  assert.equal(requests.length, 1);
   assert.equal(
     String(requests[0]?.input),
-    "https://dev.azure.com/placeholder-org/_apis/wit/wiql?api-version=7.1",
+    "https://almsearch.dev.azure.com/placeholder-org/_apis/search/workitemsearchresults?api-version=7.1",
   );
   assert.equal(
     requestHeader(requests[0], "authorization"),
     "Bearer access-token",
   );
-  const wiqlBody = requestJson(requests[0]);
-  const wiqlQuery = wiqlBody.query;
-  if (typeof wiqlQuery !== "string") {
-    assert.fail("WIQL request query should be a string");
-  }
-  assert.match(
-    wiqlQuery,
-    /CONTAINS WORDS 'login'/,
-  );
-  assert.deepEqual(requestJson(requests[1]).ids, [123, 456]);
+  assert.deepEqual(requestJson(requests[0]), {
+    searchText: "login",
+    "$skip": 0,
+    "$top": 5,
+    filters: null,
+    includeFacets: false,
+  });
 });
 
 void test("searchAzureDevOpsWorkItems fetches numeric ids directly without WIQL", async (context) => {
@@ -129,6 +136,7 @@ void test("searchAzureDevOpsWorkItems fetches numeric ids directly without WIQL"
           fields: {
             "System.Title": "Existing task",
             "System.TeamProject": "Main Project",
+            "System.Tags": "support",
           },
         },
       ],
@@ -149,6 +157,7 @@ void test("searchAzureDevOpsWorkItems fetches numeric ids directly without WIQL"
       project: "Main Project",
       assignedTo: null,
       changedAt: null,
+      tags: "support",
       url: "https://dev.azure.com/placeholder-org/Main%20Project/_workitems/edit/17198",
     },
   ]);
@@ -161,8 +170,59 @@ void test("searchAzureDevOpsWorkItems fetches numeric ids directly without WIQL"
   assert.equal(requestJson(requests[0]).errorPolicy, "Omit");
 });
 
+void test("searchAzureDevOpsWorkItems promotes marked ids alongside text search results", async (context) => {
+  const requests = mockFetch(context, [
+    Response.json({
+      value: [
+        {
+          id: 17_198,
+          fields: {
+            "System.Title": "Direct task",
+          },
+        },
+      ],
+    }),
+    Response.json({
+      results: [
+        {
+          fields: {
+            "system.id": "17198",
+            "system.title": "ignored malformed duplicate",
+          },
+        },
+        {
+          project: { name: "Main Project" },
+          fields: {
+            "system.id": "42",
+            "system.title": "Search task",
+            "system.tags": "frontend",
+          },
+        },
+      ],
+    }),
+  ]);
+
+  const items = await searchAzureDevOpsWorkItems({
+    accessToken: "access-token",
+    query: "AB#17198 frontend",
+  });
+
+  assert.deepEqual(
+    items.map((item) => item.id),
+    [17_198, 42],
+  );
+  assert.equal(items[1]?.tags, "frontend");
+  assert.equal(requests.length, 2);
+  assert.deepEqual(requestJson(requests[0]).ids, [17_198]);
+  assert.equal(
+    String(requests[1]?.input),
+    "https://almsearch.dev.azure.com/placeholder-org/_apis/search/workitemsearchresults?api-version=7.1",
+  );
+});
+
 void test("searchAzureDevOpsWorkItems falls back to contains query after unsafe words query", async (context) => {
   const requests = mockFetch(context, [
+    new Response("search unavailable", { status: 404 }),
     new Response("bad wiql", { status: 400 }),
     Response.json({ workItems: [{ id: 789 }] }),
     Response.json({
@@ -184,9 +244,9 @@ void test("searchAzureDevOpsWorkItems falls back to contains query after unsafe 
   });
 
   assert.equal(items[0]?.id, 789);
-  assert.equal(requests.length, 3);
-  const wordsQuery = requestJson(requests[0]).query;
-  const containsQuery = requestJson(requests[1]).query;
+  assert.equal(requests.length, 4);
+  const wordsQuery = requestJson(requests[1]).query;
+  const containsQuery = requestJson(requests[2]).query;
   if (typeof wordsQuery !== "string") {
     assert.fail("words query should be a string");
   }
@@ -205,6 +265,7 @@ void test("searchAzureDevOpsWorkItems falls back to contains query after unsafe 
 
 void test("searchAzureDevOpsWorkItems falls back to contains query after empty words results", async (context) => {
   const requests = mockFetch(context, [
+    Response.json({ results: [] }),
     Response.json({ workItems: [] }),
     Response.json({ workItems: [{ id: 321 }] }),
     Response.json({
@@ -227,9 +288,9 @@ void test("searchAzureDevOpsWorkItems falls back to contains query after empty w
 
   assert.equal(items[0]?.id, 321);
   assert.equal(items.length, 1);
-  assert.equal(requests.length, 3);
-  const wordsQuery = requestJson(requests[0]).query;
-  const containsQuery = requestJson(requests[1]).query;
+  assert.equal(requests.length, 4);
+  const wordsQuery = requestJson(requests[1]).query;
+  const containsQuery = requestJson(requests[2]).query;
   if (typeof wordsQuery !== "string") {
     assert.fail("words query should be a string");
   }
@@ -244,11 +305,12 @@ void test("searchAzureDevOpsWorkItems falls back to contains query after empty w
     containsQuery,
     /CONTAINS 'substring'/,
   );
-  assert.deepEqual(requestJson(requests[2]).ids, [321]);
+  assert.deepEqual(requestJson(requests[3]).ids, [321]);
 });
 
 void test("searchAzureDevOpsWorkItems returns empty after all successful text queries are empty", async (context) => {
   const requests = mockFetch(context, [
+    Response.json({ results: [] }),
     Response.json({ workItems: [] }),
     Response.json({ workItems: [] }),
   ]);
@@ -259,10 +321,10 @@ void test("searchAzureDevOpsWorkItems returns empty after all successful text qu
   });
 
   assert.deepEqual(items, []);
-  assert.equal(requests.length, 2);
+  assert.equal(requests.length, 3);
 });
 
-void test("searchAzureDevOpsWorkItems maps malformed successful WIQL JSON to a typed error", async (context) => {
+void test("searchAzureDevOpsWorkItems maps malformed successful Search JSON to a typed error", async (context) => {
   const requests = mockFetch(context, [
     new Response("{", {
       headers: { "content-type": "application/json" },
@@ -282,9 +344,9 @@ void test("searchAzureDevOpsWorkItems maps malformed successful WIQL JSON to a t
   assert.equal(requests.length, 1);
 });
 
-void test("searchAzureDevOpsWorkItems maps malformed successful batch JSON to a typed error", async (context) => {
+void test("searchAzureDevOpsWorkItems maps malformed successful WIQL JSON to a typed error", async (context) => {
   const requests = mockFetch(context, [
-    Response.json({ workItems: [{ id: 123 }] }),
+    Response.json({ results: [] }),
     new Response("{", {
       headers: { "content-type": "application/json" },
     }),
@@ -303,8 +365,31 @@ void test("searchAzureDevOpsWorkItems maps malformed successful batch JSON to a 
   assert.equal(requests.length, 2);
 });
 
+void test("searchAzureDevOpsWorkItems maps malformed successful batch JSON to a typed error", async (context) => {
+  const requests = mockFetch(context, [
+    Response.json({ results: [] }),
+    Response.json({ workItems: [{ id: 123 }] }),
+    new Response("{", {
+      headers: { "content-type": "application/json" },
+    }),
+  ]);
+
+  await assert.rejects(
+    searchAzureDevOpsWorkItems({
+      accessToken: "access-token",
+      query: "login",
+    }),
+    (error: unknown) =>
+      error instanceof AzureDevOpsWorkItemsError &&
+      error.code === "azure_devops_bad_response" &&
+      error.status === 502,
+  );
+  assert.equal(requests.length, 3);
+});
+
 void test("searchAzureDevOpsWorkItems tolerates missing successful upstream result arrays", async (context) => {
   const requests = mockFetch(context, [
+    Response.json({ results: null }),
     Response.json({ workItems: null }),
     Response.json({ workItems: null }),
   ]);
@@ -315,7 +400,7 @@ void test("searchAzureDevOpsWorkItems tolerates missing successful upstream resu
   });
 
   assert.deepEqual(items, []);
-  assert.equal(requests.length, 2);
+  assert.equal(requests.length, 3);
 });
 
 void test("searchAzureDevOpsWorkItems maps repeated rate limits to a typed error", async (context) => {

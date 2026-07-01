@@ -508,12 +508,19 @@ async function pickAzureDevOpsTask(
 function workItemQuickPickItem(
   workItem: AzureDevOpsWorkItem,
 ): vscode.QuickPickItem & { taskId: string } {
+  const detail = [
+    workItem.assignedTo ? `Assigned to ${workItem.assignedTo}` : null,
+    workItem.tags ? `Tags: ${workItem.tags}` : null,
+  ]
+    .filter(Boolean)
+    .join(" | ");
+
   return {
     label: `$(issues) ${workItem.id}: ${workItem.title}`,
     description: [workItem.type, workItem.state, workItem.project]
       .filter(Boolean)
       .join(" / "),
-    detail: workItem.assignedTo ? `Assigned to ${workItem.assignedTo}` : "",
+    detail,
     taskId: String(workItem.id),
   };
 }

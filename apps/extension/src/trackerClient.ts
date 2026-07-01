@@ -36,6 +36,7 @@ export interface AzureDevOpsWorkItem {
   project: string | null;
   assignedTo: string | null;
   changedAt: string | null;
+  tags: string | null;
   url: string | null;
 }
 
@@ -424,16 +425,18 @@ function normalizeWorkItems(payload: unknown): AzureDevOpsWorkItem[] {
     return [];
   }
 
-  return payload.workItems.filter(isAzureDevOpsWorkItem);
+  return payload.workItems
+    .map((item) => normalizeWorkItem(item))
+    .filter((item): item is AzureDevOpsWorkItem => item !== null);
 }
 
-function isAzureDevOpsWorkItem(value: unknown): value is AzureDevOpsWorkItem {
+function normalizeWorkItem(value: unknown): AzureDevOpsWorkItem | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
-    return false;
+    return null;
   }
 
   const item = value as Record<string, unknown>;
-  return (
+  if (
     typeof item.id === "number" &&
     Number.isSafeInteger(item.id) &&
     item.id > 0 &&
@@ -445,7 +448,21 @@ function isAzureDevOpsWorkItem(value: unknown): value is AzureDevOpsWorkItem {
     isNullableString(item.assignedTo) &&
     isNullableString(item.changedAt) &&
     isNullableString(item.url)
-  );
+  ) {
+    return {
+      id: item.id,
+      title: item.title,
+      state: item.state,
+      type: item.type,
+      project: item.project,
+      assignedTo: item.assignedTo,
+      changedAt: item.changedAt,
+      tags: isNullableString(item.tags) ? item.tags : null,
+      url: item.url,
+    };
+  }
+
+  return null;
 }
 
 function isNullableString(value: unknown): value is string | null {

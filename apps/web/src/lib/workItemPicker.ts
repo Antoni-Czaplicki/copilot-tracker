@@ -10,6 +10,7 @@ export interface WorkItemSearchItem {
   project: string | null;
   assignedTo: string | null;
   changedAt: string | null;
+  tags: string | null;
   url: string | null;
 }
 
@@ -99,6 +100,7 @@ function workItemFromValue(value: unknown): WorkItemSearchItem | null {
     project: nullableString(value.project),
     assignedTo: nullableString(value.assignedTo),
     changedAt: nullableString(value.changedAt),
+    tags: nullableString(value.tags),
     url: nullableString(value.url),
   };
 }
