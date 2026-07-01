@@ -27,7 +27,7 @@ where they can be explored on a dashboard and leaderboard.
 ## Settings
 
 - `copilot-tracker.serverUrl` — Copilot Tracker server URL from user settings. Workspace values are ignored for token safety.
-- `copilot-tracker.otelFilePath` — optional path for the OTel JSONL file.
+- `copilot-tracker.otelFilePath` — optional user-level path for the OTel JSONL file. Workspace values are ignored because Copilot's OTel exporter is global.
 - `copilot-tracker.syncIntervalSeconds` — fallback polling interval.
 - `copilot-tracker.showCurrentSessionTokensInStatusBar` — show current session tokens and estimated cost in the status bar.
 

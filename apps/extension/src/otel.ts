@@ -209,11 +209,15 @@ export async function readCopilotOtelRequests(
   const spans = records.flatMap((record) => collectOtelSpans(record));
   const logRecords = records.flatMap((record) => collectOtelLogRecords(record));
   const parsedRequests = [
-    ...parseOtelRequests(spans, workspaceContext),
-    ...parseOtelLogRequests(logRecords, workspaceContext),
+    ...parseOtelRequests(spans),
+    ...parseOtelLogRequests(logRecords),
   ];
-  const requests = parsedRequests.map((request) => {
+  const requests = parsedRequests.flatMap((request) => {
     const sessionMatch = resolveSessionForRequest?.(request) ?? null;
+    if (!belongsToWorkspace(request, workspaceContext, sessionMatch)) {
+      return [];
+    }
+
     const requestWorkspaceContext = {
       ...workspaceContext,
       branch: request.branch ?? workspaceContext.branch,
@@ -271,10 +275,7 @@ export async function readCopilotOtelRequests(
   return dedupedRequests.sort(compareRequestsChronologically);
 }
 
-function parseOtelRequests(
-  spans: OtelSpan[],
-  workspaceContext: WorkspaceContext,
-): ParsedOtelRequest[] {
+function parseOtelRequests(spans: OtelSpan[]): ParsedOtelRequest[] {
   const traces = new Map<string, TraceGroup>();
   for (const span of spans) {
     const trace = traces.get(span.traceId) ?? {
@@ -294,8 +295,7 @@ function parseOtelRequests(
 
   return [...traces.values()]
     .map((trace) => traceToRequest(trace))
-    .filter((request): request is ParsedOtelRequest => Boolean(request))
-    .filter((request) => belongsToWorkspace(request, workspaceContext));
+    .filter((request): request is ParsedOtelRequest => Boolean(request));
 }
 
 function traceToRequest(trace: TraceGroup): ParsedOtelRequest | null {
@@ -355,7 +355,6 @@ function traceToRequest(trace: TraceGroup): ParsedOtelRequest | null {
 
 function parseOtelLogRequests(
   logRecords: OtelLogRecord[],
-  workspaceContext: WorkspaceContext,
 ): ParsedOtelRequest[] {
   const groups = new Map<string, LogRecordGroup>();
   for (const record of logRecords) {
@@ -381,8 +380,7 @@ function parseOtelLogRequests(
 
   return [...groups.values()]
     .flatMap((group) => logGroupToRequests(group))
-    .filter((request): request is ParsedOtelRequest => Boolean(request))
-    .filter((request) => belongsToWorkspace(request, workspaceContext));
+    .filter((request): request is ParsedOtelRequest => Boolean(request));
 }
 
 function logGroupToRequests(group: LogRecordGroup): ParsedOtelRequest[] {
@@ -699,12 +697,22 @@ function readOtelValue(value: unknown): unknown {
 function belongsToWorkspace(
   request: ParsedOtelRequest,
   workspaceContext: WorkspaceContext,
+  sessionMatch: OtelSessionLookupResult | null,
 ) {
   if (!workspaceContext.repositoryRemoteUrl) {
     return true;
   }
 
   if (!request.repositoryRemoteUrl) {
+    if (hasStrongSessionMatch(request, sessionMatch)) {
+      logDebug("Accepted OTel request without repository metadata by matched chat session", {
+        traceId: request.traceId,
+        conversationId: request.conversationId,
+        sessionId: sessionMatch.sessionId,
+      });
+      return true;
+    }
+
     logDebug("Ignored OTel request without repository metadata", {
       traceId: request.traceId,
       conversationId: request.conversationId,
@@ -715,6 +723,17 @@ function belongsToWorkspace(
   return (
     normalizeRepositoryRemoteUrl(request.repositoryRemoteUrl) ===
     normalizeRepositoryRemoteUrl(workspaceContext.repositoryRemoteUrl)
+  );
+}
+
+function hasStrongSessionMatch(
+  request: ParsedOtelRequest,
+  sessionMatch: OtelSessionLookupResult | null,
+): sessionMatch is OtelSessionLookupResult {
+  return Boolean(
+    request.conversationId &&
+      sessionMatch?.sessionId &&
+      request.conversationId === sessionMatch.sessionId,
   );
 }
 

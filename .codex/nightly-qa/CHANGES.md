@@ -1470,3 +1470,26 @@
 - PASS: `pnpm -r lint`
 - PASS: `pnpm test` (11 smoke tests + 146 web tests + 35 extension tests)
 - PASS: strict `pnpm smoke:production -- --expect-sha 6ed152d`
+
+## 2026-07-01 - Real VS Code Repo-less OTel Attribution Fix
+
+- Real VS Code QA installed and ran the rebuilt extension against production with two workspaces: one GitHub HTTPS workspace and one Azure DevOps SSH-style workspace.
+- Verified no-task clear, manual override, branch-prompt accept, branch-prompt dismiss, workspace-scoped prompt de-duplication, VS Code status-bar token/cost hover, and production dashboard session/task/token rendering.
+- Found a live Copilot 0.54 shape: current JSONL log records can omit repository metadata while still carrying a Copilot chat `session.id` that matches VS Code chat-session storage.
+- Fixed `readCopilotOtelRequests` to resolve VS Code chat sessions before workspace filtering, so repo-less remote-workspace records can be accepted by exact chat-session identity.
+- Tightened the safety guard after dashboard QA exposed cross-window risk: repo-less records now require Copilot's emitted `session.id` to exactly match the workspace's VS Code chat session id. Timestamp-only matches still provide titles for records with repository metadata but cannot admit repo-less records.
+- Updated extension settings behavior/docs so the global OTel file path ignores workspace scope; Copilot's exporter setting is global.
+- Changed extension activation to `*` so the extension can configure Copilot's OTel exporter before Copilot Chat captures startup settings.
+- Replayed the patched parser against the real global OTel file and real VS Code workspace storage: workspace A returned its five relevant records, and workspace B returned exactly its own Azure-SSH chat record.
+- Packaged and installed the fixed VSIX into real VS Code. `vsce` still warns about `*` activation; this is intentional for the exporter setup requirement.
+
+## Checks
+
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS: `pnpm --filter ./apps/extension test` (40 tests)
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (11 smoke tests + 146 web tests + 40 extension tests)
+- PASS: real OTel/workspace-storage replay proves workspace B returns one exact-session Azure-SSH request instead of the earlier three-record cross-window set
+- PASS: `pnpm --filter ./apps/extension package`
+- PASS: VSIX install into real VS Code via bundled `code --install-extension --force`

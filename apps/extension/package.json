@@ -78,7 +78,7 @@
         "copilot-tracker.otelFilePath": {
           "type": "string",
           "default": "",
-          "description": "Optional path for the Copilot Chat OTel JSONL file. Leave empty to use extension global storage."
+          "description": "Optional path for the Copilot Chat OTel JSONL file. Set this in user settings; workspace values are ignored because Copilot's OTel exporter is global. Leave empty to use extension global storage."
         },
         "copilot-tracker.syncIntervalSeconds": {
           "type": "number",
@@ -95,7 +95,7 @@
     }
   },
   "activationEvents": [
-    "onStartupFinished",
+    "*",
     "onUri",
     "onCommand:copilot-tracker.setTask",
     "onCommand:copilot-tracker.useBranchTask",

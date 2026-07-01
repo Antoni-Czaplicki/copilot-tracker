@@ -445,3 +445,46 @@ env \
 - Branch/task correctness has strong pure coverage now, but still needs a deliberate real branch-switch QA pass with Copilot/Copilot Chat events.
 - Full local Docker image build remains blocked by unavailable Docker daemon on this machine.
 - Dokploy has previously marked builds done while production still served the previous SHA until app `Reload`; strict smoke catches this.
+
+## 2026-07-01 17:38 CEST Current Update
+
+### Immediate State
+
+- Current repo: `/Users/antoniczaplicki/WebstormProjects/copilot-tracker`.
+- Branch before the pending commit: `main` at `9b8a52f Cover extension OTel task history attribution`.
+- Pending local change: focused extension fix for current Copilot repo-less OTel records plus QA log updates.
+- Fixed VSIX has been packaged and installed into real VS Code from `apps/extension/copilot-tracker-0.0.1.vsix`.
+- Production web still serves `6ed152d`; this is expected for extension-only commits unless a web runtime change is made.
+
+### What The Real QA Proved
+
+- Real VS Code production sync handled no-task clear without stale task attribution.
+- Manual task override, branch-prompt accept, branch-prompt dismiss, and workspace-scoped prompt de-duplication were verified in real VS Code logs/status.
+- VS Code status bar/hover showed task label, current-session token split, total tokens, and estimated cost after sync.
+- Production dashboard showed the synced sessions, token input/output split, estimated cost, and Admin navigation.
+- Azure DevOps SSH-style workspace QA exposed a live parser edge: Copilot 0.54 log records can omit repository metadata while still carrying a chat `session.id`.
+
+### What Changed
+
+- `readCopilotOtelRequests` now resolves VS Code chat sessions before workspace filtering.
+- Repo-less records for remote workspaces are accepted only when Copilot's emitted chat `session.id` exactly matches the workspace's VS Code chat session id.
+- Timestamp-only chat-session matching can still supply session titles for records that already match by repository metadata, but it cannot admit repo-less records.
+- `copilot-tracker.otelFilePath` now reads only user/global configuration, ignoring workspace values because Copilot's OTel exporter is global.
+- Extension activation moved from `onStartupFinished` to `*` so exporter setup happens before Copilot Chat captures startup telemetry settings.
+
+### Validation
+
+- PASS: `pnpm --filter ./apps/extension compile`.
+- PASS: `pnpm --filter ./apps/extension test` (40 tests).
+- PASS: real global OTel replay against real VS Code workspace storage: workspace A returned five relevant records; workspace B returned exactly one Azure-SSH chat request.
+- PASS: `pnpm --filter ./apps/extension package` and VSIX install into real VS Code.
+- PASS: `pnpm -r typecheck`.
+- PASS: `pnpm -r lint`.
+- PASS: `pnpm test` (11 smoke tests + 146 web tests + 40 extension tests).
+
+### Remaining Before Closeout
+
+- Run production smoke in known-stale mode for the new local head.
+- Run `git diff --check`.
+- Commit/push the extension fix and QA log updates.
+- Watch GitHub Actions `CI` and `Build extension` until green.

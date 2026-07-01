@@ -1,5 +1,5 @@
 import * as assert from "assert";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
 import * as vscode from "vscode";
@@ -35,7 +35,10 @@ import {
   TrackerClient,
   TrackerClientError,
   extensionSignInUrl,
+  getTrackerConfigFromConfiguration,
   parseTrackerServerUrl,
+  type TrackerConfigurationInspect,
+  type TrackerConfigurationSource,
 } from "../trackerClient";
 import type { CopilotChatRequest, WorkspaceContext } from "../types";
 import type { SessionTokenStats } from "../sessionTokenStats";
@@ -133,6 +136,32 @@ suite("Extension Test Suite", () => {
     assert.throws(() =>
       trackerDashboardUrl("https://copilot-tracker.example.com/path"),
     );
+  });
+
+  test("Ignores workspace OTel file paths because Copilot exporter is global", () => {
+    const config = createTrackerConfigurationSource({
+      globalValues: {
+        otelFilePath: "/tmp/copilot-tracker-global-otel.jsonl",
+      },
+      workspaceValues: {
+        otelFilePath: "/tmp/copilot-tracker-workspace-otel.jsonl",
+      },
+    });
+
+    assert.strictEqual(
+      getTrackerConfigFromConfiguration(config).otelFilePath,
+      "/tmp/copilot-tracker-global-otel.jsonl",
+    );
+  });
+
+  test("Activates on startup before Copilot Chat captures OTel settings", async () => {
+    const manifestPath = path.join(__dirname, "../../package.json");
+    const manifest = JSON.parse(await readFile(manifestPath, "utf8")) as {
+      activationEvents?: string[];
+    };
+
+    assert.ok(manifest.activationEvents?.includes("*"));
+    assert.ok(!manifest.activationEvents?.includes("onStartupFinished"));
   });
 
   test("Detects Azure DevOps numeric task ids from branches", () => {
@@ -1363,6 +1392,182 @@ suite("Extension Test Suite", () => {
     }
   });
 
+  test("Accepts repo-less OTel log records when matched to this workspace chat session", async () => {
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "copilot-otel-"));
+
+    try {
+      const otelFilePath = path.join(tempDir, "copilot-otel.jsonl");
+      await writeFile(
+        otelFilePath,
+        [
+          createPlainLogRecord({
+            traceId: "trace-repoless-1",
+            spanId: "span-repoless-1",
+            hrTime: [1782918561, 664000000],
+            body: "copilot_chat.session.start",
+            resourceSessionId: "otel-window-session",
+            includeRepository: false,
+            attributes: {
+              "event.name": "copilot_chat.session.start",
+              "session.id": "otel-chat-session",
+              "gen_ai.request.model": "gpt-5-nano",
+              "gen_ai.agent.name": "GitHub Copilot Chat",
+            },
+          }),
+          createPlainLogRecord({
+            traceId: "trace-repoless-1",
+            spanId: "span-repoless-1",
+            hrTime: [1782918567, 664000000],
+            body: "GenAI inference: gpt-5-nano",
+            resourceSessionId: "otel-window-session",
+            includeRepository: false,
+            attributes: {
+              "event.name": "gen_ai.client.inference.operation.details",
+              "gen_ai.operation.name": "chat",
+              "gen_ai.request.model": "gpt-5-nano",
+              "gen_ai.response.model": "gpt-5-nano-2025-08-07",
+              "gen_ai.response.id": "response-repoless-1",
+              "gen_ai.usage.input_tokens": 22375,
+              "gen_ai.usage.output_tokens": 471,
+            },
+          }),
+        ]
+          .map((record) => JSON.stringify(record))
+          .join("\n"),
+      );
+
+      const requests = await readCopilotOtelRequests(
+        createWorkspaceContext(),
+        otelFilePath,
+        undefined,
+        (request) =>
+          request.traceId === "trace-repoless-1"
+            ? {
+                sessionId: "otel-chat-session",
+                sessionTitle: "For Copilot Tracker QA after clearing the task",
+                sessionCreatedAt: "2026-07-01T15:09:21.664Z",
+              }
+            : null,
+      );
+
+      assert.strictEqual(requests.length, 1);
+      assert.strictEqual(
+        requests[0]?.requestRecordId,
+        "otel-log:trace-repoless-1:response-repoless-1",
+      );
+      assert.strictEqual(requests[0]?.sessionId, "otel-chat-session");
+      assert.strictEqual(
+        requests[0]?.sessionTitle,
+        "For Copilot Tracker QA after clearing the task",
+      );
+      assert.strictEqual(requests[0]?.inputTokens, 22375);
+      assert.strictEqual(requests[0]?.outputTokens, 471);
+      assert.strictEqual(requests[0]?.branch, "main");
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  test("Rejects repo-less OTel log records without a workspace chat session match", async () => {
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "copilot-otel-"));
+
+    try {
+      const otelFilePath = path.join(tempDir, "copilot-otel.jsonl");
+      await writeFile(
+        otelFilePath,
+        JSON.stringify(
+          createPlainLogRecord({
+            traceId: "trace-repoless-unmatched",
+            spanId: "span-repoless-unmatched",
+            hrTime: [1782918567, 664000000],
+            body: "GenAI inference: gpt-5-nano",
+            resourceSessionId: "otel-window-session",
+            includeRepository: false,
+            attributes: {
+              "event.name": "gen_ai.client.inference.operation.details",
+              "gen_ai.operation.name": "chat",
+              "gen_ai.request.model": "gpt-5-nano",
+              "gen_ai.response.model": "gpt-5-nano-2025-08-07",
+              "gen_ai.response.id": "response-repoless-unmatched",
+              "gen_ai.usage.input_tokens": 100,
+              "gen_ai.usage.output_tokens": 20,
+            },
+          }),
+        ),
+      );
+
+      const requests = await readCopilotOtelRequests(
+        createWorkspaceContext(),
+        otelFilePath,
+      );
+
+      assert.strictEqual(requests.length, 0);
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  test("Rejects repo-less OTel log records with only a different timestamp-matched chat session", async () => {
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "copilot-otel-"));
+
+    try {
+      const otelFilePath = path.join(tempDir, "copilot-otel.jsonl");
+      await writeFile(
+        otelFilePath,
+        [
+          createPlainLogRecord({
+            traceId: "trace-repoless-other-session",
+            spanId: "span-repoless-other-session",
+            hrTime: [1782919251, 505000000],
+            body: "copilot_chat.session.start",
+            resourceSessionId: "otel-window-session",
+            includeRepository: false,
+            attributes: {
+              "event.name": "copilot_chat.session.start",
+              "session.id": "workspace-a-chat-session",
+              "gen_ai.request.model": "gpt-5-nano",
+              "gen_ai.agent.name": "GitHub Copilot Chat",
+            },
+          }),
+          createPlainLogRecord({
+            traceId: "trace-repoless-other-session",
+            spanId: "span-repoless-other-session",
+            hrTime: [1782919255, 664000000],
+            body: "GenAI inference: gpt-5-nano",
+            resourceSessionId: "otel-window-session",
+            includeRepository: false,
+            attributes: {
+              "event.name": "gen_ai.client.inference.operation.details",
+              "gen_ai.operation.name": "chat",
+              "gen_ai.request.model": "gpt-5-nano",
+              "gen_ai.response.model": "gpt-5-nano-2025-08-07",
+              "gen_ai.response.id": "response-repoless-other-session",
+              "gen_ai.usage.input_tokens": 722,
+              "gen_ai.usage.output_tokens": 305,
+            },
+          }),
+        ]
+          .map((record) => JSON.stringify(record))
+          .join("\n"),
+      );
+
+      const requests = await readCopilotOtelRequests(
+        createWorkspaceContext(),
+        otelFilePath,
+        undefined,
+        () => ({
+          sessionId: "workspace-b-chat-session",
+          sessionTitle: "Nearby request in another VS Code workspace",
+          sessionCreatedAt: "2026-07-01T15:20:51.505Z",
+        }),
+      );
+
+      assert.strictEqual(requests.length, 0);
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
+    }
+  });
+
   test("Uses matched VS Code chat session titles for OTel requests", async () => {
     const tempDir = await mkdtemp(path.join(os.tmpdir(), "copilot-otel-"));
 
@@ -1545,6 +1750,25 @@ class MemorySecretStorage {
   }
 }
 
+function createTrackerConfigurationSource({
+  globalValues = {},
+  workspaceValues = {},
+}: {
+  globalValues?: Record<string, unknown>;
+  workspaceValues?: Record<string, unknown>;
+} = {}): TrackerConfigurationSource {
+  return {
+    inspect: <T>(section: string) =>
+      ({
+        key: `copilot-tracker.${section}`,
+        globalValue: globalValues[section] as T | undefined,
+        workspaceValue: workspaceValues[section] as T | undefined,
+      }) as TrackerConfigurationInspect<T> & { workspaceValue?: T },
+    get: <T>(section: string, defaultValue: T) =>
+      (workspaceValues[section] ?? globalValues[section] ?? defaultValue) as T,
+  };
+}
+
 async function withTrackerServerUrl<T>(
   serverUrl: string,
   run: () => Promise<T>,
@@ -1655,6 +1879,7 @@ function createPlainLogRecord({
   hrTime,
   body,
   resourceSessionId,
+  includeRepository = true,
   attributes: recordAttributes,
 }: {
   traceId: string;
@@ -1662,8 +1887,21 @@ function createPlainLogRecord({
   hrTime: [number, number];
   body: string;
   resourceSessionId: string;
+  includeRepository?: boolean;
   attributes: Record<string, unknown>;
 }) {
+  const resourceAttributes: [string, string][] = [
+    ["service.name", "copilot-chat"],
+    ["service.version", "0.54.0"],
+    ["session.id", resourceSessionId],
+  ];
+  if (includeRepository) {
+    resourceAttributes.push([
+      "github.copilot.git.repository",
+      "https://github.com/Antoni-Czaplicki/copilot-tracker.git",
+    ]);
+  }
+
   return {
     hrTime,
     hrTimeObserved: hrTime,
@@ -1673,15 +1911,7 @@ function createPlainLogRecord({
       traceFlags: 1,
     },
     resource: {
-      _rawAttributes: [
-        ["service.name", "copilot-chat"],
-        ["service.version", "0.54.0"],
-        ["session.id", resourceSessionId],
-        [
-          "github.copilot.git.repository",
-          "https://github.com/Antoni-Czaplicki/copilot-tracker.git",
-        ],
-      ],
+      _rawAttributes: resourceAttributes,
       _asyncAttributesPending: false,
     },
     instrumentationScope: {

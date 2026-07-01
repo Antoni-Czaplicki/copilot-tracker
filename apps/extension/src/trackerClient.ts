@@ -19,6 +19,15 @@ export interface TrackerConfig {
   showCurrentSessionTokensInStatusBar: boolean;
 }
 
+export interface TrackerConfigurationInspect<T> {
+  globalValue?: T;
+}
+
+export interface TrackerConfigurationSource {
+  inspect<T>(section: string): TrackerConfigurationInspect<T> | undefined;
+  get<T>(section: string, defaultValue: T): T;
+}
+
 export interface AzureDevOpsWorkItem {
   id: number;
   title: string;
@@ -38,11 +47,18 @@ export interface TrackerSecretStorage {
 
 export function getTrackerConfig(): TrackerConfig {
   const config = vscode.workspace.getConfiguration(extensionId);
+  return getTrackerConfigFromConfiguration(config);
+}
+
+export function getTrackerConfigFromConfiguration(
+  config: TrackerConfigurationSource,
+): TrackerConfig {
   const serverUrl =
     config.inspect<string>("serverUrl")?.globalValue ?? defaultServerUrl;
+  const otelFilePath = config.inspect<string>("otelFilePath")?.globalValue ?? "";
   return {
     serverUrl,
-    otelFilePath: config.get<string>("otelFilePath", ""),
+    otelFilePath,
     syncIntervalSeconds: Math.max(
       5,
       config.get<number>("syncIntervalSeconds", 15),

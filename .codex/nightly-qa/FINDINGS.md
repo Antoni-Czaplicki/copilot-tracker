@@ -27,6 +27,8 @@
 23. [FIXED] Clearing a manual task on a branch with no detected task id did not write a no-task history entry, and historical no-task entries could fall back to the current task during OTel attribution.
 24. [FIXED] Branch-change prompt de-duplication was global instead of workspace-scoped, so the same branch transition in another workspace could suppress a needed task-switch prompt.
 25. [FIXED] OTel repository matching did not normalize Azure DevOps SSH/HTTPS remotes consistently, so valid Copilot requests could be dropped for workspaces cloned with a different remote URL style.
+26. [FIXED] Current Copilot 0.54 live OTel log records can omit repository metadata; the extension filtered those repo-less records out for remote workspaces before resolving VS Code chat-session identity.
+27. [FIXED] The initial repo-less OTel fallback was too loose: timestamp-only chat-session matches from another workspace could admit the same global OTel request and overwrite production workspace/task fields by `requestRecordId`. Repo-less records now require an exact Copilot chat `session.id` match to the workspace's VS Code chat session.
 
 ## Web UX
 

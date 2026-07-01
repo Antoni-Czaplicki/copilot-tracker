@@ -411,6 +411,19 @@ function matchChatSessionTitle(
   request: Parameters<OtelSessionResolver>[0],
   candidates: SessionRequestTitleCandidate[],
 ) {
+  if (request.conversationId) {
+    const exactMatch = candidates.find(
+      (candidate) => candidate.sessionId === request.conversationId,
+    );
+    if (exactMatch) {
+      return {
+        sessionId: exactMatch.sessionId,
+        sessionTitle: exactMatch.title,
+        sessionCreatedAt: exactMatch.sessionCreatedAt,
+      };
+    }
+  }
+
   const requestTimes = uniqueNumbers([
     toTimestampMs(request.requestCompletedAt),
     toTimestampMs(request.requestStartedAt),

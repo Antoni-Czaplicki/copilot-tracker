@@ -1,11 +1,11 @@
 # Nightly QA Status
 
-- Current time: 2026-07-01 15:30:42 CEST
-- Current loop: 61
-- State: extension OTel historical task-attribution coverage is implemented and validated locally
-- Focus: commit/push the timestamp-based OTel task-history regression, then verify GitHub Actions
+- Current time: 2026-07-01 17:38:21 CEST
+- Current loop: 63
+- State: real VS Code branch/task QA found a live repo-less OTel attribution bug; a focused extension fix is implemented, locally replay-verified, packaged, and installed
+- Focus: commit/push the repo-less OTel exact-session attribution fix, then verify GitHub Actions
 - Blocker: Docker daemon is unavailable locally, so full local Docker image builds cannot be run on this machine. Dokploy built and deployed the Docker image successfully.
-- Latest completed pushed evidence: `2283a85 Cover extension OTel remote filtering`; GitHub Actions CI and Build extension passed. Latest production web SHA remains `6ed152d` and strict production smoke for that deployed app SHA passed.
+- Latest completed pushed evidence: `9b8a52f Cover extension OTel task history attribution`; GitHub Actions CI and Build extension passed. Latest production web SHA remains `6ed152d`; commits after that are extension/progress-only, so known-stale production smoke is expected for new extension commits.
 - Diagnosis: production web auth/session token persistence is working. Real VS Code sign-in now uses tracker web sign-in plus a VS Code URI callback, stores a tracker session token in SecretStorage, and uses that token for API calls while Azure DevOps tokens remain server-side.
 - Latest live verification: real VS Code signed in through production, synced a one-request OTel fixture, displayed task `124`, 321 input tokens, 123 output tokens, 444 total tokens, and `$0.0001` estimated cost. Production dashboard reload showed the assigned task/session/token split. Rebuilt VSIX with OTel lifecycle stability fix stopped the repeated exporter/lifecycle log storm over a longer post-reload sample.
 - Latest local/deployed change: Docker builds generate `apps/web/src/generated/buildInfo.generated.ts` before `next build` from explicit metadata, common source metadata, or minimal `.git` refs; health reads that generated module after explicit env/common env fallbacks.
@@ -17,11 +17,12 @@
 - Latest extension change: OTel repository matching now normalizes GitHub and Azure DevOps SSH/scp-like remotes to HTTPS-style forms before filtering requests to the workspace.
 - Latest local extension coverage: `readCopilotOtelRequests` now has a full ingestion-path regression proving Azure DevOps SSH telemetry matches an HTTPS workspace remote while an unrelated repo in the same OTel file is filtered out.
 - Latest local extension coverage: `readCopilotOtelRequests` now applies real task-history resolution across multiple OTel request timestamps, covering branch default, manual override, and explicit no-task clear states.
+- Latest real QA finding/fix: current Copilot 0.54 live OTel log records can omit repository metadata. The extension now resolves VS Code chat session titles before workspace filtering and accepts repo-less remote-workspace records only when Copilot's emitted chat `session.id` exactly matches a VS Code chat session id for that workspace. Timestamp-only matches still enrich titled records with repo metadata but cannot admit repo-less records, preventing cross-window `requestRecordId` overwrites.
 - Latest extension commit: `9d298f5 Fix extension task clear attribution`; GitHub Actions CI and Build extension passed.
 - Latest extension commit: `25da717 Scope branch task prompts by workspace`; GitHub Actions CI and Build extension passed.
 - Latest extension commit: `0416c27 Normalize extension repository remotes`; GitHub Actions CI and Build extension passed.
 - Latest extension commit: `2283a85 Cover extension OTel remote filtering`; GitHub Actions CI and Build extension passed.
-- Latest checks: `pnpm --filter ./apps/extension compile`, `pnpm --filter ./apps/extension test` (35 tests), `pnpm -r typecheck`, `pnpm -r lint`, root `pnpm test`, and strict production smoke for deployed app commit `6ed152d` passed. GitHub Actions are green through `2283a85`; the new historical-attribution test is not pushed yet.
+- Latest checks: `pnpm --filter ./apps/extension compile`, `pnpm --filter ./apps/extension test` (40 tests), `pnpm -r typecheck`, `pnpm -r lint`, root `pnpm test`, replay against the real global OTel file/workspace storage, and fixed VSIX package/install all passed. Production smoke and GitHub Actions are still pending for the new commit.
 - Deployment note: `9d298f5`, `25da717`, and `0416c27` are extension/progress-only; production web still serves `6ed152d` and passes strict smoke. No Dokploy reload was forced for those extension-only commits.
-- Next action: run diff check, commit/push the timestamp-based task-history regression and local log closeout, then verify GitHub Actions.
+- Next action: run production smoke/diff check, commit/push the repo-less OTel attribution fix and QA log closeout, then verify GitHub Actions.
 - Production target: https://copilot-tracker.antek.page

@@ -2445,3 +2445,24 @@
 - PASS: root `pnpm test` (11 smoke tests, 146 web tests, 35 extension tests).
 - PASS: strict `pnpm smoke:production -- --expect-sha 6ed152d`.
 - NEXT: run diff check, commit/push, and verify CI/package workflow.
+
+## 2026-07-01 17:38:21 CEST - Loop 63 Real VS Code Repo-less OTel Attribution
+
+- RESUMED: from the fresh next-agent handoff and continued real VS Code QA with macOS permissions granted.
+- INSTALLED/RAN: rebuilt VSIX for `9b8a52f` in real VS Code and exercised production sync from two workspaces.
+- VERIFIED: no-task clear produced a later production dashboard row under `No task` instead of the previous/manual task.
+- VERIFIED: manual override, branch-prompt accept, branch-prompt dismiss, status-bar task/tokens/cost hover, click-through dashboard, and admin nav visibility in production.
+- VERIFIED: workspace-scoped branch prompt de-duplication in a second workspace using an Azure DevOps SSH-style remote; the same branch transition was not globally suppressed.
+- FOUND: current Copilot 0.54 live OTel log records can omit repository metadata but include a Copilot chat `session.id` matching VS Code chat-session storage.
+- FOUND: after the first repo-less fallback, dashboard QA showed cross-window risk: timestamp-only matches could admit a different workspace's repo-less global OTel request and overwrite workspace/task fields by shared `requestRecordId`.
+- IMPLEMENTED: OTel parsing now resolves session identity before workspace filtering, accepts repo-less remote-workspace records only on exact Copilot/VS Code chat session id match, and prefers exact session id matches before timestamp title matching.
+- IMPLEMENTED: global OTel file path config ignores workspace settings, and activation moved from `onStartupFinished` to `*` so Copilot exporter configuration happens before Copilot Chat captures startup telemetry settings.
+- ADDED: extension regressions for user-scope OTel path config, startup activation, accepting exact-session repo-less OTel records, rejecting unmatched repo-less records, and rejecting timestamp-only different-session repo-less records.
+- PASS: `pnpm --filter ./apps/extension compile`.
+- PASS: `pnpm --filter ./apps/extension test` (40 tests).
+- PASS: replay against the real global OTel file and real VS Code workspace storage: workspace A returned five relevant records, workspace B returned exactly one Azure-SSH chat record.
+- PASS: `pnpm --filter ./apps/extension package` and VSIX install into real VS Code.
+- PASS: `pnpm -r typecheck`.
+- PASS: `pnpm -r lint`.
+- PASS: root `pnpm test` (11 smoke tests, 146 web tests, 40 extension tests).
+- NEXT: run production smoke in known-stale mode for the new local head, run diff check, commit/push, and verify GitHub Actions `CI` plus `Build extension`.
