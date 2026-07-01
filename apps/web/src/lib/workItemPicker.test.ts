@@ -4,6 +4,7 @@ import { test } from "node:test";
 import {
   canSearchWorkItems,
   emptyWorkItemSearchMessage,
+  nextWorkItemActiveIndex,
   workItemsFromSearchPayload,
   workItemSearchErrorMessage,
 } from "./workItemPicker";
@@ -27,6 +28,68 @@ void test("emptyWorkItemSearchMessage distinguishes numeric ids from text querie
   assert.equal(
     emptyWorkItemSearchMessage("login"),
     "No Azure DevOps matches",
+  );
+});
+
+void test("nextWorkItemActiveIndex moves through listbox results within bounds", () => {
+  assert.equal(
+    nextWorkItemActiveIndex({
+      currentIndex: 0,
+      itemCount: 3,
+      key: "ArrowDown",
+    }),
+    1,
+  );
+  assert.equal(
+    nextWorkItemActiveIndex({
+      currentIndex: 2,
+      itemCount: 3,
+      key: "ArrowDown",
+    }),
+    2,
+  );
+  assert.equal(
+    nextWorkItemActiveIndex({
+      currentIndex: 2,
+      itemCount: 3,
+      key: "ArrowUp",
+    }),
+    1,
+  );
+  assert.equal(
+    nextWorkItemActiveIndex({
+      currentIndex: 0,
+      itemCount: 3,
+      key: "ArrowUp",
+    }),
+    0,
+  );
+});
+
+void test("nextWorkItemActiveIndex clamps stale or invalid active indexes", () => {
+  assert.equal(
+    nextWorkItemActiveIndex({
+      currentIndex: 99,
+      itemCount: 3,
+      key: "ArrowDown",
+    }),
+    2,
+  );
+  assert.equal(
+    nextWorkItemActiveIndex({
+      currentIndex: -4,
+      itemCount: 3,
+      key: "ArrowUp",
+    }),
+    0,
+  );
+  assert.equal(
+    nextWorkItemActiveIndex({
+      currentIndex: 1,
+      itemCount: 0,
+      key: "ArrowDown",
+    }),
+    0,
   );
 });
 

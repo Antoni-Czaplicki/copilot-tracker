@@ -567,5 +567,15 @@
 - [x] Update deployment docs to reflect generated build-info fallback accurately
 - [x] Document Dokploy `Reload` as the safe recovery when a Dockerfile build is done but strict smoke still sees the previous SHA
 - [x] Run diff/format checks and production smoke for deployed app commit
-- [ ] Commit and push docs/log updates
-- [ ] Poll CI and production smoke
+- [x] Commit and push docs/log updates
+- [x] Poll CI and production smoke
+
+## Loop 58 - WorkItemPicker Keyboard Coverage
+
+- [x] Inspect existing web test architecture and avoid adding a heavy DOM stack
+- [x] Extract WorkItemPicker active-index movement into a pure helper
+- [x] Add tests for ArrowUp/ArrowDown bounds and stale-index clamping
+- [x] Run web tests, typecheck, lint, production-style web build, repo typecheck/lint, smoke tests, root tests, and diff check
+- [ ] Commit and push picker keyboard coverage
+- [ ] Poll CI
+- [ ] Update logs and continue next gap

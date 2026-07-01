@@ -1,5 +1,11 @@
 # Nightly QA Changes
 
+## 2026-07-01 - WorkItemPicker Keyboard Coverage
+
+- Extracted ArrowUp/ArrowDown active-result movement into `nextWorkItemActiveIndex`.
+- Added tests for listbox movement bounds and stale/invalid active-index clamping.
+- PASS: web tests, web typecheck, web lint, production-style web build, smoke tests, repo typecheck/lint, root tests, and diff check.
+
 ## 2026-07-01 - Deployment Docs Reload Fallback
 
 - Clarified that generated Docker build metadata proves the built image, while strict production smoke proves the running service.

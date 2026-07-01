@@ -2311,3 +2311,13 @@
 - PASS: `git diff --check`.
 - PASS: strict `pnpm smoke:production -- --expect-sha 6477f9c` still passes for the deployed app commit.
 - NEXT: commit/push the docs update, poll CI, then continue the next QA gap.
+
+## 2026-07-01 14:31:01 CEST - Loop 58 WorkItemPicker Keyboard Coverage
+
+- PUSHED: `158d69e Document Dokploy reload fallback`.
+- PASS: GitHub Actions `CI` and `Build extension` completed successfully for `158d69e`.
+- PASS: production strict smoke still passes for deployed app commit `6477f9c`; the docs/log commit did not change runtime app code.
+- IMPLEMENTED: extracted WorkItemPicker ArrowUp/ArrowDown active-result movement into `nextWorkItemActiveIndex`.
+- ADDED: tests cover listbox active-index movement at upper/lower bounds and stale/invalid active-index clamping.
+- PASS: `pnpm --filter @copilot-tracker/web test` (144 tests), web typecheck, web lint, production-style web build, `pnpm test:smoke`, repo typecheck/lint, root `pnpm test`, and `git diff --check`.
+- NEXT: commit/push picker keyboard coverage and poll CI.

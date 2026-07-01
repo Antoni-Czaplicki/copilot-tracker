@@ -385,3 +385,5 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | WEB-377 | Web/Dashboard | PASS | Deployed dashboard picker shows clearer numeric empty-state text | Chrome production dashboard | Task `124` displayed `No Azure DevOps match for this ID` |
 | WEB-378 | Web/Dashboard | PASS | Deployed dashboard picker shows clearer text-query empty-state text | Chrome production dashboard | Query `login` displayed `No Azure DevOps matches` |
 | DOC-379 | Docs/Deployment | PASS | Deployment docs explain Dokploy Reload recovery for stale SHA after done deployment | Manual doc review | Added generated-image-vs-running-service distinction and General -> Reload recovery steps |
+| WEB-380 | Web/UX | PASS | WorkItemPicker keyboard active result movement stays within list bounds | Automated | Added tests for ArrowUp/ArrowDown movement and stale-index clamping |
+| CHECK-381 | Quality | PASS | Broad local validation passes after picker keyboard coverage | CLI | Web tests/typecheck/lint, production-style web build, smoke tests, repo typecheck/lint, root tests, and diff check passed |

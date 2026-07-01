@@ -7,6 +7,7 @@ import type { WorkItemSearchItem } from "@/lib/workItemPicker";
 import {
   canSearchWorkItems,
   emptyWorkItemSearchMessage,
+  nextWorkItemActiveIndex,
   workItemsFromSearchPayload,
   workItemSearchErrorMessage,
 } from "@/lib/workItemPicker";
@@ -141,13 +142,23 @@ export function WorkItemPicker({
               case "ArrowDown": {
                 event.preventDefault();
                 setActiveIndex((index) =>
-                  Math.min(index + 1, visibleWorkItems.length - 1),
+                  nextWorkItemActiveIndex({
+                    currentIndex: index,
+                    itemCount: visibleWorkItems.length,
+                    key: "ArrowDown",
+                  }),
                 );
                 break;
               }
               case "ArrowUp": {
                 event.preventDefault();
-                setActiveIndex((index) => Math.max(index - 1, 0));
+                setActiveIndex((index) =>
+                  nextWorkItemActiveIndex({
+                    currentIndex: index,
+                    itemCount: visibleWorkItems.length,
+                    key: "ArrowUp",
+                  }),
+                );
                 break;
               }
               case "Enter": {

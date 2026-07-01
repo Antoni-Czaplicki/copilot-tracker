@@ -306,3 +306,9 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - `docs/deployment.md` now documents the exact Dokploy stale-rollout recovery: if deployment is done but strict smoke still sees the previous SHA, use General -> Reload and rerun strict smoke.
 - The docs also clarify that generated build metadata proves the image, while production smoke proves the running service.
 - Local doc diff check passed, and production still passes strict smoke for deployed app commit `6477f9c`.
+
+## 2026-07-01 14:31 CEST Picker Keyboard Coverage
+
+- Added pure regression coverage for WorkItemPicker active-result movement: ArrowUp/ArrowDown bounds and stale-index clamping.
+- This improves the previous picker coverage gap without adding a new DOM test dependency; true rendered/browser component coverage remains a future improvement.
+- Local checks passed: web tests/typecheck/lint, production-style web build, smoke tests, repo typecheck/lint, root tests, and diff check.

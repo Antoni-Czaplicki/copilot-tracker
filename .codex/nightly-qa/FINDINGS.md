@@ -39,7 +39,7 @@
 10. [FIXED] README did not mention clearing task assignments and omitted newer task/search/mapping API routes.
 11. [FIXED] README full-build command omitted production placeholder env values required by Next/env validation.
 12. [FIXED] Dashboard task pagination dropped `sessionId`, losing the extension-opened focused session while paging task summaries.
-13. [PARTIAL] WorkItemPicker search threshold and error-message mapping now have direct coverage; rendered keyboard/listbox behavior still needs component/browser tests.
+13. [PARTIAL] WorkItemPicker search threshold, error-message mapping, empty states, and keyboard active-index transitions now have direct coverage; rendered keyboard/listbox behavior still needs component/browser tests.
 14. [PARTIAL] Request session grouping, focused-session ordering, task fallback, token labels, and anchors now have pure coverage; rendered browser/component interaction tests are still missing.
 15. [FIXED] GitHub username editor collapsed safe server validation errors into a generic `Failed` message.
 16. [FIXED] Frontend mutation/search helpers duplicated JSON `{ error }` parsing and could display blank server error strings instead of a useful fallback.

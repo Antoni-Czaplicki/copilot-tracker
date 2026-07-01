@@ -24,6 +24,30 @@ export function emptyWorkItemSearchMessage(value: string) {
     : "No Azure DevOps matches";
 }
 
+export function nextWorkItemActiveIndex({
+  currentIndex,
+  itemCount,
+  key,
+}: {
+  currentIndex: number;
+  itemCount: number;
+  key: "ArrowDown" | "ArrowUp";
+}) {
+  if (itemCount <= 0) {
+    return 0;
+  }
+
+  const clampedIndex = Math.min(
+    Math.max(Math.trunc(currentIndex), 0),
+    itemCount - 1,
+  );
+  if (key === "ArrowDown") {
+    return Math.min(clampedIndex + 1, itemCount - 1);
+  }
+
+  return Math.max(clampedIndex - 1, 0);
+}
+
 export function workItemsFromSearchPayload(
   payload: unknown,
 ): WorkItemSearchItem[] {
