@@ -1148,3 +1148,14 @@
 - PASS: `pnpm --filter ./apps/extension compile`
 - PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 0d1bab4`
 - PASS: `git diff --check`
+
+## 2026-07-01 - Operator Auth Diagnosis Notes
+
+- Recorded that public auth failures should return only safe `auth_code` and `auth_ref` values.
+- Recorded that detailed OAuth provider diagnostics belong in redacted Dokploy/server logs and should be correlated by `auth_ref`.
+- Verified production log correlation in Dokploy UI and documented the current Azure client-type mismatch diagnosis without recording secrets.
+
+## Checks
+
+- PASS: production `pnpm smoke:production -- --allow-known-stale --expect-sha 615f097` includes provider-error `auth_ref` behavior.
+- PASS: real Chrome failure page stays safe while matching Dokploy logs provide the detailed diagnosis.

@@ -164,3 +164,12 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - `0d1bab4 Add redacted auth diagnostics` passed both GitHub Actions workflows.
 - Production smoke now checks provider-error callback `auth_ref`; current production warns on missing `auth_ref`, which is expected until the diagnostics deployment is live.
 - Next verification after deploy: strict enough smoke should pass the `auth_ref` check, then Chrome login should expose an `auth_ref` that can be matched in Dokploy logs.
+
+## 2026-07-01 09:26 CEST Auth Diagnostics Verification
+
+- `615f097 Check auth references in production smoke` passed both GitHub Actions workflows.
+- Production now has the intended error split: browser gets safe `auth_code` plus `auth_ref`; detailed provider diagnostics stay in redacted Dokploy/server logs.
+- Verified a real Chrome `invalid_client` failure produced an `auth_ref`, and the same reference appears in a redacted Dokploy `azure_oauth_callback_failed` log event.
+- Actual remaining auth problem: Azure reports `AADSTS700025`, which means the Azure app/client is currently public while this backend is presenting a client secret. Fix Azure app registration/client type for the confidential backend flow, or intentionally change the app to public-client PKCE without a secret.
+- No Dokploy MCP is exposed in this session; use Dokploy UI in Chrome for logs and Termius/SSH for VPS/Dokploy host repairs. Do not copy secrets into logs.
+- Remaining independent production gap: `/api/health` still reports unknown `sha`/`builtAt`, so strict exact-SHA smoke remains blocked until build metadata is configured.

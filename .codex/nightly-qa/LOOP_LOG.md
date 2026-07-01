@@ -2018,3 +2018,13 @@
 - PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 0d1bab4` now warns that production lacks `auth_ref` until deploy catches up.
 - PASS: `git diff --check`
 - Next: commit/push the smoke assertion, poll CI, then verify production `auth_ref` after deployment.
+
+## 2026-07-01 09:26:34 CEST - Loop 45 Auth Diagnostics Verification
+
+- PASS: `615f097 Check auth references in production smoke` completed successfully on GitHub Actions CI and Build extension workflows.
+- PASS: production direct provider-error smoke now includes a diagnostic `auth_ref`.
+- PASS: real Chrome Azure login retry exposes only safe client data: `auth_code=invalid_client` and an opaque `auth_ref`.
+- PASS: Dokploy UI logs contain a matching redacted `azure_oauth_callback_failed` event for the `auth_ref`.
+- DIAGNOSIS: the detailed server-side Azure error is `AADSTS700025`, meaning Azure treats the client as public while the backend presents a client secret. Fix Azure app registration/client type for the confidential backend flow, or intentionally migrate to public-client PKCE without a secret.
+- CONFIRMED: no Dokploy MCP is exposed through current tool discovery; use Chrome Dokploy UI for log lookup and Termius/SSH for VPS/Dokploy host fixes.
+- Next: commit this log-only operator handoff, then continue with the Azure config/build metadata follow-up.

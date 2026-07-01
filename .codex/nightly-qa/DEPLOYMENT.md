@@ -716,3 +716,13 @@
 - PASS: `0d1bab4 Add redacted auth diagnostics` completed successfully on GitHub Actions CI and Build extension workflows.
 - ADDED: production smoke now checks that provider-error callbacks include diagnostic `auth_ref`.
 - PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 0d1bab4` passes but warns that production still lacks `auth_ref` until the diagnostics deployment is live.
+
+## 2026-07-01 09:26 CEST Auth Diagnostics Verification
+
+- PASS: `615f097 Check auth references in production smoke` completed successfully on GitHub Actions CI and Build extension workflows.
+- PASS: `pnpm smoke:production -- --allow-known-stale --expect-sha 615f097` passes against production; the provider-error callback now includes a short diagnostic `auth_ref`.
+- PASS: real Chrome Azure login retry still returns the known safe failure URL/page with `auth_code=invalid_client` plus an `auth_ref`; no provider descriptions, tokens, cookies, code verifiers, or secret values are exposed in the browser.
+- PASS: Dokploy logs contain a matching redacted `azure_oauth_callback_failed` event for the browser `auth_ref`, proving the client reference can be used for operator-side diagnosis.
+- DIAGNOSIS: the server-side log reports Azure `AADSTS700025`: the client is treated as public, so the backend should not present a client secret. Current app code is built for a confidential server-side token exchange, so fix the Azure app registration/client type or deliberately change the auth config/code to a public-client PKCE flow.
+- LIMITATION: no Dokploy MCP tool is exposed in this Codex session. Use Chrome for the Dokploy UI/logs, and if the VPS/Dokploy host itself needs fixing, use Termius/SSH without printing credentials.
+- LIMITATION: exact deployed commit proof still waits on build metadata; production `/api/health` reports `sha="unknown"` and `builtAt="unknown"`.

@@ -422,4 +422,4 @@
 - [x] Add production smoke assertion for provider-error callback `auth_ref`
 - [x] Document auth diagnostics/logging contract
 - [x] Run typecheck, lint, root tests, production web build, extension compile, live known-stale smoke, and diff check
-- [ ] Commit, push, smoke production, poll CI, and verify deployed auth_ref/log behavior
+- [x] Commit, push, smoke production, poll CI, and verify deployed auth_ref/log behavior

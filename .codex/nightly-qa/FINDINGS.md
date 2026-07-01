@@ -83,7 +83,7 @@
 
 ## Auth / Security / Privacy
 
-0. [P1] Production Azure login returns `auth_code=invalid_client`, blocking full signed-in production E2E verification.
+0. [P1] Production Azure login returns `auth_code=invalid_client`, blocking full signed-in production E2E verification. The new `auth_ref` correlation is working: the browser shows only safe `auth_code`/`auth_ref`, while the matching Dokploy server log reports Azure `AADSTS700025`, meaning the Azure app/client is treated as public while the backend is presenting a client secret. Align the Azure app registration/client type with the backend confidential-client flow, or intentionally switch to a public-client PKCE flow without a secret.
 1. [FIXED in `f85f30e`] OAuth callback can 500 after token exchange if profile lookup/session creation throws, leaving OAuth cookies until expiry.
 2. [FIXED in `f85f30e`] OAuth provider error details are reflected into public redirect URLs and homepage UI.
 3. [FIXED in `a85225d`] Azure token encryption falls back to `AZURE_DEVOPS_CLIENT_SECRET`; app now avoids the client-secret fallback and does not persist session tokens when the dedicated key is missing.
@@ -110,3 +110,4 @@
 24. [FIXED] Production smoke checks were manual and easy to perform inconsistently; `pnpm smoke:production` now codifies strict gates and known-stale warnings.
 25. [FIXED] Production smoke verifier behavior had only live-run evidence; local tests now cover fresh, strict stale, and known-stale outcomes without touching production.
 26. [FIXED] Azure OAuth failures had safe client URLs but no correlation id or redacted structured server log event for Dokploy diagnostics.
+27. [FIXED] Production diagnostics were too shallow for OAuth failures; production now gives a safe public `auth_ref` and keeps the detailed, redacted provider failure in Dokploy/server logs for operator lookup.
