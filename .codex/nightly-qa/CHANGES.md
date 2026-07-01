@@ -71,3 +71,15 @@
 - PASS: `pnpm --filter @copilot-tracker/web lint`
 - PASS: `pnpm --filter @copilot-tracker/web typecheck`
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env and build metadata
+
+## 2026-07-01 - Leaderboard Privacy Gate
+
+- Restricted `/leaderboard` to admins while preserving the existing feature flag.
+- Hid the leaderboard nav link from non-admin signed-in users.
+- Updated README wording from authenticated leaderboard to admin-only leaderboard.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env and build metadata

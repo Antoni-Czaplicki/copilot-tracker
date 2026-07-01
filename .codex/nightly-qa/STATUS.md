@@ -1,10 +1,10 @@
 # Nightly QA Status
 
-- Current time: 2026-07-01 02:12:17 CEST
+- Current time: 2026-07-01 02:15:51 CEST
 - Current loop: 1
 - State: implementation and validation in progress
-- Focus: deployment recovery for encryption-key startup risk
+- Focus: leaderboard privacy gate validated locally
 - Blocker: Docker daemon unavailable for image-build verification; production appears pinned before health endpoint
-- Next action: validate/commit/push token-storage fail-closed recovery, then poll production `/api/health`
-- Last known git state: request grid UX pushed at `392f9ca Expose request task editing in grid`
+- Next action: commit/push leaderboard privacy gate, then poll production `/api/health`
+- Last known git state: deployment recovery pushed at `a85225d Avoid blocking deploy without token key`
 - Production target: https://copilot-tracker.antek.page

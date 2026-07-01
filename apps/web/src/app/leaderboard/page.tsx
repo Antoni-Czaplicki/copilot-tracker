@@ -17,7 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatNumber, publicLeaderboard } from "@/lib/analytics";
-import { currentUser } from "@/lib/auth";
+import { currentUser, isAdmin } from "@/lib/auth";
 import { leaderboardEnabled } from "@/lib/config";
 import { formatCurrency } from "@/lib/pricing";
 import { readDatabase } from "@/lib/store";
@@ -30,7 +30,7 @@ export default async function LeaderboardPage() {
   }
 
   const user = await currentUser();
-  if (user === null) {
+  if (!isAdmin(user)) {
     redirect("/");
   }
 

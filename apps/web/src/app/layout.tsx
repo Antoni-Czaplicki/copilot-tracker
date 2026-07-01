@@ -30,7 +30,7 @@ export default async function RootLayout({
   children: ReactNode;
 }) {
   const user = await currentUser();
-  const showLeaderboard = leaderboardEnabled();
+  const showLeaderboard = leaderboardEnabled() && isAdmin(user);
 
   return (
     <html

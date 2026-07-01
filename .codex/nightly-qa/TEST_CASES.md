@@ -121,7 +121,7 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | UI-113 | Web | PENDING | `taskPage` clamps invalid/non-positive values to 1 | Automated | |
 | UI-114 | Web | PENDING | `/admin` redirects non-admin users to `/` | Automated | |
 | UI-115 | Web | PENDING | Admin unknown view falls back to overview and active nav is correct | Automated | |
-| UI-116 | Web | PENDING | `/leaderboard` returns notFound when feature flag disabled | Automated | |
+| UI-116 | Web | PASS | `/leaderboard` returns notFound when feature flag disabled and redirects non-admin users | Automated | Admin-only gate implemented; build/lint/typecheck passed |
 | UI-117 | Web | PENDING | Request sessions grid groups by session, sorts newest first, focuses `sessionId` | Automated | |
 | UI-118 | Web | PASS | Selection flow sends expected payload for selected requests/session | Automated | Added `updated: 0` guard for bulk/session assignment; build/lint/typecheck passed |
 | UI-119 | Web | PENDING | WorkItemPicker searches only for query >=2 chars or digits-only | Component + MSW | |

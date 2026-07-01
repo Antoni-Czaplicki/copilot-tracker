@@ -7,7 +7,7 @@ For setup instructions, see [INSTALL.md](./INSTALL.md).
 The project has three packages:
 
 - `apps/extension` - VS Code extension that configures Copilot Chat OpenTelemetry and sends usage records.
-- `apps/web` - Next.js app with ingestion API routes, Azure DevOps login, dashboard, authenticated leaderboard, admin views, and Drizzle/Postgres storage.
+- `apps/web` - Next.js app with ingestion API routes, Azure DevOps login, dashboard, admin-only leaderboard, admin views, and Drizzle/Postgres storage.
 - `packages/shared` - shared TypeScript event and request contracts.
 
 ## Current Tracking Model
