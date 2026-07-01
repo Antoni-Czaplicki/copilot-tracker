@@ -938,3 +938,20 @@
 - PASS: `pnpm test` (112 web tests + 25 extension VS Code tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm --filter ./apps/extension compile`
+
+## 2026-07-01 - Work Item Picker Payload Normalization
+
+- Added `workItemsFromSearchPayload` to normalize successful Azure DevOps work-item search payloads for the picker UI.
+- Filtered malformed entries and defaulted nullable display fields before rendering search options.
+- Replaced the WorkItemPicker raw JSON cast with the shared normalizer.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web test` (114 tests)
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (114 web tests + 25 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`

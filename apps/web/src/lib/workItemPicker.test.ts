@@ -3,6 +3,7 @@ import { test } from "node:test";
 
 import {
   canSearchWorkItems,
+  workItemsFromSearchPayload,
   workItemSearchErrorMessage,
 } from "./workItemPicker";
 
@@ -15,6 +16,64 @@ void test("canSearchWorkItems allows multi-character text and digit-only ids", (
 void test("canSearchWorkItems blocks one-character non-id searches", () => {
   assert.equal(canSearchWorkItems("l"), false);
   assert.equal(canSearchWorkItems(" "), false);
+});
+
+void test("workItemsFromSearchPayload maps valid work-item search results", () => {
+  assert.deepEqual(
+    workItemsFromSearchPayload({
+      workItems: [
+        {
+          id: 123,
+          title: "Fix login",
+          state: "Active",
+          type: "Bug",
+          project: "Tracker",
+          assignedTo: "Example User",
+          changedAt: "2026-07-01T04:00:00.000Z",
+          url: "https://example.com/work-items/123",
+        },
+      ],
+    }),
+    [
+      {
+        id: 123,
+        title: "Fix login",
+        state: "Active",
+        type: "Bug",
+        project: "Tracker",
+        assignedTo: "Example User",
+        changedAt: "2026-07-01T04:00:00.000Z",
+        url: "https://example.com/work-items/123",
+      },
+    ],
+  );
+});
+
+void test("workItemsFromSearchPayload filters malformed work-item search results", () => {
+  assert.deepEqual(
+    workItemsFromSearchPayload({
+      workItems: [
+        { id: 123, title: "Valid", state: 12 },
+        { id: "124", title: "Wrong id" },
+        { id: 125, title: null },
+        null,
+      ],
+    }),
+    [
+      {
+        id: 123,
+        title: "Valid",
+        state: null,
+        type: null,
+        project: null,
+        assignedTo: null,
+        changedAt: null,
+        url: null,
+      },
+    ],
+  );
+  assert.deepEqual(workItemsFromSearchPayload(null), []);
+  assert.deepEqual(workItemsFromSearchPayload({ workItems: "oops" }), []);
 });
 
 void test("workItemSearchErrorMessage maps Azure DevOps API error codes", async () => {

@@ -262,3 +262,6 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | UI-254 | Web | PASS | Successful mutation count reader accepts finite numeric fields from JSON responses | Automated | Added `readNumericResponseField` coverage; web/root tests passed |
 | UI-255 | Web | PASS | Successful mutation count reader falls back for missing, non-numeric, non-finite, malformed, empty, array, and null payloads | Automated | Added `readNumericResponseField` fallback coverage; web/root tests passed |
 | UI-256 | Web | PASS | Admin billing sync and request-session mutation success paths share tolerant count parsing | Code review + automated | Reused `readNumericResponseField`; web/root tests passed |
+| UI-257 | Web | PASS | WorkItemPicker successful search payload normalizer maps valid Azure DevOps work items | Automated | Added `workItemsFromSearchPayload` mapping coverage; web/root tests passed |
+| UI-258 | Web | PASS | WorkItemPicker successful search payload normalizer filters malformed entries and falls back for null/non-array payloads | Automated | Added malformed payload coverage; web/root tests passed |
+| UI-259 | Web | PASS | WorkItemPicker renders only normalized work-item search results from successful responses | Code review + automated | Replaced raw JSON cast with `workItemsFromSearchPayload`; web/root tests passed |

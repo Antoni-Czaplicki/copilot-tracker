@@ -3,24 +3,15 @@
 import { Search } from "lucide-react";
 import { useEffect, useId, useMemo, useState } from "react";
 
+import type { WorkItemSearchItem } from "@/lib/workItemPicker";
 import {
   canSearchWorkItems,
+  workItemsFromSearchPayload,
   workItemSearchErrorMessage,
 } from "@/lib/workItemPicker";
 
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-
-interface AzureDevOpsWorkItem {
-  id: number;
-  title: string;
-  state: string | null;
-  type: string | null;
-  project: string | null;
-  assignedTo: string | null;
-  changedAt: string | null;
-  url: string | null;
-}
 
 interface WorkItemPickerProps {
   value: string;
@@ -35,7 +26,7 @@ export function WorkItemPicker({
 }: WorkItemPickerProps) {
   const inputId = useId();
   const listboxId = useId();
-  const [workItems, setWorkItems] = useState<AzureDevOpsWorkItem[]>([]);
+  const [workItems, setWorkItems] = useState<WorkItemSearchItem[]>([]);
   const [state, setState] = useState<"idle" | "loading" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -66,13 +57,11 @@ export function WorkItemPicker({
           if (!response.ok) {
             throw new Error(await workItemSearchErrorMessage(response));
           }
-          return (await response.json()) as {
-            workItems?: AzureDevOpsWorkItem[];
-          };
+          return workItemsFromSearchPayload(await response.json());
         })
-        .then((payload) => {
+        .then((items) => {
           setResultQuery(normalizedValue);
-          setWorkItems(payload.workItems ?? []);
+          setWorkItems(items);
           setActiveIndex(0);
           setErrorMessage(null);
           setState("idle");
@@ -112,7 +101,7 @@ export function WorkItemPicker({
     return null;
   }, [canSearch, errorMessage, visibleState, visibleWorkItems.length]);
 
-  function selectWorkItem(item: AzureDevOpsWorkItem) {
+  function selectWorkItem(item: WorkItemSearchItem) {
     onChange(String(item.id));
     setWorkItems([]);
     setResultQuery("");

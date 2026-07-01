@@ -271,4 +271,15 @@
 - [x] Add shared numeric response-field helper and regression tests
 - [x] Reuse helper in admin billing sync and request session mutation success handling
 - [x] Run focused web validation and broad checks
+- [x] Commit, push, and smoke production
+- [x] Verify CI completion for `2b69124`
+
+## Loop 31 - Work Item Picker Payload Robustness
+
+- [x] Re-sync git and CI state for `2b69124`
+- [x] Inspect WorkItemPicker successful response parsing
+- [x] Add successful payload normalizer and tests
+- [x] Wire picker rendering through normalized work-item results
+- [x] Fix typecheck/lint issues found during validation
+- [x] Run focused and broad validation
 - [ ] Commit, push, and smoke production

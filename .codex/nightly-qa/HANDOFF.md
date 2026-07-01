@@ -44,4 +44,11 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - `f76379a Enforce pnpm security overrides` passed both GitHub Actions workflows.
 - Added shared successful-response count parsing for web mutations and reused it in admin billing sync plus request-session mutation handling.
 - Web tests are now 112; latest broad validation passed typecheck, lint, root tests, web build, and extension compile.
-- The successful-response count parsing fix is pending commit/push at this update point.
+- The successful-response count parsing fix was committed and pushed as `2b69124 Harden successful mutation counts`; GitHub Actions were in progress at the latest poll.
+
+## 2026-07-01 07:01 CEST Update
+
+- `2b69124 Harden successful mutation counts` passed both GitHub Actions workflows.
+- Added WorkItemPicker successful search payload normalization and malformed-entry filtering.
+- Web tests are now 114; latest broad validation passed typecheck, lint, root tests, web build, and extension compile.
+- The WorkItemPicker payload normalization fix is pending commit/push at this update point.

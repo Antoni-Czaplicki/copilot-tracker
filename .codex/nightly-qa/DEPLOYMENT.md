@@ -554,3 +554,11 @@
 - PASS: production `/api/health` returned HTTP 200 with `ok=true` and `database.ok=true`.
 - PASS: production Azure OAuth start redirect includes state, PKCE `S256`, client id, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
 - STALE/LIMITATION: production `/api/health` freshness and exact deployed commit remain unproven until production exposes build metadata and the expected no-store header.
+
+## 2026-07-01 06:58 CEST Production Poll
+
+- PUSHED: `2b69124 Harden successful mutation counts`.
+- PASS: GitHub Actions for `2b69124` completed successfully on both CI and Build extension workflows.
+- PASS: production `/api/health` returned HTTP 200 with `ok=true` and `database.ok=true`.
+- PASS: production Azure OAuth start redirect includes state, PKCE `S256`, client id, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
+- STALE/LIMITATION: production `/api/health` still reports `sha="unknown"`, `builtAt="unknown"`, and no visible `Cache-Control` header.
