@@ -61,4 +61,12 @@
 - [x] Add tested GitHub-login mutation error-message helper
 - [x] Show safe server validation errors in the editor
 - [x] Run local validation
+- [x] Commit, push, and smoke production
+- [x] Verify CI completion for `21a41f5`
+
+## Loop 8 - Extension Dashboard URL Coverage
+
+- [x] Extract open-dashboard URL helper
+- [x] Add tests for base dashboard URL and encoded session links
+- [x] Run local validation
 - [ ] Commit, push, and smoke production

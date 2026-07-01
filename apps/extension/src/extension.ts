@@ -4,6 +4,7 @@ import {
   createChatSessionTitleResolver,
   getDefaultWorkspaceStorageRoot,
 } from "./chatSessionTitles";
+import { trackerDashboardUrl } from "./dashboardUrl";
 import { getAzureDevOpsToken } from "./azureDevOpsAuth";
 import {
   initializeLogger,
@@ -476,10 +477,7 @@ async function showContext(context: vscode.ExtensionContext) {
 async function openDashboard(sessionId?: string) {
   let url: URL;
   try {
-    url = new URL(
-      "/dashboard",
-      parseTrackerServerUrl(getTrackerConfig().serverUrl),
-    );
+    url = trackerDashboardUrl(getTrackerConfig().serverUrl, sessionId);
   } catch (error) {
     const message =
       error instanceof Error
@@ -502,9 +500,6 @@ async function openDashboard(sessionId?: string) {
     return;
   }
 
-  if (sessionId) {
-    url.searchParams.set("sessionId", sessionId);
-  }
   logInfo("Opening dashboard", { url: url.toString() });
   await vscode.env.openExternal(vscode.Uri.parse(url.toString()));
 }

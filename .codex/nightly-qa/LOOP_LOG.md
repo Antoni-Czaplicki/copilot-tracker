@@ -958,3 +958,34 @@
 - PASS: GitHub Actions for `80f9933 Add extension status formatting coverage` completed successfully on both CI and extension build workflows.
 - PASS: `git diff --check`
 - Next: commit, push, production smoke, then continue.
+
+## 2026-07-01 05:24:17 CEST - Loop 7 End
+
+- Committed and pushed GitHub username mapping feedback as `21a41f5 Improve GitHub username error feedback`.
+- GitHub Actions for `21a41f5` are in progress.
+- PASS: production `/api/health` returns HTTP 200 with `ok=true` and `database.ok=true`.
+- LIMITATION: production `/api/health` still reports `version.sha="unknown"` and `builtAt="unknown"`.
+- PASS: sanitized production Azure OAuth start redirects to Microsoft with PKCE `S256`, state, client id, and required Azure DevOps scopes.
+- Next: continue with the next high-value gap and poll CI.
+
+## 2026-07-01 05:24:56 CEST - Loop 8 Start
+
+- Started a focused extension URL coverage slice for the `openDashboard` command and status-token click path.
+- Target behavior: dashboard URLs are rooted at `/dashboard`, optional `sessionId` query values are encoded, and invalid server URL values continue to fail through the existing validation.
+- Current git state: post-push QA logs modified from Loop 7; no new code changes yet.
+- Next: extract dashboard URL construction into a testable helper and validate.
+
+## 2026-07-01 05:26:14 CEST - Loop 8 Validation
+
+- Extracted extension dashboard URL construction into `trackerDashboardUrl`.
+- Added extension tests for base dashboard URLs, encoded session ids, and invalid server URL rejection.
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS: `pnpm --filter ./apps/extension lint`
+- PASS: `pnpm --filter ./apps/extension test` (20 tests)
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (81 web tests + 20 extension VS Code tests)
+- PASS: GitHub Actions for `21a41f5 Improve GitHub username error feedback` completed successfully on both CI and extension build workflows.
+- PASS: `git diff --check`
+- Next: commit, push, production smoke, then continue.

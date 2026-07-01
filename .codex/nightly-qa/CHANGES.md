@@ -644,3 +644,18 @@
 - PASS: `pnpm --filter @copilot-tracker/web test` (81 tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm test` (81 web tests + 18 extension VS Code tests)
+
+## 2026-07-01 - Extension Dashboard URL Coverage
+
+- Extracted extension dashboard URL construction into a tested helper.
+- Added coverage for base dashboard links, encoded `sessionId` deep links from the status token item, and invalid tracker server origins.
+
+## Checks
+
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS: `pnpm --filter ./apps/extension lint`
+- PASS: `pnpm --filter ./apps/extension test` (20 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (81 web tests + 20 extension VS Code tests)

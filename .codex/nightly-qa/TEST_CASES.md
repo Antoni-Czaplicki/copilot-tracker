@@ -224,3 +224,6 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | EXT-216 | Extension | PASS | Session estimated cost tooltip marks cost as a lower bound when any request has incomplete token data | Automated | Extracted `statusFormatting`; extension tests passed |
 | UI-217 | Web | PASS | GitHub username editor can surface safe server validation errors | Automated | Added GitHub-login mutation error-message coverage; web tests passed |
 | UI-218 | Web | PASS | GitHub username editor falls back to a generic error for empty or non-JSON failures | Automated | Added GitHub-login mutation error-message coverage; web tests passed |
+| EXT-219 | Extension | PASS | Open-dashboard URL helper builds tracker dashboard links rooted at `/dashboard` | Automated | Extracted `trackerDashboardUrl`; extension tests passed |
+| EXT-220 | Extension | PASS | Open-dashboard URL helper encodes focused session ids in dashboard links | Automated | Extracted `trackerDashboardUrl`; extension tests passed |
+| EXT-221 | Extension | PASS | Open-dashboard URL helper rejects invalid tracker server URLs before opening external links | Automated | Extracted `trackerDashboardUrl`; extension tests passed |

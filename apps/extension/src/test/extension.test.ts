@@ -4,6 +4,7 @@ import * as os from "node:os";
 import * as path from "node:path";
 import * as vscode from "vscode";
 
+import { trackerDashboardUrl } from "../dashboardUrl";
 import { formatLogDetails } from "../logger";
 import { readCopilotOtelRequests } from "../otel";
 import { estimateRequestsCostUsd } from "../pricing";
@@ -99,6 +100,26 @@ suite("Extension Test Suite", () => {
         }),
       ),
       "$1.25+ lower bound",
+    );
+  });
+
+  test("Builds dashboard URLs with optional encoded session ids", () => {
+    assert.strictEqual(
+      trackerDashboardUrl("https://copilot-tracker.example.com").toString(),
+      "https://copilot-tracker.example.com/dashboard",
+    );
+    assert.strictEqual(
+      trackerDashboardUrl(
+        "http://localhost:3737",
+        "session/with spaces",
+      ).toString(),
+      "http://localhost:3737/dashboard?sessionId=session%2Fwith+spaces",
+    );
+  });
+
+  test("Rejects dashboard URLs for invalid tracker server origins", () => {
+    assert.throws(() =>
+      trackerDashboardUrl("https://copilot-tracker.example.com/path"),
     );
   });
 

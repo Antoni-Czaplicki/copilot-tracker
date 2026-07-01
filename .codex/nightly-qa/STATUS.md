@@ -1,10 +1,10 @@
 # Nightly QA Status
 
-- Current time: 2026-07-01 05:22:42 CEST
-- Current loop: 7
+- Current time: 2026-07-01 05:26:14 CEST
+- Current loop: 8
 - State: local validation passed; preparing commit
-- Focus: GitHub username mapping error feedback
+- Focus: Extension open-dashboard URL construction
 - Blocker: production Azure login returns `invalid_client`; Docker daemon unavailable; exact deployed commit cannot be proven until build SHA is configured
-- Next action: commit/push GitHub username mapping feedback, then smoke production and poll CI
-- Last known git state: extension status formatting coverage pushed at `80f9933 Add extension status formatting coverage`
+- Next action: commit/push dashboard URL coverage, then smoke production and poll CI
+- Last known git state: GitHub username mapping feedback pushed at `21a41f5 Improve GitHub username error feedback`
 - Production target: https://copilot-tracker.antek.page
