@@ -597,3 +597,19 @@
 - PASS: `pnpm --filter @copilot-tracker/web test` (73 tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm test` (73 web tests + 16 extension VS Code tests)
+
+## 2026-07-01 - Request Sessions Grid Model Coverage
+
+- Extracted dashboard request-session grouping, task fallback/override, token capture label, request cost label, and session anchor helpers into `requestSessionsGridModel`.
+- Added tests for focused-session ordering and latest-activity ordering.
+- Added tests for manual task overrides, clearing back to detected/default tasks, shared session task calculation, token capture labels, unpriced/missing cost display, and DOM-safe session anchors.
+
+## Checks
+
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS: `pnpm --filter ./apps/extension test` (16 tests)
+- PASS: `pnpm --filter @copilot-tracker/web test` (79 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (79 web tests + 16 extension VS Code tests)

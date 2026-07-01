@@ -861,3 +861,36 @@
 - PASS: GitHub Actions for `91fb8d3 Add work item picker coverage` completed successfully on both CI and extension build workflows.
 - PASS: `git diff --check`
 - Next: commit and push chat request merge coverage, then smoke production again.
+
+## 2026-07-01 05:10:48 CEST - Loop 4 End
+
+- Committed and pushed chat request merge coverage as `4e96bf2 Add chat request merge coverage`.
+- GitHub Actions for `4e96bf2` are in progress.
+- PASS: production `/api/health` returns HTTP 200 with `ok=true` and `database.ok=true`.
+- LIMITATION: production `/api/health` still reports `version.sha="unknown"` and `builtAt="unknown"`.
+- PASS: sanitized production Azure OAuth start redirects to Microsoft with PKCE `S256`, state, client id, and required Azure DevOps scopes.
+- Next: poll CI while continuing with the next high-value issue.
+
+## 2026-07-01 05:12:01 CEST - Loop 5 Start
+
+- Started a focused web UX/model coverage slice for request session grouping and task display behavior.
+- Target behavior: focused session sorts first, session rows sort by latest activity, common task calculation honors overrides, clear actions fall back to branch/default task, token capture labels distinguish total/partial/missing data, and session anchors remain stable.
+- Current git state: post-push QA logs modified from Loop 4; no new code changes yet.
+- Next: extract pure helpers from `request-sessions-grid.tsx`, add tests, and run focused validation.
+
+## 2026-07-01 05:15:03 CEST - Loop 5 Validation
+
+- Extracted request session grouping, task fallback, request cost label, token capture label, and session anchor helpers from the dashboard grid into `requestSessionsGridModel`.
+- Added six web tests covering focused-session ordering, latest-activity ordering, manual override/clear fallback behavior, common task calculation, complete/partial/missing/unpriced labels, and stable DOM anchors.
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web test` (79 tests)
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS: `pnpm --filter ./apps/extension test` (16 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (79 web tests + 16 extension VS Code tests)
+- PASS: GitHub Actions for `4e96bf2 Add chat request merge coverage` completed successfully on both CI and extension build workflows.
+- PASS: `git diff --check`
+- Next: commit, push, production smoke, then continue.

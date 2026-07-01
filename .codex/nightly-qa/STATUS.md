@@ -1,10 +1,10 @@
 # Nightly QA Status
 
-- Current time: 2026-07-01 05:10:10 CEST
-- Current loop: 4
+- Current time: 2026-07-01 05:15:03 CEST
+- Current loop: 5
 - State: local validation passed; preparing commit
-- Focus: Chat request batch merge/dedupe/token normalization coverage
+- Focus: Request sessions grid grouping/task/token display helpers
 - Blocker: production Azure login returns `invalid_client`; Docker daemon unavailable; exact deployed commit cannot be proven until build SHA is configured
-- Next action: commit/push `chatRequestMerge`, smoke production, then continue with the next gap
-- Last known git state: WorkItemPicker helper coverage pushed at `91fb8d3 Add work item picker coverage`; local chat request merge tests added but not committed
+- Next action: commit/push request-session grid model coverage, then smoke production and poll CI
+- Last known git state: chat request merge coverage pushed at `4e96bf2 Add chat request merge coverage`
 - Production target: https://copilot-tracker.antek.page

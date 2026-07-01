@@ -214,3 +214,9 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | API-206 | API/Backend | PASS | Chat request ingest normalization derives complete, partial, and missing token source states | Automated | Extracted `chatRequestMerge`; web tests passed |
 | API-207 | API/Backend | PASS | Duplicate chat request records keep the richer telemetry row while filling fallback metadata | Automated | Added dedupe merge coverage; web tests passed |
 | API-208 | API/Backend | PASS | Batch upsert preparation normalizes token totals before deduping duplicate request records | Automated | Added `prepareChatRequestsForUpsert` coverage; web tests passed |
+| UI-209 | Web | PASS | Request session grid sorts an extension-opened focused session before newer sessions | Automated | Extracted session grid model coverage; web tests passed |
+| UI-210 | Web | PASS | Request session grid sorts sessions and rows by latest request activity | Automated | Extracted session grid model coverage; web tests passed |
+| UI-211 | Web | PASS | Request session task display honors manual overrides and clearing falls back to detected/default tasks | Automated | Extracted session grid model coverage; web tests passed |
+| UI-212 | Web | PASS | Session bulk editor shows a common task only when all session requests agree | Automated | Extracted session grid model coverage; web tests passed |
+| UI-213 | Web | PASS | Request token/cost labels distinguish complete, partial, missing, unpriced, and priced requests | Automated | Extracted session grid model coverage; web tests passed |
+| UI-214 | Web | PASS | Focused session anchor ids remain stable for punctuation and spaces | Automated | Extracted session grid model coverage; web tests passed |

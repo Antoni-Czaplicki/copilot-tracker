@@ -1,7 +1,11 @@
 "use client";
 
-import type { CopilotChatRequest } from "@copilot-tracker/shared";
 import type { ColumnDef } from "@tanstack/react-table";
+import type {
+  RequestGridRequest,
+  SessionGroup,
+  TaskOverrideMap,
+} from "@/lib/requestSessionsGridModel";
 import {
   getCoreRowModel,
   getPaginationRowModel,
@@ -13,9 +17,16 @@ import {
   formatDateTime,
   formatNumber,
   getRepositoryName,
-  getRequestActivityTimestamp,
   summarizeRequests,
 } from "@/lib/analytics";
+import {
+  formatRequestCost,
+  formatTokenCaptureLabel,
+  getCommonTask,
+  getCurrentTask,
+  groupRequestsBySession,
+  sessionAnchor,
+} from "@/lib/requestSessionsGridModel";
 import { estimateRequestsCost, formatCurrency } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
 
@@ -25,26 +36,11 @@ import { DataGrid } from "./ui/data-grid";
 import { TaskEditor } from "./task-editor";
 import { WorkItemPicker } from "./work-item-picker";
 
-export type RequestGridRequest = CopilotChatRequest & {
-  userLogin?: string | null;
-  githubLogin?: string | null;
-  userId?: string | null;
-};
-
 interface RequestSessionsGridProps {
   requests: RequestGridRequest[];
   focusedSessionId?: string | null;
   showDeveloper?: boolean;
 }
-
-interface SessionGroup {
-  sessionId: string;
-  sessionTitle: string | null;
-  sessionCreatedAt: string | null;
-  requests: RequestGridRequest[];
-}
-
-type TaskOverrideMap = Record<string, string | null>;
 
 export function RequestSessionsGrid({
   requests,
@@ -574,103 +570,4 @@ async function readMutationResult(response: Response) {
   } catch {
     return { updated: null };
   }
-}
-
-function groupRequestsBySession(
-  requests: RequestGridRequest[],
-  focusedSessionId: string | null,
-): SessionGroup[] {
-  const groups = new Map<string, SessionGroup>();
-  for (const request of requests) {
-    const group = groups.get(request.sessionId) ?? {
-      sessionId: request.sessionId,
-      sessionTitle: request.sessionTitle,
-      sessionCreatedAt: request.sessionCreatedAt,
-      requests: [],
-    };
-    group.requests.push(request);
-    group.sessionTitle ??= request.sessionTitle;
-    group.sessionCreatedAt ??= request.sessionCreatedAt;
-    groups.set(request.sessionId, group);
-  }
-
-  return [...groups.values()]
-    .map((group) => ({
-      ...group,
-      requests: [...group.requests].sort(
-        (a, b) => getRequestActivityTimestamp(b) - getRequestActivityTimestamp(a),
-      ),
-    }))
-    .sort((a, b) => {
-      if (focusedSessionId) {
-        if (a.sessionId === focusedSessionId) {
-          return -1;
-        }
-        if (b.sessionId === focusedSessionId) {
-          return 1;
-        }
-      }
-
-      const aFirstRequest = a.requests[0];
-      const bFirstRequest = b.requests[0];
-      return (
-        (bFirstRequest ? getRequestActivityTimestamp(bFirstRequest) : 0) -
-        (aFirstRequest ? getRequestActivityTimestamp(aFirstRequest) : 0)
-      );
-    });
-}
-
-function getCommonTask(
-  group: SessionGroup,
-  taskOverrides: TaskOverrideMap,
-) {
-  const firstRequest = group.requests[0];
-  if (!firstRequest) {
-    return "";
-  }
-
-  const firstTask = getCurrentTask(firstRequest, taskOverrides);
-  return group.requests.every(
-    (request) => getCurrentTask(request, taskOverrides) === firstTask,
-  )
-    ? firstTask
-    : "";
-}
-
-function getCurrentTask(
-  request: RequestGridRequest,
-  taskOverrides: TaskOverrideMap,
-) {
-  if (Object.hasOwn(taskOverrides, request.requestRecordId)) {
-    return taskOverrides[request.requestRecordId] ?? request.defaultTask ?? "";
-  }
-
-  return request.selectedTask ?? request.defaultTask ?? "";
-}
-
-function formatRequestCost(request: RequestGridRequest) {
-  if (request.totalTokens === null) {
-    return "missing";
-  }
-
-  const cost = estimateRequestsCost([request]);
-  if (cost.pricedRequestCount === 0) {
-    return "unpriced";
-  }
-
-  return formatCurrency(cost.estimatedUsd);
-}
-
-function formatTokenCaptureLabel(request: RequestGridRequest) {
-  if (request.totalTokens !== null) {
-    return `${formatNumber(request.totalTokens)} total`;
-  }
-
-  return request.tokenSource === "partial-in-copilot-otel"
-    ? "partial capture"
-    : "missing total";
-}
-
-function sessionAnchor(sessionId: string) {
-  return `session-${sessionId.replaceAll(/[^a-zA-Z0-9_-]/g, "-")}`;
 }

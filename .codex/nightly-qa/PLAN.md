@@ -34,4 +34,14 @@
 - [x] Add token-source normalization coverage
 - [x] Add duplicate request-record merge coverage
 - [x] Run broad local validation
-- [ ] Commit, push, and verify CI/deployment
+- [x] Commit, push, and verify production smoke
+- [x] Verify CI completion for `4e96bf2`
+
+## Loop 5 - Request Sessions Grid Model Coverage
+
+- [x] Extract pure session-grid helpers
+- [x] Add grouping/focused-session ordering tests
+- [x] Add task fallback/override/clearing tests
+- [x] Add token label/session anchor tests
+- [x] Run local validation
+- [ ] Commit, push, and smoke production
