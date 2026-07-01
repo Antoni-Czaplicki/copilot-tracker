@@ -274,8 +274,8 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 
 ## 2026-07-01 13:35 CEST Docker Build Metadata Fallback Ready
 
-- Added a source-side fallback for the remaining exact-SHA proof gap: Docker builds now generate `apps/web/build-info.json` from explicit metadata, common source env names, or minimal `.git` refs.
-- `/api/health` now reads that generated file only after explicit runtime env and common env fallbacks, so operator-provided metadata still wins.
+- Added a source-side fallback for the remaining exact-SHA proof gap: Docker builds now generate a build-info module from explicit metadata, common source env names, or minimal `.git` refs before `next build`.
+- `/api/health` now reads that generated module only after explicit runtime env and common env fallbacks, so operator-provided metadata still wins. A generated JSON file fallback remains for compatibility.
 - Local validation passed: smoke/script tests, web tests, lint/typecheck, repo lint/typecheck, production-style web build, extension compile/test, root tests, compose config, and diff check.
 - Full local Docker image build remains unverified because Docker Desktop/daemon is not reachable from this machine.
 - Next: commit/push, wait for CI/Dokploy, then run `pnpm smoke:production -- --expect-sha <latest-sha>` without known-stale mode.

@@ -3,11 +3,11 @@
 ## 2026-07-01 - Docker Build Metadata Fallback
 
 - Added `scripts/write-build-info.mjs` to generate non-secret build metadata from explicit Copilot Tracker env, common source metadata env names, or minimal `.git` `HEAD`/ref metadata.
-- Updated Docker builds to write `apps/web/build-info.json` during the build stage, then remove `.git` before the final image is copied.
+- Updated Docker builds to write `apps/web/src/generated/buildInfo.generated.ts` before `next build`, then remove `.git` before the final image is copied.
 - Changed `.dockerignore` to include only the minimal Git metadata required for SHA resolution instead of the full `.git` directory.
-- Updated `/api/health` build metadata lookup to use the generated file as a fallback after explicit runtime env and common source env names.
+- Updated `/api/health` build metadata lookup to use the generated module as a fallback after explicit runtime env and common source env names, with the generated JSON file fallback retained for compatibility.
 - Documented the generated build-info safety net in README and deployment docs while keeping explicit runtime env as the preferred override.
-- Added tests for branch-ref metadata, packed-ref metadata, explicit metadata precedence, generated-file fallback, and env-over-file precedence.
+- Added tests for branch-ref metadata, packed-ref metadata, explicit metadata precedence, generated TypeScript module output, generated-file fallback, and env-over-file precedence.
 
 ## Checks
 

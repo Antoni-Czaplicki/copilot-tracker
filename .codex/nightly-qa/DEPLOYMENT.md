@@ -270,8 +270,9 @@
 
 ## 2026-07-01 13:35 CEST Build Metadata Fallback Ready
 
-- LOCAL: Docker builds now generate `apps/web/build-info.json` from explicit build metadata, common source metadata env names, or minimal `.git` `HEAD`/ref metadata.
-- LOCAL: `/api/health` uses the generated build-info file after explicit runtime env and common env fallbacks, preserving env override precedence.
+- LOCAL: Docker builds first generated `apps/web/build-info.json`; Dokploy logs confirmed that step ran, but strict production smoke still reported unknown metadata after deploy.
+- UPDATED: Docker builds now generate `apps/web/src/generated/buildInfo.generated.ts` before `next build` so the server bundle can report the deployed commit even when runtime file reads are unavailable.
+- LOCAL: `/api/health` uses the generated module after explicit runtime env and common env fallbacks, preserving env override precedence. The generated-file fallback remains as a compatibility fallback.
 - LOCAL: `.dockerignore` includes only minimal Git metadata for SHA resolution, and Dockerfile removes `.git` before final image copy.
 - PASS: production-style Next build passed without the previous broad Turbopack tracing warning.
 - PASS: `docker compose config` passed.

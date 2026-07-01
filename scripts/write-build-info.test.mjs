@@ -78,6 +78,33 @@ test("write-build-info prefers explicit metadata over git refs", () => {
   rmSync(repo, { recursive: true, force: true });
 });
 
+test("write-build-info can generate a TypeScript module for Next builds", () => {
+  const repo = createTempRepo();
+  const sha = "1111111111111111111111111111111111111111";
+  writeFileSync(path.join(repo, ".git/HEAD"), `${sha}\n`);
+
+  const outputPath = path.join(
+    repo,
+    "apps/web/src/generated/buildInfo.generated.ts",
+  );
+  execFileSync(process.execPath, [scriptPath, outputPath], {
+    cwd: repo,
+    env: {
+      COPILOT_TRACKER_BUILD_TIME: "2026-07-01T12:30:00.000Z",
+    },
+  });
+
+  assert.equal(
+    readFileSync(outputPath, "utf8"),
+    `export const generatedBuildInfo = {
+  "sha": "${sha}",
+  "builtAt": "2026-07-01T12:30:00.000Z"
+} as const;\n`,
+  );
+
+  rmSync(repo, { recursive: true, force: true });
+});
+
 function createTempRepo() {
   const repo = mkdtempSync(path.join(tmpdir(), "copilot-tracker-build-info-"));
   mkdirSync(path.join(repo, ".git"), { recursive: true });

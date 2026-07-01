@@ -1,6 +1,8 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
+import { generatedBuildInfo } from "@/generated/buildInfo.generated";
+
 type BuildInfoEnv = Record<string, string | undefined>;
 
 const unknown = "unknown";
@@ -17,6 +19,7 @@ export function readBuildInfo(env: BuildInfoEnv = process.env) {
         env.VERCEL_GIT_COMMIT_SHA,
         env.RAILWAY_GIT_COMMIT_SHA,
         env.COMMIT_SHA,
+        generatedBuildInfo.sha,
         fileInfo.sha,
       ) ?? unknown,
     builtAt:
@@ -24,6 +27,7 @@ export function readBuildInfo(env: BuildInfoEnv = process.env) {
         env.COPILOT_TRACKER_BUILD_TIME,
         env.BUILD_TIME,
         sourceDateEpochToIso(env.SOURCE_DATE_EPOCH),
+        generatedBuildInfo.builtAt,
         fileInfo.builtAt,
       ) ?? unknown,
   };

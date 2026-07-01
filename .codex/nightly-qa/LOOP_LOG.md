@@ -2240,3 +2240,15 @@
 - PASS: production-style web build no longer emits the Turbopack broad-tracing warning after marking dynamic build-info file paths for bundler ignore.
 - BLOCKED: full Docker image build cannot run locally because Docker cannot connect to the local daemon socket.
 - NEXT: commit/push the build-info fallback, poll CI/deploy, then rerun production smoke and strict exact-SHA smoke when the new Docker image is live.
+
+## 2026-07-01 13:48:47 CEST - Loop 55 Deployment Feedback And Stronger Fallback
+
+- PUSHED: `759b3b0 Generate Docker build metadata`.
+- PASS: GitHub Actions `CI` and `Build extension` both completed successfully for `759b3b0`.
+- PASS: Dokploy deployments tab showed `759b3b0` completed successfully.
+- PASS: Dokploy deployment logs showed `RUN node scripts/write-build-info.mjs apps/web/build-info.json` ran and wrote a build-info file during the Docker build.
+- FAIL: strict `pnpm smoke:production -- --expect-sha 759b3b0` still reported `/api/health` `version.sha="unknown"` and `builtAt="unknown"` after the deployment completed.
+- DIAGNOSIS: runtime file fallback is not reliable under the deployed Next/Dokploy runtime path, even though the Docker build wrote the file.
+- IMPLEMENTED: changed the Docker build to generate `apps/web/src/generated/buildInfo.generated.ts` before `next build`, so build metadata is compiled into the server bundle while explicit runtime env still takes precedence.
+- PASS: local validation for the generated-module fallback: `pnpm test:smoke` (11 tests), web tests (139 tests), web typecheck/lint, repo typecheck/lint, production-style web build, extension tests, root `pnpm test`, and `git diff --check`.
+- NEXT: commit/push the generated-module fallback, poll CI/Dokploy, and rerun strict exact-SHA production smoke.

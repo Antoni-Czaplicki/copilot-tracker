@@ -65,12 +65,13 @@ fall back to common source metadata variables (`SOURCE_COMMIT`, `GITHUB_SHA`,
 `COPILOT_TRACKER_BUILD_TIME` variables are still the preferred production
 contract because Dokploy does not guarantee those fallback names.
 
-As a safety net, the Dockerfile also writes `apps/web/build-info.json` during
-image builds. That generated file is populated from explicit build args, common
-source metadata variables, or the minimal `.git` `HEAD`/ref metadata included in
-the Docker build context. Runtime environment variables still take precedence
-over the generated file. The full `.git` directory is not copied into the final
-image.
+As a safety net, the Dockerfile also writes
+`apps/web/src/generated/buildInfo.generated.ts` before `next build`. That
+generated module is populated from explicit build args, common source metadata
+variables, or the minimal `.git` `HEAD`/ref metadata included in the Docker
+build context, so the server bundle can report the deployed commit. Runtime
+environment variables still take precedence over the generated module. The full
+`.git` directory is not copied into the final image.
 
 ## Azure App Registration
 

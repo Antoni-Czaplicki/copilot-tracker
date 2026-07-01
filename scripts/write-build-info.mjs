@@ -25,9 +25,28 @@ const buildInfo = {
 };
 
 mkdirSync(path.dirname(outputPath), { recursive: true });
-writeFileSync(outputPath, `${JSON.stringify(buildInfo, null, 2)}\n`);
+writeBuildInfo(outputPath, buildInfo);
 
-console.log(`Wrote build info to ${outputPath}`);
+console.log(
+  `Wrote build info to ${outputPath} (sha: ${shortSha(buildInfo.sha)}, builtAt: ${buildInfo.builtAt})`,
+);
+
+function writeBuildInfo(filePath, info) {
+  if (filePath.endsWith(".ts")) {
+    writeFileSync(
+      filePath,
+      `export const generatedBuildInfo = ${JSON.stringify(info, null, 2)} as const;\n`,
+    );
+    return;
+  }
+
+  writeFileSync(filePath, `${JSON.stringify(info, null, 2)}\n`);
+}
+
+function shortSha(sha) {
+  const normalized = normalize(sha);
+  return normalized ? normalized.slice(0, 12) : unknown;
+}
 
 function firstKnown(...values) {
   for (const value of values) {
