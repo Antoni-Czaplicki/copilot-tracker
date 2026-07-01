@@ -71,6 +71,16 @@ void test("taskAssignmentSchema trims task values and rejects empty assignments"
   );
 });
 
+void test("taskAssignmentSchema accepts null selectedTask to clear assignments", () => {
+  const result = taskAssignmentSchema.safeParse({
+    requestRecordIds: ["record-1"],
+    selectedTask: null,
+  });
+
+  assert.equal(result.success, true);
+  assert.equal(result.data.selectedTask, null);
+});
+
 function createChatRequest(
   overrides: Partial<ReturnType<typeof baseChatRequest>> = {},
 ) {

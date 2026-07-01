@@ -44,15 +44,15 @@ interface SessionGroup {
   requests: RequestGridRequest[];
 }
 
+type TaskOverrideMap = Record<string, string | null>;
+
 export function RequestSessionsGrid({
   requests,
   focusedSessionId = null,
   showDeveloper = false,
 }: RequestSessionsGridProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
-  const [taskOverrides, setTaskOverrides] = useState<Record<string, string>>(
-    {},
-  );
+  const [taskOverrides, setTaskOverrides] = useState<TaskOverrideMap>({});
   const [sessionDrafts, setSessionDrafts] = useState<Record<string, string>>(
     {},
   );
@@ -69,6 +69,8 @@ export function RequestSessionsGrid({
       requests.filter((request) => selectedIds.has(request.requestRecordId)),
     [requests, selectedIds],
   );
+  const selectedSaving =
+    savingKey === "selected" || savingKey === "clear-selected";
 
   async function applyTask({
     requestRecordIds,
@@ -78,11 +80,11 @@ export function RequestSessionsGrid({
   }: {
     requestRecordIds?: string[];
     sessionId?: string;
-    selectedTask: string;
+    selectedTask: string | null;
     key: string;
   }) {
-    const task = selectedTask.trim();
-    if (!task) {
+    const task = selectedTask === null ? null : selectedTask.trim();
+    if (task === "") {
       setError("Choose a task before applying changes.");
       return;
     }
@@ -125,6 +127,9 @@ export function RequestSessionsGrid({
         setSelectedIds(new Set());
         setBulkTask("");
       }
+      if (sessionId && task === null) {
+        setSessionDrafts(({ [sessionId]: _removed, ...remaining }) => remaining);
+      }
     } catch (mutationError) {
       setError(
         mutationError instanceof Error
@@ -136,7 +141,10 @@ export function RequestSessionsGrid({
     }
   }
 
-  function handleSingleTaskSaved(requestRecordId: string, selectedTask: string) {
+  function handleSingleTaskSaved(
+    requestRecordId: string,
+    selectedTask: string | null,
+  ) {
     setTaskOverrides((current) => ({
       ...current,
       [requestRecordId]: selectedTask,
@@ -184,7 +192,7 @@ export function RequestSessionsGrid({
           <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
             <WorkItemPicker value={bulkTask} onChange={setBulkTask} />
             <Button
-              disabled={savingKey === "selected"}
+              disabled={selectedSaving}
               type="button"
               variant="secondary"
               onClick={() => {
@@ -196,6 +204,20 @@ export function RequestSessionsGrid({
               }}
             >
               {savingKey === "selected" ? "Applying" : "Apply to selected"}
+            </Button>
+            <Button
+              disabled={selectedSaving}
+              type="button"
+              variant="outline"
+              onClick={() => {
+                void applyTask({
+                  requestRecordIds: [...selectedIds],
+                  selectedTask: null,
+                  key: "clear-selected",
+                });
+              }}
+            >
+              {savingKey === "clear-selected" ? "Clearing" : "Clear selected"}
             </Button>
           </div>
         </section>
@@ -221,6 +243,8 @@ export function RequestSessionsGrid({
             selectedIds.has(request.requestRecordId),
           );
         const sessionKey = `session:${group.sessionId}`;
+        const sessionSaving =
+          savingKey === sessionKey || savingKey === `${sessionKey}:clear`;
 
         return (
           <section
@@ -271,7 +295,7 @@ export function RequestSessionsGrid({
                   }}
                 />
                 <Button
-                  disabled={savingKey === sessionKey}
+                  disabled={sessionSaving}
                   type="button"
                   variant="secondary"
                   onClick={() => {
@@ -283,6 +307,22 @@ export function RequestSessionsGrid({
                   }}
                 >
                   {savingKey === sessionKey ? "Applying" : "Apply to session"}
+                </Button>
+                <Button
+                  disabled={sessionSaving}
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    void applyTask({
+                      sessionId: group.sessionId,
+                      selectedTask: null,
+                      key: `${sessionKey}:clear`,
+                    });
+                  }}
+                >
+                  {savingKey === `${sessionKey}:clear`
+                    ? "Clearing"
+                    : "Clear session"}
                 </Button>
               </div>
             </div>
@@ -313,9 +353,9 @@ function SessionRequestTable({
   requests: RequestGridRequest[];
   selectedIds: Set<string>;
   showDeveloper: boolean;
-  taskOverrides: Record<string, string>;
+  taskOverrides: TaskOverrideMap;
   toggleRequest: (requestRecordId: string, checked: boolean) => void;
-  onTaskSaved: (requestRecordId: string, selectedTask: string) => void;
+  onTaskSaved: (requestRecordId: string, selectedTask: string | null) => void;
 }) {
   const columns = useMemo<ColumnDef<RequestGridRequest>[]>(
     () => [
@@ -582,7 +622,7 @@ function groupRequestsBySession(
 
 function getCommonTask(
   group: SessionGroup,
-  taskOverrides: Record<string, string>,
+  taskOverrides: TaskOverrideMap,
 ) {
   const firstRequest = group.requests[0];
   if (!firstRequest) {
@@ -599,14 +639,13 @@ function getCommonTask(
 
 function getCurrentTask(
   request: RequestGridRequest,
-  taskOverrides: Record<string, string>,
+  taskOverrides: TaskOverrideMap,
 ) {
-  return (
-    taskOverrides[request.requestRecordId] ??
-    request.selectedTask ??
-    request.defaultTask ??
-    ""
-  );
+  if (Object.hasOwn(taskOverrides, request.requestRecordId)) {
+    return taskOverrides[request.requestRecordId] ?? request.defaultTask ?? "";
+  }
+
+  return request.selectedTask ?? request.defaultTask ?? "";
 }
 
 function formatRequestCost(request: RequestGridRequest) {

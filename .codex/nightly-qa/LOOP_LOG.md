@@ -340,3 +340,20 @@
 - Fixed extension tracker server URL validation to treat `http://[::1]:3737` as a local origin.
 - Validation passed: `pnpm --filter ./apps/extension test` reported 10 passing tests.
 - Next: inspect diff, commit/push IPv6 localhost fix, then poll CI/production.
+
+## 2026-07-01 03:30:02 CEST - Loop 3 Progress
+
+- Committed and pushed IPv6 localhost server URL support as `e4e49ee Allow IPv6 localhost tracker server`.
+- Local tree is clean after push.
+- GitHub Actions for `e4e49ee` are in progress.
+- Production health still returns OK with database ready and `version.sha="unknown"`.
+- Next: continue the next non-auth-blocked improvement while CI runs.
+
+## 2026-07-01 03:34:08 CEST - Loop 3 Progress
+
+- GitHub Actions for `e4e49ee` completed successfully on both CI and extension build workflows.
+- Added web/API support for clearing task assignments with `selectedTask: null`.
+- Added clear actions for single request rows, selected request bulk edits, and whole sessions; cleared rows fall back to branch-derived defaults in the display.
+- Added schema coverage for nullable task assignment payloads.
+- Validation passed: web test suite now reports 20 tests, plus web lint, typecheck, and placeholder production build.
+- Next: inspect diff, commit/push web task clearing support, then poll CI/production.

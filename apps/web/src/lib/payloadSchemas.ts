@@ -10,6 +10,12 @@ const nonNegativeInteger = z
   .nonnegative()
   .max(maxPostgresInteger)
   .nullable();
+const selectedTaskSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(256)
+  .nullable();
 
 const workspaceContextSchema = {
   workspaceId: z.string().trim().min(1).max(256),
@@ -81,6 +87,6 @@ export const trackerEventSchema = z.object({
 
 export const taskAssignmentSchema = z.object({
   requestRecordIds: z.array(z.string().trim().min(1).max(512)).max(500).optional(),
-  selectedTask: z.string().trim().min(1).max(256),
+  selectedTask: selectedTaskSchema,
   sessionId: z.string().trim().min(1).max(512).optional(),
 });

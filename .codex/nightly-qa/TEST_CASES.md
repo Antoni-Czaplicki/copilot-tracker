@@ -162,3 +162,7 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | API-154 | API/Backend | PASS | Admin request CSV export excludes captured-only placeholder rows | Automated | Added `adminExport` node:test coverage; web tests passed |
 | API-155 | API/Backend | PASS | Admin GitHub billing CSV export emits billing rows without depending on request data | Automated | Added `adminExport` node:test coverage; web tests passed |
 | EXT-156 | Extension | PASS | Tracker server URL validation treats IPv6 localhost `http://[::1]:3737` as a safe local origin | Automated | Added parser regression assertion; extension tests passed |
+| UI-157 | Web | PASS | Single request row task editor can clear the selected task assignment | Code review + build | Clear action sends `selectedTask: null`; web test/lint/typecheck/build passed |
+| UI-158 | Web | PASS | Bulk selected request assignment can clear selected rows | Code review + build | Selected toolbar clear action sends nullable assignment; web test/lint/typecheck/build passed |
+| UI-159 | Web | PASS | Session assignment controls can clear every request in a session | Code review + build | Session clear action sends nullable assignment; web test/lint/typecheck/build passed |
+| API-160 | API/Backend | PASS | Task assignment payload schema accepts `selectedTask: null` for clearing while still rejecting empty strings | Automated | Added web `node:test` coverage; web tests passed |

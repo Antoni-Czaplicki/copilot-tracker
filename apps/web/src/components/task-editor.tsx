@@ -9,7 +9,7 @@ import { WorkItemPicker } from "./work-item-picker";
 interface TaskEditorProps {
   requestRecordId: string;
   initialTask: string;
-  onSaved?: (task: string) => void;
+  onSaved?: (task: string | null) => void;
 }
 
 export function TaskEditor({
@@ -32,6 +32,14 @@ export function TaskEditor({
       return;
     }
 
+    await saveTask(selectedTask);
+  }
+
+  async function clearTask() {
+    await saveTask(null);
+  }
+
+  async function saveTask(selectedTask: string | null) {
     setState("saving");
     setError(null);
     try {
@@ -49,7 +57,7 @@ export function TaskEditor({
         return;
       }
 
-      setTask(selectedTask);
+      setTask(selectedTask ?? "");
       setState("saved");
       onSaved?.(selectedTask);
     } catch (mutationError) {
@@ -80,6 +88,17 @@ export function TaskEditor({
           variant="secondary"
         >
           {state === "saving" ? "Saving" : "Save"}
+        </Button>
+        <Button
+          disabled={state === "saving" || !task.trim()}
+          size="sm"
+          type="button"
+          variant="outline"
+          onClick={() => {
+            void clearTask();
+          }}
+        >
+          Clear
         </Button>
       </div>
       {state === "saved" ? (

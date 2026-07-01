@@ -462,7 +462,7 @@ function chatRequestCompletenessScore(request: CopilotChatRequest) {
 
 export async function updateChatRequestTask(
   requestRecordId: string,
-  selectedTask: string,
+  selectedTask: string | null,
   user: StoredUser,
   canEditAll: boolean,
 ): Promise<boolean> {
@@ -485,7 +485,7 @@ export async function updateChatRequestTasks({
 }: {
   requestRecordIds?: string[];
   sessionId?: string;
-  selectedTask: string;
+  selectedTask: string | null;
   user: StoredUser;
   canEditAll: boolean;
 }): Promise<number> {

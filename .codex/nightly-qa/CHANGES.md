@@ -279,6 +279,20 @@
 - PASS: `pnpm --filter @copilot-tracker/web typecheck`
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env and build metadata
 
+## 2026-07-01 - Web Task Clearing UX
+
+- Added `selectedTask: null` support to task assignment payloads and store updates so web task assignments can be cleared.
+- Added clear actions for single request rows, selected requests, and whole sessions.
+- Kept cleared rows displaying the branch-derived default task when one exists.
+- Added schema coverage for nullable task assignment payloads.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web test` (20 tests)
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web build` with current placeholder production env names
+
 ## 2026-07-01 - Extension Log Privacy
 
 - Redacted local workspace/repository/storage/file fields from structured extension logs.
