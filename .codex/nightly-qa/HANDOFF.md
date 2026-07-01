@@ -263,3 +263,11 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - A real reliability bug was found and fixed locally: repeated Copilot OTel `outfile` writes caused lifecycle rebuild/event spam. The local VSIX now coalesces rebuilds, uses the active OTel path for polling/syncing, and ignores self-caused OTel config-change events.
 - Validation passed after the fix: typecheck, lint, placeholder-env web build, extension compile/test, workspace tests, smoke tests, VSIX install, and real VS Code post-reload log sampling.
 - Next: commit/push the OTel lifecycle fix and QA logs, wait for CI/Dokploy, rerun production smoke, and keep the dashboard tab as useful handoff context. Production exact-SHA proof still needs build metadata.
+
+## 2026-07-01 13:23 CEST OTel Fix Pushed And Green
+
+- `ae3d4e4 Stabilize extension OTel lifecycle` is pushed to `main`.
+- GitHub Actions `CI` and `Build extension` both passed for `ae3d4e4`.
+- Live production smoke passes hard gates with `pnpm smoke:production -- --allow-known-stale --expect-sha ae3d4e4`.
+- The remaining warning is unchanged: `/api/health` still reports unknown SHA/build time, so strict exact-SHA production proof needs Dokploy build metadata configuration.
+- Current practical status: Azure web auth works, the requested admin access is active, real VS Code sign-in/sync/task assignment/status/click-through works, and the reliability bug found during real VS Code testing is fixed and pushed.

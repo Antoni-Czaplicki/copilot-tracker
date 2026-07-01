@@ -1,5 +1,27 @@
 # Nightly QA Changes
 
+## 2026-07-01 - Extension OTel Lifecycle Stability
+
+- Added a single-flight queue around extension OTel lifecycle rebuilds so overlapping rebuild requests collapse into one active run and, at most, one queued rerun.
+- Tracked the active Copilot OTel file path so normal polling and sync do not repeatedly reconfigure Copilot exporter settings.
+- Ignored Copilot OTel config-change events caused by the extension's own exporter writes for a short window, preventing a self-triggered lifecycle feedback loop.
+- Reduced noisy exporter logging to actual setting changes while keeping debug visibility for already-configured state.
+- Added regression coverage for coalesced lifecycle rebuild behavior.
+
+## Checks
+
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS: `pnpm --filter ./apps/extension lint`
+- PASS: `pnpm --filter ./apps/extension test` (30 tests)
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm -r test --if-present`
+- PASS: `pnpm test:smoke`
+- PASS: GitHub Actions `CI` for `ae3d4e4`
+- PASS: GitHub Actions `Build extension` for `ae3d4e4`
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha ae3d4e4`
+
 ## 2026-07-01 - Extension Task/Search/Dashboard Hardening
 
 - Tightened `getTaskFromBranch` so detached commit labels and version-like branch names do not become false task IDs.

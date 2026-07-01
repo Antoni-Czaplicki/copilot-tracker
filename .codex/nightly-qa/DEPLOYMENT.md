@@ -259,6 +259,15 @@
 
 - PASS: GitHub Actions for `d8473d2 Harden Azure profile parsing` completed successfully on both CI and extension build workflows.
 
+## 2026-07-01 13:23 CEST Extension Lifecycle Commit Poll
+
+- PUSHED: `ae3d4e4 Stabilize extension OTel lifecycle`.
+- PASS: `origin/main` points at `ae3d4e465e46e85211e6a8465999ca66d76fc23e`.
+- PASS: GitHub Actions `CI` completed successfully for `ae3d4e4`.
+- PASS: GitHub Actions `Build extension` completed successfully for `ae3d4e4`.
+- PASS/WARN: live production smoke passed all hard gates with `pnpm smoke:production -- --allow-known-stale --expect-sha ae3d4e4`.
+- LIMITATION: production `/api/health` still reports `version.sha="unknown"` and `builtAt="unknown"`, so exact deployed commit proof still depends on configuring build metadata in Dokploy/build env.
+
 ## 2026-07-01 04:43 CEST Production Poll
 
 - PUSHED: `97ce2f9 Harden Azure token responses`.

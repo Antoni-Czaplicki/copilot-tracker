@@ -2210,3 +2210,14 @@
 - PASS: rebuilt/installed VSIX, reloaded real VS Code, and observed a quiet post-reload log over a longer sample: one startup sync, one initial file signature capture, no repeated exporter/lifecycle loop.
 - PASS: checks run after the fix: `pnpm -r typecheck`, `pnpm -r lint`, placeholder-env web build, extension compile/test, workspace tests, and smoke tests.
 - NEXT: commit/push the OTel lifecycle fix and QA log updates, then poll CI/deploy and rerun production smoke.
+
+## 2026-07-01 13:23:00 CEST - Loop 54 Commit/CI/Smoke Closeout
+
+- PUSHED: `ae3d4e4 Stabilize extension OTel lifecycle` to `main`.
+- PASS: remote `origin/main` points at `ae3d4e465e46e85211e6a8465999ca66d76fc23e`.
+- PASS: GitHub Actions `CI` completed successfully for `ae3d4e4`.
+- PASS: GitHub Actions `Build extension` completed successfully for `ae3d4e4`.
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha ae3d4e4` passed all hard gates against https://copilot-tracker.antek.page.
+- WARN: production still reports `/api/health` `version.sha="unknown"` and `builtAt="unknown"`, so exact deployed commit proof remains blocked until build metadata is configured.
+- PASS: working tree was clean after push before this log-only closeout update.
+- NEXT: configure build metadata for strict exact-SHA production smoke; otherwise the real VS Code/admin/auth path is verified for this loop.
