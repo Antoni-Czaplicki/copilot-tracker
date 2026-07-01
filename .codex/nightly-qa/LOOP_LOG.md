@@ -562,3 +562,27 @@
 - PASS: `pnpm test` (37 web tests + 10 extension VS Code tests)
 - PASS: GitHub Actions for `96d1148 Add Azure OAuth route coverage` completed successfully.
 - Next: inspect diff, commit, push, and continue.
+
+## 2026-07-01 04:15:49 CEST - Loop 3 Progress
+
+- Committed and pushed token exchange coverage as `0a093ad Add Azure token exchange coverage`.
+- GitHub Actions for `0a093ad` are in progress for CI and extension build.
+- Production `/api/health` remains OK with DB ready; build metadata still reports `sha="unknown"` and `builtAt="unknown"`.
+- Local tree is clean immediately after push.
+- Next: poll checks while selecting the next non-auth-blocked improvement.
+
+## 2026-07-01 04:16:36 CEST - Loop 3 Progress
+
+- Starting Azure DevOps work-item search coverage.
+- Plan: mock `fetch` to cover WIQL search plus batch mapping, 400 fallback to the second text query, rate-limit error mapping, and the no-query API route response that does not require auth.
+
+## 2026-07-01 04:19:36 CEST - Loop 3 Progress
+
+- Added mocked Azure DevOps work-item search tests for WIQL ID results flowing into batch-field mapping, first-WIQL 400 fallback to the second text query, repeated 429 rate-limit errors, and blank-query route empty state.
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web test` (41 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (41 web tests + 10 extension VS Code tests)
+- PASS: GitHub Actions for `0a093ad Add Azure token exchange coverage` completed successfully.
+- Next: inspect diff, commit, push, and continue.

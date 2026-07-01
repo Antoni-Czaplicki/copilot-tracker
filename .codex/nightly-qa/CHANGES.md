@@ -422,3 +422,16 @@
 - PASS: `pnpm --filter @copilot-tracker/web test` (37 tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm test` (37 web tests + 10 extension VS Code tests)
+
+## 2026-07-01 - Azure DevOps Work-Item Search Coverage
+
+- Added mocked web tests for work-item search request flow, batch field mapping, WIQL fallback after a 400 response, and repeated 429 rate-limit error mapping.
+- Added route coverage for blank work-item queries returning an empty result before auth.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web test` (41 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (41 web tests + 10 extension VS Code tests)

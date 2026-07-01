@@ -58,7 +58,7 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | API-049 | API/Backend | PENDING | Single-row task patch non-existent id returns 404 | Automated | |
 | API-050 | API/Backend | PENDING | Single-row task patch updates exactly one record | Automated + DB | |
 | API-051 | API/Backend | PENDING | Single-row task patch accepts only `selectedTask` and ignores extras | Automated | |
-| API-052 | API/Backend | PENDING | Work-items API with empty query returns `{workItems: []}` | Automated | |
+| API-052 | API/Backend | PASS | Work-items API with empty query returns `{workItems: []}` | Automated | Added route-level blank query coverage; web tests passed |
 | API-053 | API/Backend | PENDING | Work-items bearer path uses ingest token auth | Automated + mock headers | |
 | API-054 | API/Backend | PENDING | Work-items session cookie path reads session token cache | Automated | |
 | API-055 | API/Backend | PASS | Work-items route unauthorized when no token/session | Automated | Production unauthenticated request returned auth-gated status |
@@ -176,3 +176,6 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | QA-168 | Quality | PASS | Root `pnpm test` runs both web regression tests and extension VS Code tests | Manual command | `pnpm test` passed with 22 web tests and 10 extension tests |
 | UI-169 | Web | PASS | Dashboard task pagination preserves focused `sessionId` query parameter | Automated | Added `dashboardTaskPageHref` regression coverage; web tests passed |
 | AUTH-170 | Auth | PASS | Token exchange request includes PKCE `code_verifier`, redirect URI, and required scopes | Automated | Added mocked token exchange request coverage; web tests passed |
+| API-171 | API/Backend | PASS | Azure DevOps work-item search maps WIQL ids through batch field responses | Automated | Added mocked work-item search coverage; web tests passed |
+| API-172 | API/Backend | PASS | Azure DevOps work-item search falls back to the second text WIQL query after a 400 | Automated | Added fallback query coverage; web tests passed |
+| API-173 | API/Backend | PASS | Azure DevOps work-item search maps repeated 429 responses to a typed rate-limit error | Automated | Added mocked rate-limit coverage; web tests passed |
