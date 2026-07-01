@@ -24,6 +24,10 @@
 - PASS: `docker compose config`
 - PASS: `git diff --check`
 - BLOCKED: full Docker image build could not run because the local Docker daemon socket is unavailable
+- PASS: GitHub Actions `CI` for `23e4df9`
+- PASS: GitHub Actions `Build extension` for `23e4df9`
+- PASS: Dokploy deployment for `23e4df9`
+- PASS: strict `pnpm smoke:production -- --expect-sha 23e4df9`
 
 ## 2026-07-01 - Extension OTel Lifecycle Stability
 

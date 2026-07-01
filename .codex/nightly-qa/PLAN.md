@@ -541,5 +541,16 @@
 - [x] Keep the full `.git` directory out of the final image
 - [x] Add focused tests for branch refs, packed refs, env precedence, and health file fallback
 - [x] Run focused tests, lint, typecheck, production-style web build, root tests, extension tests, compose config, and diff check
-- [ ] Commit, push, poll CI, and rerun production smoke after deploy
-- [ ] Verify strict exact-SHA smoke when production serves the new build-info fallback
+- [x] Commit, push, poll CI, and rerun production smoke after deploy
+- [x] Verify strict exact-SHA smoke when production serves the new build-info fallback
+
+## Loop 56 - Exact-Proof Log Commit And Dashboard Search E2E
+
+- [x] Re-sync repo state and confirm only QA logs are dirty
+- [x] Re-check Dokploy MCP availability; no callable Dokploy MCP is exposed in this session, so continue with Dokploy UI and production smoke fallback
+- [ ] Commit and push durable QA log updates for exact-SHA deployment proof
+- [ ] Poll GitHub Actions for the log commit
+- [ ] Verify Dokploy deploys the log commit or record any expected lag
+- [ ] Run production smoke against the latest head
+- [ ] Test visible dashboard work-item search with a known matching query
+- [ ] Update logs, findings, test cases, and handoff

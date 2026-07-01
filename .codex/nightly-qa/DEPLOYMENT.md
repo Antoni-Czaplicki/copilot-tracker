@@ -279,6 +279,15 @@
 - BLOCKED: full Docker image build could not be run locally because Docker cannot connect to the local daemon socket.
 - EXPECTED: production will continue to warn on unknown SHA/build time until this change is pushed and Dokploy builds a new image.
 
+## 2026-07-01 13:57 CEST Exact SHA Smoke Passed
+
+- PUSHED: `23e4df9 Compile Docker build metadata`.
+- PASS: GitHub Actions `CI` and `Build extension` completed successfully for `23e4df9`.
+- PASS: Dokploy deployment for `23e4df9` completed successfully.
+- PASS: Dokploy build logs showed `apps/web/src/generated/buildInfo.generated.ts` was written before `next build` with the expected commit prefix and build time.
+- PASS: strict `pnpm smoke:production -- --expect-sha 23e4df9` passed without `--allow-known-stale`.
+- PASS: production `/api/health` now reports the exact deployed SHA `23e4df9d0ca6018a04bafee3d1cff9f7b3c0c3cb` and a non-unknown build time.
+
 ## 2026-07-01 04:43 CEST Production Poll
 
 - PUSHED: `97ce2f9 Harden Azure token responses`.

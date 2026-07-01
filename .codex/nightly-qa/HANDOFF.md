@@ -279,3 +279,10 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - Local validation passed: smoke/script tests, web tests, lint/typecheck, repo lint/typecheck, production-style web build, extension compile/test, root tests, compose config, and diff check.
 - Full local Docker image build remains unverified because Docker Desktop/daemon is not reachable from this machine.
 - Next: commit/push, wait for CI/Dokploy, then run `pnpm smoke:production -- --expect-sha <latest-sha>` without known-stale mode.
+
+## 2026-07-01 13:57 CEST Exact Deploy Proof Working
+
+- `23e4df9 Compile Docker build metadata` is pushed, CI-green, and deployed by Dokploy.
+- Strict production smoke now passes without known-stale mode: `pnpm smoke:production -- --expect-sha 23e4df9`.
+- `/api/health` reports the exact deployed SHA and a non-unknown build time, so the prior deployment-freshness proof gap is closed.
+- The earlier generated JSON file fallback was deployed first but did not affect health metadata; the working fix is the generated TypeScript module compiled before `next build`.

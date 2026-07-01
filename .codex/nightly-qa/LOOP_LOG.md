@@ -2252,3 +2252,22 @@
 - IMPLEMENTED: changed the Docker build to generate `apps/web/src/generated/buildInfo.generated.ts` before `next build`, so build metadata is compiled into the server bundle while explicit runtime env still takes precedence.
 - PASS: local validation for the generated-module fallback: `pnpm test:smoke` (11 tests), web tests (139 tests), web typecheck/lint, repo typecheck/lint, production-style web build, extension tests, root `pnpm test`, and `git diff --check`.
 - NEXT: commit/push the generated-module fallback, poll CI/Dokploy, and rerun strict exact-SHA production smoke.
+
+## 2026-07-01 13:57:51 CEST - Loop 55 Exact Deploy Proof Closed
+
+- PUSHED: `23e4df9 Compile Docker build metadata`.
+- PASS: GitHub Actions `CI` completed successfully for `23e4df9`.
+- PASS: GitHub Actions `Build extension` completed successfully for `23e4df9`.
+- PASS: Dokploy deployment for `23e4df9` completed successfully.
+- PASS: Dokploy build logs showed the generated TypeScript build-info module was written before `next build`, including the `23e4df9` SHA prefix and non-secret build timestamp.
+- PASS: strict `pnpm smoke:production -- --expect-sha 23e4df9` passed without known-stale mode.
+- PASS: production `/api/health` reports `version.sha="23e4df9d0ca6018a04bafee3d1cff9f7b3c0c3cb"` and a non-unknown `builtAt`.
+- RESULT: exact deployed commit proof is now working in production.
+- NEXT: continue with visible dashboard work-item search / remaining UX and regression gaps.
+
+## 2026-07-01 14:00:00 CEST - Loop 56 Start
+
+- PASS: repository has only `.codex/nightly-qa` QA log updates dirty after the exact deployment proof work.
+- PASS: latest code commit remains `23e4df9 Compile Docker build metadata`.
+- INFO: tool discovery for Dokploy still did not expose a callable Dokploy MCP in this Codex session; continue using Dokploy UI evidence and production smoke until a Dokploy tool appears.
+- FOCUS: commit and push the durable exact-SHA proof logs, verify the new head through CI/Dokploy/smoke, then continue visible dashboard work-item search E2E.
