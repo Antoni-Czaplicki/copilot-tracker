@@ -101,10 +101,10 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | AUTH-092 | Auth | PASS | PKCE challenge outputs URL-safe verifier/challenge pair | Automated | Added S256 PKCE coverage; web tests passed |
 | AUTH-093 | Auth | PENDING | Token exchange error response maps to `AzureDevOpsTokenExchangeError` | Automated | |
 | AUTH-094 | Auth | PENDING | OAuth start missing config redirects `/?auth=misconfigured` | Automated | |
-| AUTH-095 | Auth | PENDING | OAuth start sets PKCE cookies with 10-minute expiry | Automated | |
-| AUTH-096 | Auth | PENDING | Callback provider error redirects failed state and clears OAuth cookies | Automated | |
-| AUTH-097 | Auth | PENDING | Callback state mismatch redirects invalid state and clears cookies | Automated | Security |
-| AUTH-098 | Auth | PENDING | Callback missing code/verifier fails with invalid OAuth state | Automated | |
+| AUTH-095 | Auth | PASS | OAuth start sets PKCE cookies with 10-minute expiry | Automated | Added route-level OAuth start coverage; web tests passed |
+| AUTH-096 | Auth | PASS | Callback provider error redirects failed state and clears OAuth cookies | Automated | Added safe callback failure coverage; web tests passed |
+| AUTH-097 | Auth | PASS | Callback state mismatch redirects invalid state and clears cookies | Automated | Added state mismatch route coverage; web tests passed |
+| AUTH-098 | Auth | PASS | Callback missing code/verifier fails with invalid OAuth state | Automated | Added missing-code/verifier route coverage; web tests passed |
 | AUTH-099 | Auth | PASS | Callback token exchange failure redirects proper auth failure | Automated | Production Chrome flow returned `auth=failed&auth_code=invalid_client` without reflected description |
 | AUTH-100 | Auth | PENDING | Callback token exchange exception class path preserves useful safe details | Automated | |
 | AUTH-101 | Auth | PENDING | Callback profile/org failure redirects `profile_or_org_check_failed` | Automated | |

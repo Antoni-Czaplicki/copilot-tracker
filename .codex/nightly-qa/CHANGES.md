@@ -396,3 +396,16 @@
 - PASS: `pnpm --filter @copilot-tracker/web test` (30 tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm test` (30 web tests + 10 extension VS Code tests)
+
+## 2026-07-01 - Azure OAuth Route Coverage
+
+- Added route-level web tests for Azure OAuth start redirects, PKCE cookies, required scopes, provider-error callback privacy, state mismatch handling, and missing code/verifier handling.
+- Kept tests on safe placeholder env and avoided live token exchange.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web test` (35 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (35 web tests + 10 extension VS Code tests)

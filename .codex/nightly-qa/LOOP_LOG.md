@@ -512,3 +512,28 @@
 - PASS: `pnpm test` (30 web tests + 10 extension VS Code tests)
 - PASS: GitHub Actions for `c67f8fa Preserve dashboard session focus in pagination` completed successfully.
 - Next: inspect diff, commit, push, and continue.
+
+## 2026-07-01 04:06:30 CEST - Loop 3 Progress
+
+- Committed and pushed auth cookie/PKCE helper coverage as `b1d5098 Add auth cookie and PKCE coverage`.
+- GitHub Actions for `b1d5098` are queued/in progress.
+- Production `/api/health` remains OK with DB ready; build metadata still reports `sha="unknown"` and `builtAt="unknown"`.
+- Local tree is clean immediately after push.
+- Next: poll checks while selecting the next non-auth-blocked improvement.
+
+## 2026-07-01 04:07:46 CEST - Loop 3 Progress
+
+- Starting OAuth route-level test coverage with safe placeholder env.
+- Verified manually that the start route returns a Microsoft redirect with PKCE cookies and that provider-error callbacks redirect safely while clearing OAuth cookies.
+- Next: add automated `node:test` coverage for these redirect/cookie branches.
+
+## 2026-07-01 04:09:59 CEST - Loop 3 Progress
+
+- Added route-level tests for Azure OAuth start redirects, PKCE state/verifier cookies, provider-error callback privacy, state mismatch, and missing code/verifier failure.
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web test` (35 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (35 web tests + 10 extension VS Code tests)
+- PASS: GitHub Actions for `b1d5098 Add auth cookie and PKCE coverage` completed successfully.
+- Next: inspect diff, commit, push, and continue.
