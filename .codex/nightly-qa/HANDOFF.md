@@ -137,3 +137,11 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - `ea2685e Harden health freshness headers` passed both GitHub Actions workflows.
 - Post-CI production smoke still passes in known-stale mode and still warns on unknown build metadata, missing visible health cache header, and stale provider-error callback behavior.
 - Best next step: inspect Dokploy/build env and deployment routing/cache behavior, then rerun strict `pnpm smoke:production` once metadata/cache/provider-code freshness are expected to be live.
+
+## 2026-07-01 08:58 CEST VPS Recovery / Exact Smoke Update
+
+- User fixed the VPS/Dokploy issue. If this kind of production/VPS failure recurs, open the Termius app, use the saved SSH/Dokploy access there, and fix the deployment host directly without printing credentials in logs.
+- Production now shows the source-side freshness fixes live: health no-store headers are visible, provider-error callback preserves `auth_code=access_denied`, and auth failure HTML includes `role="alert"`.
+- Remaining production proof gap: `/api/health` still reports `sha="unknown"` and `builtAt="unknown"`.
+- Added `--expect-sha` to production smoke so the next metadata fix can be verified with `pnpm smoke:production -- --expect-sha "$(git rev-parse --short HEAD)"`.
+- Broad validation passed after the verifier change: typecheck, lint, root tests, placeholder-env web build, extension compile, production known-stale exact-SHA smoke, and diff check.

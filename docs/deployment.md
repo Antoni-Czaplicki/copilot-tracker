@@ -77,6 +77,7 @@ Run these checks after each deploy:
 
 ```sh
 pnpm smoke:production
+pnpm smoke:production -- --expect-sha "$(git rev-parse --short HEAD)"
 curl -fsS https://copilot-tracker.antek.page/api/health
 curl -I https://copilot-tracker.antek.page/
 curl -I https://copilot-tracker.antek.page/api/auth/azure-devops
@@ -86,6 +87,8 @@ Expected results:
 
 - `/api/health` returns HTTP 200 with `ok=true`, `database.ok=true`, and a
   non-`unknown` `version.sha`.
+- When `--expect-sha` is supplied, `/api/health` `version.sha` matches the
+  expected deployed commit. Short and full SHA prefixes are accepted.
 - `/api/health` sends `Cache-Control: no-store` so deploy/readiness checks do
   not pass because of a cached health response.
 - `/` returns HTTP 200.
@@ -97,10 +100,10 @@ Expected results:
   descriptions into public URLs or page text.
 
 `pnpm smoke:production` fails on stale deployment evidence such as unknown build
-metadata, missing `Cache-Control: no-store`, or old provider-error callback
-behavior. During investigation of a known stale deploy, use
-`pnpm smoke:production -- --allow-known-stale` to keep checking the hard health
-and OAuth redirect gates while reporting freshness problems as warnings.
+metadata, wrong expected SHA, missing `Cache-Control: no-store`, or old
+provider-error callback behavior. During investigation of a known stale deploy,
+use `pnpm smoke:production -- --allow-known-stale` to keep checking the hard
+health and OAuth redirect gates while reporting freshness problems as warnings.
 
 ## Local Container Smoke
 

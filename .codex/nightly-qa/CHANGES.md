@@ -1108,3 +1108,22 @@
 - PASS: `pnpm --filter ./apps/extension compile`
 - PASS: `pnpm smoke:production -- --allow-known-stale`
 - PASS: `git diff --check`
+
+## 2026-07-01 - Exact Deployment Smoke
+
+- Added `--expect-sha` support to `scripts/smoke-production.mjs` so smoke checks can prove the exact deployed commit once `/api/health` build metadata is configured.
+- Kept short/full SHA prefix matching and made known-stale mode warn instead of fail on SHA mismatches.
+- Preserved existing `pnpm smoke:production -- ...` usage by accepting the forwarded `--` separator.
+- Documented exact-SHA smoke usage in deployment docs.
+
+## Checks
+
+- PASS: `node --check scripts/smoke-production.mjs`
+- PASS: `pnpm test:smoke` (7 tests)
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (7 smoke tests + 123 web tests + 26 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 0bc8f68`
+- PASS: `git diff --check`

@@ -400,3 +400,14 @@
 - [x] Add regression coverage for the expanded health header contract
 - [x] Run typecheck, lint, root tests, production web build, extension compile, live known-stale smoke, and diff check
 - [x] Commit, push, smoke production, and poll CI
+
+## Loop 44 - Exact Deployment Smoke
+
+- [x] Re-sync latest `0bc8f68` CI and production state after VPS recovery
+- [x] Verify production now sends health cache headers and preserves provider `access_denied`
+- [x] Verify production auth failure page includes `role="alert"` without provider-detail leakage
+- [x] Add `--expect-sha` support to `pnpm smoke:production`
+- [x] Add smoke verifier coverage for expected SHA match, prefix match, mismatch failure, known-stale warning, and forwarded `--` separator
+- [x] Document exact deployed SHA smoke usage
+- [x] Run broad validation
+- [ ] Commit, push, smoke production, and poll CI

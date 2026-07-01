@@ -1950,3 +1950,28 @@
 - PASS: GitHub Actions Build extension for `ea2685e` completed successfully.
 - PASS/WARN: post-CI `pnpm smoke:production -- --allow-known-stale` still passes with the known freshness warnings.
 - STALE/LIMITATION: production still reports `sha="unknown"`, `builtAt="unknown"`, missing visible `Cache-Control`, and provider-error callback `auth_code=provider_error`.
+
+## 2026-07-01 08:58:49 CEST - Loop 44 Start/Validation
+
+- User reports VPS/Dokploy issue was fixed; future VPS incidents should use the Termius app with saved SSH/Dokploy access instead of guessing from app behavior alone.
+- PASS: latest pushed commit `0bc8f68 Record health header QA poll` is green on CI and Build extension.
+- PASS: production smoke hard gates for health, Azure auth start, provider-error callback, and cache header now pass.
+- PASS: production auth failure HTML includes `role="alert"` and safe `invalid_client` text; no `AADSTS`, `error_description`, or `client_secret` matches were returned by the HTML probe.
+- LIMITATION: strict production smoke still fails because `/api/health` build metadata is `unknown`.
+- Added `--expect-sha` to `scripts/smoke-production.mjs` so exact deployed commit checks can be enforced once metadata is configured.
+- PASS: `node --check scripts/smoke-production.mjs`
+- PASS: `pnpm test:smoke` (7 tests)
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 0bc8f68`
+- PASS: `git diff --check`
+- Next: run broad validation, commit/push, poll CI, and then continue with Chrome signed-in production E2E.
+
+## 2026-07-01 09:01:38 CEST - Loop 44 Broad Validation
+
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (7 smoke tests + 123 web tests + 26 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 0bc8f68`
+- PASS: `git diff --check`
+- Next: commit and push exact-SHA smoke verifier and poll CI.

@@ -1,10 +1,9 @@
 #!/usr/bin/env node
 
 const defaultBaseUrl = "https://copilot-tracker.antek.page";
-const args = process.argv.slice(2);
-const allowKnownStale = args.includes("--allow-known-stale");
-const positionalArgs = args.filter((arg) => !arg.startsWith("--"));
-const baseUrl = normalizeBaseUrl(positionalArgs[0] ?? defaultBaseUrl);
+const options = parseArgs(process.argv.slice(2));
+const allowKnownStale = options.allowKnownStale;
+const baseUrl = normalizeBaseUrl(options.baseUrl ?? defaultBaseUrl);
 const expectedAuthCode = "access_denied";
 const results = [];
 
@@ -39,6 +38,14 @@ async function smokeHealth() {
     Boolean(sha) && sha !== "unknown",
     `/api/health exposes a non-unknown version.sha (got ${formatValue(sha)})`,
   );
+  if (options.expectedSha) {
+    assertFresh(
+      shaMatches(sha, options.expectedSha),
+      `/api/health version.sha matches expected deployed SHA ${options.expectedSha} (got ${formatValue(
+        sha,
+      )})`,
+    );
+  }
   assertFresh(
     Boolean(builtAt) && builtAt !== "unknown",
     `/api/health exposes a non-unknown version.builtAt (got ${formatValue(
@@ -140,6 +147,79 @@ function assertFresh(condition, message) {
   }
 
   results.push({ level: allowKnownStale ? "WARN" : "FAIL", message });
+}
+
+function parseArgs(rawArgs) {
+  const parsed = {
+    allowKnownStale: false,
+    baseUrl: null,
+    expectedSha: null,
+  };
+
+  for (let index = 0; index < rawArgs.length; index += 1) {
+    const arg = rawArgs[index];
+
+    if (arg === "--") {
+      continue;
+    }
+
+    if (arg === "--allow-known-stale") {
+      parsed.allowKnownStale = true;
+      continue;
+    }
+
+    if (arg === "--expect-sha") {
+      const expectedSha = normalizeExpectedSha(rawArgs[index + 1]);
+      if (!expectedSha) {
+        console.error("--expect-sha requires a non-empty SHA value");
+        process.exit(2);
+      }
+      parsed.expectedSha = expectedSha;
+      index += 1;
+      continue;
+    }
+
+    if (arg.startsWith("--expect-sha=")) {
+      const expectedSha = normalizeExpectedSha(arg.slice("--expect-sha=".length));
+      if (!expectedSha) {
+        console.error("--expect-sha requires a non-empty SHA value");
+        process.exit(2);
+      }
+      parsed.expectedSha = expectedSha;
+      continue;
+    }
+
+    if (arg.startsWith("--")) {
+      console.error(`Unknown option: ${arg}`);
+      process.exit(2);
+    }
+
+    if (parsed.baseUrl) {
+      console.error(`Unexpected extra positional argument: ${arg}`);
+      process.exit(2);
+    }
+    parsed.baseUrl = arg;
+  }
+
+  return parsed;
+}
+
+function normalizeExpectedSha(value) {
+  const normalized = value?.trim().toLowerCase();
+  return normalized ? normalized : null;
+}
+
+function shaMatches(actual, expected) {
+  const normalizedActual = normalizeExpectedSha(actual);
+  if (!normalizedActual) {
+    return false;
+  }
+
+  return (
+    normalizedActual === expected ||
+    normalizedActual.startsWith(expected) ||
+    expected.startsWith(normalizedActual)
+  );
 }
 
 function normalizeBaseUrl(value) {

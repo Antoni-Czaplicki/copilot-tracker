@@ -22,6 +22,58 @@ test("production smoke verifier passes a fresh deployment", async () => {
   });
 });
 
+test("production smoke verifier can require the expected deployed SHA", async () => {
+  await withSmokeServer({ fresh: true }, async (baseUrl) => {
+    const result = await runSmoke(baseUrl, "--expect-sha=abc1234");
+
+    assert.equal(result.code, 0);
+    assert.match(
+      result.stdout,
+      /PASS \/api\/health version\.sha matches expected deployed SHA abc1234/,
+    );
+    assert.equal(result.stderr, "");
+  });
+});
+
+test("production smoke verifier accepts a forwarded argument separator", async () => {
+  await withSmokeServer({ fresh: true }, async (baseUrl) => {
+    const result = await runSmoke(baseUrl, "--", "--expect-sha=abc1234");
+
+    assert.equal(result.code, 0);
+    assert.match(
+      result.stdout,
+      /PASS \/api\/health version\.sha matches expected deployed SHA abc1234/,
+    );
+    assert.equal(result.stderr, "");
+  });
+});
+
+test("production smoke verifier accepts short or long matching SHA prefixes", async () => {
+  await withSmokeServer({ fresh: true }, async (baseUrl) => {
+    const result = await runSmoke(baseUrl, "--expect-sha", "abc");
+
+    assert.equal(result.code, 0);
+    assert.match(
+      result.stdout,
+      /PASS \/api\/health version\.sha matches expected deployed SHA abc/,
+    );
+    assert.equal(result.stderr, "");
+  });
+});
+
+test("production smoke verifier fails strict mode on deployed SHA mismatch", async () => {
+  await withSmokeServer({ fresh: true }, async (baseUrl) => {
+    const result = await runSmoke(baseUrl, "--expect-sha", "deadbeef");
+
+    assert.equal(result.code, 1);
+    assert.match(
+      result.stdout,
+      /FAIL \/api\/health version\.sha matches expected deployed SHA deadbeef \(got abc1234\)/,
+    );
+    assert.equal(result.stderr, "");
+  });
+});
+
 test("production smoke verifier fails strict mode on stale deployment evidence", async () => {
   await withSmokeServer({ fresh: false }, async (baseUrl) => {
     const result = await runSmoke(baseUrl);
@@ -45,12 +97,21 @@ test("production smoke verifier fails strict mode on stale deployment evidence",
 
 test("production smoke verifier can warn for known stale deployment evidence", async () => {
   await withSmokeServer({ fresh: false }, async (baseUrl) => {
-    const result = await runSmoke(baseUrl, "--allow-known-stale");
+    const result = await runSmoke(
+      baseUrl,
+      "--allow-known-stale",
+      "--expect-sha",
+      "abc1234",
+    );
 
     assert.equal(result.code, 0);
     assert.match(
       result.stdout,
       /WARN \/api\/health exposes a non-unknown version\.sha/,
+    );
+    assert.match(
+      result.stdout,
+      /WARN \/api\/health version\.sha matches expected deployed SHA abc1234/,
     );
     assert.match(
       result.stdout,

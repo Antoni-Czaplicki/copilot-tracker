@@ -678,3 +678,14 @@
 - PASS: GitHub Actions CI and Build extension workflows completed successfully for `ea2685e`.
 - PASS/WARN: post-CI `pnpm smoke:production -- --allow-known-stale` passed against https://copilot-tracker.antek.page.
 - STALE/LIMITATION: production still reports unknown build metadata, missing visible health `Cache-Control`, and stale provider-error callback `auth_code=provider_error`.
+
+## 2026-07-01 08:58 CEST Production Poll
+
+- User reports the VPS/Dokploy issue was fixed.
+- PASS: latest pushed commit `0bc8f68 Record health header QA poll` completed successfully on both GitHub Actions workflows.
+- PASS: production `/api/health` returns HTTP 200 with `ok=true` and `database.ok=true`.
+- PASS: production `/api/health` now sends `Cache-Control: no-store, no-cache, max-age=0, must-revalidate` plus CDN/proxy freshness headers.
+- PASS: direct provider-error callback redirects to `/?auth=failed&auth_code=access_denied` and clears OAuth cookies.
+- PASS: production auth failure HTML includes `role="alert"` and safe `invalid_client` copy without matching `AADSTS`, `error_description`, or `client_secret`.
+- LIMITATION: strict `pnpm smoke:production` still fails because `/api/health` reports `sha="unknown"` and `builtAt="unknown"`.
+- ADDED: `pnpm smoke:production -- --expect-sha "$(git rev-parse --short HEAD)"` can now prove exact deployed SHA once metadata is configured.
