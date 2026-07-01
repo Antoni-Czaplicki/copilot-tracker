@@ -578,3 +578,11 @@
 - PASS: production `/api/health` returned HTTP 200 with `ok=true` and `database.ok=true`.
 - PASS: production Azure OAuth start redirect includes state, PKCE `S256`, client id, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
 - STALE/LIMITATION: production `/api/health` still reports `sha="unknown"`, `builtAt="unknown"`, and no visible `Cache-Control` header.
+
+## 2026-07-01 07:13 CEST Production Poll
+
+- PUSHED: `784ef08 Restrict billing sync GET to cron`.
+- PASS: GitHub Actions for `784ef08` completed successfully on both CI and Build extension workflows.
+- PASS: production `/api/health` returned HTTP 200 with `ok=true` and `database.ok=true`.
+- PASS: production Azure OAuth start redirect includes state, PKCE `S256`, client id, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
+- STALE/LIMITATION: production `/api/health` still reports `sha="unknown"`, `builtAt="unknown"`, and no visible `Cache-Control` header.

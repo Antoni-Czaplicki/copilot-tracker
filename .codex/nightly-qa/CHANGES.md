@@ -989,3 +989,20 @@
 - PASS: `pnpm test` (120 web tests + 25 extension VS Code tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm --filter ./apps/extension compile`
+
+## 2026-07-01 - Extension Work Item Id Guard
+
+- Aligned extension TrackerClient work-item result validation with the web/backend Azure DevOps work-item ID range.
+- Filtered non-positive and too-large successful work-item search payload IDs before they can reach the quick pick.
+- Expanded the extension malformed work-item payload regression test.
+
+## Checks
+
+- PASS: `pnpm --filter ./apps/extension test` (25 tests)
+- PASS: `pnpm --filter ./apps/extension typecheck`
+- PASS: `pnpm --filter ./apps/extension lint`
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (120 web tests + 25 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`

@@ -23,6 +23,7 @@
 19. [FIXED] Task history resolver depended on pre-sorted history input even though the helper is exported for reuse.
 20. [FIXED] Extension work-item search trusted successful server payload shape and could pass malformed work-item entries into picker rendering.
 21. [FIXED] Extension server JSON/string error bodies that were blank could surface empty messages instead of the HTTP-status fallback.
+22. [FIXED] Extension work-item result validation accepted non-positive or too-large integer IDs even though web/backend reject invalid Azure DevOps work-item IDs.
 
 ## Web UX
 

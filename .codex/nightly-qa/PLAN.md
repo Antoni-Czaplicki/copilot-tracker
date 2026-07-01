@@ -304,4 +304,14 @@
 - [x] Make GET cron-only while POST keeps admin/manual fallback
 - [x] Update README API and billing sync docs
 - [x] Run focused and broad validation
+- [x] Commit, push, and smoke production
+- [x] Verify CI completion for `784ef08`
+
+## Loop 34 - Extension Work Item Id Guard
+
+- [x] Re-sync git and CI state for `784ef08`
+- [x] Inspect extension work-item result validation
+- [x] Align extension ID guard with backend/web positive Azure DevOps ID range
+- [x] Expand extension malformed payload test
+- [x] Run focused and broad validation
 - [ ] Commit, push, and smoke production

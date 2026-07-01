@@ -1341,6 +1341,38 @@
 - PASS: `pnpm --filter ./apps/extension compile`
 - Next: commit, push, smoke production, and continue.
 
+## 2026-07-01 07:13:26 CEST - Loop 33 End
+
+- Committed and pushed GitHub billing sync method authorization hardening as `784ef08 Restrict billing sync GET to cron`.
+- GitHub Actions for `784ef08` are in progress on both CI and Build extension workflows.
+- PASS: production `/api/health` returns HTTP 200 with `ok=true` and `database.ok=true`.
+- STALE/LIMITATION: production `/api/health` still reports `version.sha="unknown"`, `builtAt="unknown"`, and no visible `Cache-Control` header.
+- PASS: sanitized production Azure OAuth start redirects to Microsoft with PKCE `S256`, state, client id, and required Azure DevOps scopes.
+- Current git state after push: clean.
+- Next: start loop 34, poll CI/deploy, and continue improvement work.
+
+## 2026-07-01 07:14:24 CEST - Loop 34 Start
+
+- Previous pushed commit: `784ef08 Restrict billing sync GET to cron`; GitHub Actions were in progress at the prior poll.
+- Current blocker remains external Azure OAuth `invalid_client`, unavailable Docker daemon, and unproven production commit metadata/cache-header freshness.
+- Next: poll CI, inspect extension work-item result validation, and implement a parity fix if needed.
+
+## 2026-07-01 07:16:06 CEST - Loop 34 Validation
+
+- PASS: GitHub Actions for `784ef08 Restrict billing sync GET to cron` completed successfully on both CI and extension build workflows.
+- FOUND: extension TrackerClient work-item result validation accepted any integer ID, while web/backend now reject non-positive or too-large Azure DevOps IDs.
+- Tightened extension work-item validation to require a positive safe integer no larger than `2_147_483_647`.
+- Expanded the malformed work-item search payload regression test to cover negative and too-large IDs.
+- PASS: `pnpm --filter ./apps/extension test` (25 tests)
+- PASS: `pnpm --filter ./apps/extension typecheck`
+- PASS: `pnpm --filter ./apps/extension lint`
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (120 web tests + 25 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`
+- Next: commit, push, smoke production, and continue.
+
 ## 2026-07-01 07:08:02 CEST - Loop 32 End
 
 - Committed and pushed Azure DevOps work-item upstream response hardening as `de00e83 Harden Azure work item responses`.

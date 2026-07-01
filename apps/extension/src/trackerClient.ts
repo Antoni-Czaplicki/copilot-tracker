@@ -9,6 +9,7 @@ const defaultServerUrl = "http://localhost:3737";
 const trustedServerOriginsKey = "trustedServerOrigins";
 const requestTimeoutMs = 15_000;
 const maxRequestAttempts = 3;
+const maxAzureDevOpsWorkItemId = 2_147_483_647;
 
 export interface TrackerConfig {
   serverUrl: string;
@@ -392,7 +393,10 @@ function isAzureDevOpsWorkItem(value: unknown): value is AzureDevOpsWorkItem {
 
   const item = value as Record<string, unknown>;
   return (
-    Number.isInteger(item.id) &&
+    typeof item.id === "number" &&
+    Number.isSafeInteger(item.id) &&
+    item.id > 0 &&
+    item.id <= maxAzureDevOpsWorkItemId &&
     typeof item.title === "string" &&
     isNullableString(item.state) &&
     isNullableString(item.type) &&

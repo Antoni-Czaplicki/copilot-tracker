@@ -273,3 +273,4 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | API-265 | API/Security | PASS | GitHub billing sync admin fallback is allowed only when the route explicitly enables admin access | Automated | Added `allowAdmin` coverage for POST-vs-GET behavior; web/root tests passed |
 | API-266 | API/Security | PASS | GitHub billing sync rejects unauthenticated requests without cron or admin authorization | Automated | Added `canRunBillingSync` rejection coverage; web/root tests passed |
 | DOC-267 | Docs | PASS | README distinguishes cron GET billing sync from admin POST billing sync | Docs review + validation | Updated API list and billing sync instructions; typecheck/lint/tests/build passed |
+| EXT-268 | Extension | PASS | TrackerClient work-item search filters non-positive and too-large Azure DevOps IDs from successful payloads | Automated | Expanded malformed payload regression; extension/root tests passed |

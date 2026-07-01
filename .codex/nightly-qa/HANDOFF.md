@@ -65,4 +65,11 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - `de00e83 Harden Azure work item responses` passed both GitHub Actions workflows.
 - Tightened GitHub billing sync so cron bearer auth can use GET/POST, while admin/manual browser sync is POST-only.
 - Web tests are now 120; latest broad validation passed typecheck, lint, root tests, web build, and extension compile.
-- The billing sync method authorization fix is pending commit/push at this update point.
+- The billing sync method authorization fix was committed and pushed as `784ef08 Restrict billing sync GET to cron`; GitHub Actions were in progress at the latest poll.
+
+## 2026-07-01 07:16 CEST Update
+
+- `784ef08 Restrict billing sync GET to cron` passed both GitHub Actions workflows.
+- Aligned extension work-item result ID validation with web/backend Azure DevOps ID bounds.
+- Latest broad validation passed typecheck, lint, root tests, web build, and extension compile.
+- The extension work-item ID guard is pending commit/push at this update point.
