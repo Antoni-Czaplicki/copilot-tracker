@@ -96,3 +96,16 @@
 - Removed deprecated global selected-task fallback to prevent stale manual tasks leaking across workspaces.
 - Validated with extension compile/lint/test.
 - Next: commit/push workspace task isolation and poll CI/production.
+
+## 2026-07-01 02:28:38 CEST - Loop 1 End
+
+- Worktree clean after `815ae6f Isolate selected tasks by workspace`.
+- First loop delivered multiple focused commits across extension UX, OAuth security, deployment readiness, API validation, web task assignment UX, privacy gates, and docs/logging.
+- Latest GitHub CI for `815ae6f` was still in progress at loop end.
+- Production remains partially stale: OAuth privacy fix is live, but `/api/health` is still 404, so deployment has not reached the health/readiness commits.
+- Carry forward blockers: Docker daemon unavailable; no direct Dokploy deployment visibility from repo; production freshness unresolved.
+
+## 2026-07-01 02:28:38 CEST - Loop 2 Start
+
+- Starting from clean worktree at `815ae6f`.
+- Next actions: poll CI/production, keep investigating deployment freshness, and continue reducing remaining findings.
