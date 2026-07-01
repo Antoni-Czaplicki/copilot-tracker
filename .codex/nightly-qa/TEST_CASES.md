@@ -183,3 +183,4 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | EXT-175 | Extension | PASS | TrackerClient blocks remote server sync when no token is available | Automated | Added VS Code extension test; extension tests passed |
 | EXT-176 | Extension | PASS | TrackerClient surfaces JSON error messages from non-2xx server responses | Automated | Added VS Code extension test; extension tests passed |
 | EXT-177 | Extension | PASS | TrackerClient retries network failures and surfaces `network_error` after final failure | Automated | Added VS Code extension test; extension tests passed |
+| DEP-178 | Deployment | PASS | Health build metadata prefers explicit values, falls back to common source metadata, and reports `unknown` only when metadata is absent/invalid | Automated | Added `readBuildInfo` web tests; web tests passed |

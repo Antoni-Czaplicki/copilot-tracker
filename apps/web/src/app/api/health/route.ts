@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
+import { readBuildInfo } from "@/lib/buildInfo";
 import { db } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -13,10 +14,7 @@ export async function GET() {
     {
       ok,
       database,
-      version: {
-        sha: process.env.COPILOT_TRACKER_BUILD_SHA ?? "unknown",
-        builtAt: process.env.COPILOT_TRACKER_BUILD_TIME ?? "unknown",
-      },
+      version: readBuildInfo(),
       time: new Date().toISOString(),
     },
     { status: ok ? 200 : 503 },
@@ -31,4 +29,3 @@ async function checkDatabase() {
     return { ok: false };
   }
 }
-

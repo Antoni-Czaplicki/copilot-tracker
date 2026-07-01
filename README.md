@@ -102,7 +102,9 @@ docker compose up --build app
 
 For production deploys, pass the current commit and build time into the Docker
 build/runtime environment so `/api/health` can report the exact deployed
-revision:
+revision. The health endpoint can fall back to common source metadata variables
+when they are present, but explicit `COPILOT_TRACKER_BUILD_SHA` and
+`COPILOT_TRACKER_BUILD_TIME` values are the deployment contract:
 
 ```sh
 COPILOT_TRACKER_BUILD_SHA=$(git rev-parse --short HEAD)

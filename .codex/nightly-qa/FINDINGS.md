@@ -51,6 +51,7 @@
 4. [FIXED in `f6346a9`] Local compose only starts Postgres; app service/health/restart behavior is not modeled.
 5. [FIXED in `03c390b`] README references missing `apps/web/.env.example`.
 6. [FIXED in `03c390b` and documented in `2ea2641`] No health/readiness endpoint or build SHA exposure for deployed stale-build detection.
+7. [PARTIAL] `/api/health` now normalizes blank/`unknown` build metadata and supports common source env fallbacks, but exact deployed commit is still unprovable until production passes build metadata.
 
 ## Auth / Security / Privacy
 

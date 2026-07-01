@@ -125,3 +125,9 @@
 ## 2026-07-01 04:26 CEST CI Poll
 
 - PASS: GitHub Actions for `15d76ee Add Azure work item search coverage` completed successfully on both CI and extension build workflows.
+
+## 2026-07-01 04:31 CEST Build Metadata Follow-Up
+
+- PASS: GitHub Actions for `96bab47 Add extension TrackerClient coverage` completed successfully on both CI and extension build workflows.
+- LOCAL: `/api/health` build metadata lookup now treats blank/`unknown` values as absent and can use common source commit/time variables when available.
+- LIMITATION: production still needs explicit build metadata env/build args to prove exact deployed commit from `/api/health`.

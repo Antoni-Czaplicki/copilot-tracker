@@ -445,3 +445,17 @@
 
 - PASS: `pnpm --filter ./apps/extension test` (14 tests)
 - PASS: `pnpm test` (41 web tests + 14 extension VS Code tests)
+
+## 2026-07-01 - Health Build Metadata Normalization
+
+- Moved `/api/health` build metadata lookup into a tested `readBuildInfo` helper.
+- Treat blank and literal `unknown` values as missing so stale placeholder metadata does not mask useful fallback source metadata.
+- Added fallback support for common source commit/time environment names while keeping explicit Copilot Tracker build metadata as the documented production contract.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web test` (44 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (44 web tests + 14 extension VS Code tests)

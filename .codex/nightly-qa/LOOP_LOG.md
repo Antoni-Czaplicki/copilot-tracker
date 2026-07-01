@@ -608,3 +608,29 @@
 - PASS: `pnpm test` (41 web tests + 14 extension VS Code tests)
 - PASS: GitHub Actions for `15d76ee Add Azure work item search coverage` completed successfully.
 - Next: inspect diff, commit, push, and continue.
+
+## 2026-07-01 04:27:20 CEST - Loop 3 Progress
+
+- Committed and pushed extension TrackerClient coverage as `96bab47 Add extension TrackerClient coverage`.
+- GitHub Actions for `96bab47` are in progress for CI and extension build.
+- Production `/api/health` remains OK with DB ready; build metadata still reports `sha="unknown"` and `builtAt="unknown"`.
+- Local tree is clean immediately after push.
+- Next: poll checks while selecting the next non-auth-blocked improvement.
+
+## 2026-07-01 04:28:29 CEST - Loop 3 Progress
+
+- Starting health build metadata normalization.
+- Dokploy build metadata still needs explicit build args/runtime env, but `/api/health` can be made more robust by treating empty/`unknown` values as absent and accepting common CI/deploy fallback variable names when present.
+
+## 2026-07-01 04:31:58 CEST - Loop 3 Validation
+
+- Added `readBuildInfo` helper for `/api/health`.
+- Added web tests for explicit metadata preference, fallback source metadata, and invalid/unknown metadata handling.
+- Documented fallback metadata names while keeping explicit `COPILOT_TRACKER_BUILD_SHA` and `COPILOT_TRACKER_BUILD_TIME` as the deployment contract.
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web test` (44 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (44 web tests + 14 extension VS Code tests)
+- PASS: GitHub Actions for `96bab47 Add extension TrackerClient coverage` completed successfully.
+- Next: inspect diff, commit, push, and poll deployment.

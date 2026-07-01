@@ -45,6 +45,13 @@ In Dokploy or another Docker builder, map those values to:
 If production reports `version.sha="unknown"`, the deploy cannot be tied back
 to a commit from the health endpoint.
 
+The health endpoint treats blank or literal `unknown` values as missing and can
+fall back to common source metadata variables (`SOURCE_COMMIT`, `GITHUB_SHA`,
+`VERCEL_GIT_COMMIT_SHA`, `RAILWAY_GIT_COMMIT_SHA`, `COMMIT_SHA`, and
+`SOURCE_DATE_EPOCH`). The explicit `COPILOT_TRACKER_BUILD_SHA` and
+`COPILOT_TRACKER_BUILD_TIME` variables are still the preferred production
+contract because Dokploy does not guarantee those fallback names.
+
 ## Azure App Registration
 
 The Microsoft Entra app registration must include this redirect URI:
