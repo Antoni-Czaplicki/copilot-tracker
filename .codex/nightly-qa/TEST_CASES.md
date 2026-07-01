@@ -195,3 +195,9 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | API-187 | API/Backend | PASS | Chat request payload bounds prompt-token percentages and tool-call round counts | Automated | Added payload schema coverage; web tests passed |
 | API-188 | API/Backend | PASS | Tracker event payload accepts known event types and optional payload records | Automated | Added payload schema coverage; web tests passed |
 | API-189 | API/Backend | PASS | Tracker event payload rejects blank workspace ids and unknown event types | Automated | Added payload schema coverage; web tests passed |
+| UI-190 | Web | PASS | Dashboard summary metrics filter placeholder rows and aggregate token/cost totals | Automated | Added analytics coverage; web tests passed |
+| UI-191 | Web | PASS | Task summaries group by task/repository/branch and sort by latest activity | Automated | Added analytics coverage; web tests passed |
+| UI-192 | Web | PASS | Developer task summaries fall back to default task when selected task is null | Automated | Added analytics coverage; web tests passed |
+| UI-193 | Web | PASS | Public leaderboard ranks meaningful requests by total tokens and uses stored GitHub mappings | Automated | Added analytics coverage; web tests passed |
+| UI-194 | Web | PASS | Model summaries group known model ids and unknown model requests | Automated | Added analytics coverage; web tests passed |
+| UI-195 | Web | PASS | Repository and activity helpers handle Windows paths, workspace fallbacks, and invalid dates | Automated | Added analytics coverage; web tests passed |

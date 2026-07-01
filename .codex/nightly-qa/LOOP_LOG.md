@@ -718,3 +718,23 @@
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm test` (57 web tests + 14 extension VS Code tests)
 - Next: inspect diff, commit, push, and continue.
+
+## 2026-07-01 04:47:05 CEST - Loop 3 Progress
+
+- Committed and pushed payload schema coverage as `7871f09 Expand payload schema coverage`.
+- GitHub Actions for `7871f09` are in progress.
+- PASS: production `/api/health` returns OK with database ready.
+- LIMITATION: production `/api/health` still reports `version.sha="unknown"` and `builtAt="unknown"`.
+- PASS: sanitized production Azure OAuth start still redirects to Microsoft with PKCE `S256`, state, client id, and required Azure DevOps scopes.
+- Next: poll CI and continue with additional high-value tests/fixes.
+
+## 2026-07-01 04:49:43 CEST - Loop 3 Validation
+
+- PASS: GitHub Actions for `7871f09 Expand payload schema coverage` completed successfully on both CI and extension build workflows.
+- Added analytics tests for meaningful-request filtering, token/cost summaries, task summaries, developer-task fallback grouping, leaderboard ranking, model grouping, repository name fallbacks, and invalid activity timestamps.
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web test` (63 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (63 web tests + 14 extension VS Code tests)
+- Next: inspect diff, commit, push, and continue.

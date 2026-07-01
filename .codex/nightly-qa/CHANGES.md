@@ -516,3 +516,17 @@
 - PASS: `pnpm --filter @copilot-tracker/web test` (57 tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm test` (57 web tests + 14 extension VS Code tests)
+
+## 2026-07-01 - Analytics and Dashboard Grouping Coverage
+
+- Added analytics tests for meaningful request filtering, summary metrics, token totals, and estimated cost aggregation.
+- Added tests for task summaries, developer task summaries, public leaderboard ranking, and model grouping.
+- Added fallback helper coverage for repository names and invalid request activity timestamps.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web test` (63 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (63 web tests + 14 extension VS Code tests)
