@@ -33,16 +33,16 @@
 
 1. [P1] No tracked Dokploy deployment manifest/workflow or production deploy contract.
 2. [P1] Drizzle config falls back to localhost `DATABASE_URL`, which can mask production migration misconfiguration.
-3. [P1] CI lacks `pnpm --filter @copilot-tracker/web build`.
+3. [FIXED locally, commit pending] CI lacks `pnpm --filter @copilot-tracker/web build`.
 4. [P2] Local compose only starts Postgres; app service/health/restart behavior is not modeled.
-5. [P2] README references missing `apps/web/.env.example`.
-6. [P2] No health/readiness endpoint or build SHA exposure for deployed stale-build detection.
+5. [FIXED locally, commit pending] README references missing `apps/web/.env.example`.
+6. [FIXED locally, commit pending] No health/readiness endpoint or build SHA exposure for deployed stale-build detection.
 
 ## Auth / Security / Privacy
 
-1. [FIXED locally, commit pending] OAuth callback can 500 after token exchange if profile lookup/session creation throws, leaving OAuth cookies until expiry.
-2. [FIXED locally, commit pending] OAuth provider error details are reflected into public redirect URLs and homepage UI.
-3. [P1] Azure token encryption falls back to `AZURE_DEVOPS_CLIENT_SECRET`; production should require a dedicated stable encryption key.
+1. [FIXED in `f85f30e`] OAuth callback can 500 after token exchange if profile lookup/session creation throws, leaving OAuth cookies until expiry.
+2. [FIXED in `f85f30e`] OAuth provider error details are reflected into public redirect URLs and homepage UI.
+3. [FIXED locally, commit pending] Azure token encryption falls back to `AZURE_DEVOPS_CLIENT_SECRET`; production should require a dedicated stable encryption key.
 4. [P1] Leaderboard exposes all signed-in developers' leaderboard and login mapping data to any signed-in user.
 5. [P3] Extension info logs and context UI include raw local paths, remote URLs, and storage paths.
 6. [P2] No web auth tests cover PKCE/state cookies, callback failures, session creation, profile/org checks, or work-item status mapping.

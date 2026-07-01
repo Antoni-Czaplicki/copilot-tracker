@@ -81,9 +81,10 @@ if (
   env.COPILOT_TRACKER_AUTH_MODE === "azure-devops" &&
   (env.AZURE_DEVOPS_CLIENT_ID === undefined ||
     env.AZURE_DEVOPS_CLIENT_SECRET === undefined ||
-    env.AZURE_DEVOPS_ORG === undefined)
+    env.AZURE_DEVOPS_ORG === undefined ||
+    env.COPILOT_TRACKER_TOKEN_ENCRYPTION_KEY === undefined)
 ) {
   throw new Error(
-    "AZURE_DEVOPS_CLIENT_ID, AZURE_DEVOPS_CLIENT_SECRET, and AZURE_DEVOPS_ORG are required in production when Azure DevOps auth is enabled.",
+    "AZURE_DEVOPS_CLIENT_ID, AZURE_DEVOPS_CLIENT_SECRET, AZURE_DEVOPS_ORG, and COPILOT_TRACKER_TOKEN_ENCRYPTION_KEY are required in production when Azure DevOps auth is enabled.",
   );
 }

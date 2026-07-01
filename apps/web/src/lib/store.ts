@@ -714,9 +714,7 @@ function decryptSessionToken(value: string | null): string | null {
 }
 
 function sessionTokenEncryptionKey() {
-  const material =
-    env.COPILOT_TRACKER_TOKEN_ENCRYPTION_KEY ??
-    env.AZURE_DEVOPS_CLIENT_SECRET;
+  const material = env.COPILOT_TRACKER_TOKEN_ENCRYPTION_KEY;
   if (!material) {
     return null;
   }

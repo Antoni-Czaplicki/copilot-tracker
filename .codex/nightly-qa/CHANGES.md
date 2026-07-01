@@ -28,3 +28,21 @@
 - PASS: `pnpm --filter @copilot-tracker/web typecheck`
 - PASS: `pnpm --filter @copilot-tracker/web lint`
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+
+## 2026-07-01 - Deployment Health and Secret Contract
+
+- Added `GET /api/health` with DB readiness, build SHA, build time, and current timestamp.
+- Added Docker build/runtime metadata arguments and a container `HEALTHCHECK` against `/api/health`.
+- Added a CI web production build step with safe placeholder env values.
+- Added `apps/web/.env.example` for local/production env onboarding.
+- Required `COPILOT_TRACKER_TOKEN_ENCRYPTION_KEY` for production Azure DevOps auth and removed the Azure client-secret fallback for token encryption.
+- Updated README to document the dedicated encryption key and health endpoint.
+
+## Checks
+
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm --filter ./apps/extension test`
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env and build metadata
+- PASS: local `next start` health smoke returned `503` with `database.ok=false` and build SHA when no local database was available
+- BLOCKED: Docker image build could not run because the local Docker daemon socket was unavailable

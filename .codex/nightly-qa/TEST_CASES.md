@@ -142,3 +142,4 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | DEP-134 | Deployment | PENDING | Extension packaging workflow compiles and packages VSIX | Workflow/manual | |
 | DEP-135 | Deployment | PENDING | Extension tests run headless under Xvfb without flake | CI validation | |
 | DEP-136 | Deployment | PENDING | Schema migration is idempotent across container restarts | Integration | |
+| DEP-137 | Deployment | PASS | `/api/health` returns readiness status, DB status, build SHA, and timestamp | Local `next start` smoke | Returned 503 with DB unavailable and build metadata present |

@@ -20,3 +20,12 @@
 - Implemented OAuth callback hardening: stable failure codes, no provider descriptions in redirect URLs, and OAuth cookie clearing on callback failure branches.
 - Validated OAuth patch with web typecheck, lint, and placeholder production build.
 - Next: commit/push OAuth patch, then verify production freshness and continue with deployment/API fixes.
+
+## 2026-07-01 02:04:48 CEST - Loop 1 Progress
+
+- Committed and pushed OAuth callback hardening as `f85f30e Harden Azure OAuth callback failures`.
+- Production checks: homepage and Azure PKCE redirect are healthy, work-items API is auth-gated, login link is document navigation, but provider-error redirect still reflects descriptions, indicating production lag/staleness.
+- Implemented deployment health/readiness and secret-contract slice: `/api/health`, Docker healthcheck/build metadata, CI web build, env example, production encryption-key requirement, and README updates.
+- Validated with repo typecheck, lint, extension tests, placeholder production web build, and local health smoke.
+- Docker image build is blocked because Docker daemon is not running.
+- Next: commit/push deployment slice and poll production for deployment freshness.
