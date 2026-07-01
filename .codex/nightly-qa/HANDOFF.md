@@ -151,3 +151,10 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - `d948d06 Verify deployed commit in production smoke` passed both GitHub Actions workflows.
 - Post-CI production smoke with `--expect-sha d948d06` passes in known-stale mode; only build metadata/SHA checks warn because production still reports `version.sha="unknown"` and `builtAt="unknown"`.
 - Next high-value pass: use Chrome's existing session to verify signed-in production dashboard/Azure work-item flows, then set Dokploy/runtime build metadata and rerun strict exact-SHA smoke.
+
+## 2026-07-01 09:14 CEST Auth Diagnostics Update
+
+- Chrome production auth retry still returns `auth_code=invalid_client`; failure UI remains safe.
+- Added redacted server-side Azure OAuth diagnostic logging plus public `auth_ref` correlation for matching browser failures to Dokploy logs.
+- No Dokploy MCP is exposed here; use Chrome for Dokploy UI/log inspection and Termius/SSH for VPS fixes.
+- After this deploy, rerun the Chrome login, grab `auth_ref` from the public URL/page, and confirm Dokploy logs have a matching `azure_oauth_callback_failed` JSON event with redacted provider details.

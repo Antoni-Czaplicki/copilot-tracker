@@ -12,14 +12,24 @@ import {
   secureCookieOptions,
   sessionCookie,
 } from "@/lib/auth";
-import { sanitizeAuthCallbackValue } from "@/lib/authCallback";
+import {
+  createAuthFailureReference,
+  logAuthFailure,
+  sanitizeAuthCallbackValue,
+} from "@/lib/authCallback";
 import { MissingAzureDevOpsOAuthConfigError, appBaseUrl } from "@/lib/config";
 
 export async function GET(request: NextRequest) {
   try {
     const providerError = request.nextUrl.searchParams.get("error");
     if (providerError) {
-      return failureResponse(providerFailureCode(providerError));
+      const code = providerFailureCode(providerError);
+      return failureResponse(request, code, {
+        providerError,
+        providerErrorDescription:
+          request.nextUrl.searchParams.get("error_description"),
+        stage: "provider_error",
+      });
     }
 
     const code = request.nextUrl.searchParams.get("code");
@@ -35,7 +45,19 @@ export async function GET(request: NextRequest) {
       codeVerifier === undefined ||
       codeVerifier === ""
     ) {
-      return failureResponse("invalid_oauth_state");
+      return failureResponse(request, "invalid_oauth_state", {
+        hasCode: code !== null && code !== "",
+        hasCodeVerifier: codeVerifier !== undefined && codeVerifier !== "",
+        hasExpectedState: expectedState !== undefined && expectedState !== "",
+        hasState: state !== null && state !== "",
+        stage: "oauth_state",
+        stateMatches:
+          state !== null &&
+          state !== "" &&
+          expectedState !== undefined &&
+          expectedState !== "" &&
+          state === expectedState,
+      });
     }
 
     let tokens: Awaited<ReturnType<typeof exchangeAzureDevOpsCode>>;
@@ -43,18 +65,26 @@ export async function GET(request: NextRequest) {
       tokens = await exchangeAzureDevOpsCode(code, codeVerifier);
     } catch (error) {
       if (error instanceof AzureDevOpsTokenExchangeError) {
-        return failureResponse(error.code);
+        return failureResponse(request, error.code, {
+          errorMessage: error.description,
+          errorName: error.name,
+          stage: "token_exchange",
+        });
       }
 
       throw error;
     }
     if (tokens === null) {
-      return failureResponse("token_exchange_failed");
+      return failureResponse(request, "token_exchange_failed", {
+        stage: "token_exchange",
+      });
     }
 
     const azureUser = await fetchAzureDevOpsUser(tokens.accessToken);
     if (azureUser === null) {
-      return failureResponse("profile_or_org_check_failed");
+      return failureResponse(request, "profile_or_org_check_failed", {
+        stage: "profile_or_org_check",
+      });
     }
 
     const sessionId = await createUserSession(azureUser, tokens);
@@ -73,20 +103,40 @@ export async function GET(request: NextRequest) {
       return response;
     }
 
-    return failureResponse("callback_failed");
+    return failureResponse(request, "callback_failed", {
+      errorMessage: error instanceof Error ? error.message : String(error),
+      errorName: error instanceof Error ? error.name : typeof error,
+      errorStack: error instanceof Error ? error.stack : null,
+      stage: "callback_exception",
+    });
   }
 }
 
-function failureResponse(code: string) {
-  const response = authFailureRedirect(code);
+function failureResponse(
+  request: NextRequest,
+  code: string,
+  details: Omit<
+    Parameters<typeof logAuthFailure>[0],
+    "authRef" | "code" | "requestPath"
+  >,
+) {
+  const authRef = createAuthFailureReference();
+  logAuthFailure({
+    ...details,
+    authRef,
+    code,
+    requestPath: request.nextUrl.pathname,
+  });
+  const response = authFailureRedirect(code, authRef);
   clearOauthCookies(response);
   return response;
 }
 
-function authFailureRedirect(code: string) {
+function authFailureRedirect(code: string, authRef: string) {
   const url = new URL("/", appBaseUrl());
   url.searchParams.set("auth", "failed");
   url.searchParams.set("auth_code", sanitizeAuthCallbackValue(code, 80));
+  url.searchParams.set("auth_ref", sanitizeAuthCallbackValue(authRef, 32));
 
   return NextResponse.redirect(url);
 }

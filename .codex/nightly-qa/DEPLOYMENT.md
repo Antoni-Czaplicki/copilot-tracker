@@ -696,3 +696,17 @@
 - PASS: GitHub Actions CI and Build extension workflows completed successfully for `d948d06`.
 - PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha d948d06` passed against production.
 - LIMITATION: production smoke warnings are now limited to unknown build metadata and expected-SHA mismatch caused by `version.sha="unknown"`.
+
+## 2026-07-01 09:07 CEST Chrome Production Auth Retry
+
+- PASS: `7d88d23 Record exact smoke QA poll` completed successfully on GitHub Actions CI and Build extension workflows.
+- FAIL/BLOCKED: real Chrome retry of the visible Azure DevOps login link still redirects back to `/?auth=failed&auth_code=invalid_client`.
+- PASS: the production auth failure page remains safe after the real retry: one alert region, retry links present, and no provider-description leakage detected.
+- NEXT: inspect/fix production Azure OAuth client configuration in Dokploy/Termius, then rerun Chrome signed-in dashboard/Azure work-item E2E.
+
+## 2026-07-01 09:14 CEST Auth Diagnostics Prep
+
+- No Dokploy MCP tool is exposed in this Codex session; use Chrome for Dokploy UI/log inspection and Termius/SSH for VPS-level fixes.
+- ADDED: Azure OAuth callback failures now emit redacted structured `azure_oauth_callback_failed` warning events with `authRef`, stage, stable code, and safe diagnostic fields.
+- ADDED: public failure redirects now include only safe `auth_code` plus `auth_ref`; provider `error_description`, tokens, cookies, code verifiers, and secrets stay out of browser URLs/page text.
+- NEXT AFTER DEPLOY: reproduce the Chrome `invalid_client` flow, copy the public `auth_ref`, and find the matching JSON line in Dokploy logs.

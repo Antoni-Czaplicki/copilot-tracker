@@ -11,6 +11,56 @@ export function sanitizeAuthCallbackValue(value: string, maxLength: number) {
     .slice(0, maxLength);
 }
 
+export function createAuthFailureReference(
+  randomUuid = () => crypto.randomUUID(),
+) {
+  return sanitizeAuthCallbackValue(randomUuid().replaceAll("-", ""), 16);
+}
+
+export interface AuthFailureLogInput {
+  authRef: string;
+  code: string;
+  errorMessage?: string | null;
+  errorName?: string | null;
+  errorStack?: string | null;
+  hasCode?: boolean;
+  hasCodeVerifier?: boolean;
+  hasExpectedState?: boolean;
+  hasState?: boolean;
+  providerError?: string | null;
+  providerErrorDescription?: string | null;
+  requestPath?: string;
+  stage: string;
+  stateMatches?: boolean;
+}
+
+export function authFailureLogEvent(input: AuthFailureLogInput) {
+  return {
+    authRef: sanitizeAuthCallbackValue(input.authRef, 32),
+    code: sanitizeAuthCallbackValue(input.code, 80) || "unknown",
+    errorMessage: sanitizeAuthLogValue(input.errorMessage, 500),
+    errorName: sanitizeAuthLogValue(input.errorName, 120),
+    errorStack: sanitizeAuthLogValue(input.errorStack, 2000),
+    event: "azure_oauth_callback_failed",
+    hasCode: input.hasCode,
+    hasCodeVerifier: input.hasCodeVerifier,
+    hasExpectedState: input.hasExpectedState,
+    hasState: input.hasState,
+    providerError: sanitizeAuthLogValue(input.providerError, 120),
+    providerErrorDescription: sanitizeAuthLogValue(
+      input.providerErrorDescription,
+      500,
+    ),
+    requestPath: sanitizeAuthLogValue(input.requestPath, 120),
+    stage: sanitizeAuthCallbackValue(input.stage, 80) || "unknown",
+    stateMatches: input.stateMatches,
+  };
+}
+
+export function logAuthFailure(input: AuthFailureLogInput) {
+  console.warn(JSON.stringify(authFailureLogEvent(input)));
+}
+
 export function authFailureHint(code: string) {
   switch (code) {
     case "access_denied": {
@@ -41,4 +91,22 @@ export function authFailureHint(code: string) {
       return null;
     }
   }
+}
+
+function sanitizeAuthLogValue(value: string | null | undefined, maxLength: number) {
+  if (!value) {
+    return;
+  }
+
+  const sanitized = sanitizeAuthCallbackValue(value, maxLength);
+  if (!sanitized) {
+    return;
+  }
+
+  return sanitized
+    .replaceAll(
+      /\b(client_secret|code_verifier|access_token|refresh_token|id_token|authorization|cookie)\b\s*[:=]\s*[^&\s;,]+/giu,
+      "$1=[redacted]",
+    )
+    .replaceAll(/\bBearer\s+[A-Za-z0-9._~+/=-]+/gu, "Bearer [redacted]");
 }

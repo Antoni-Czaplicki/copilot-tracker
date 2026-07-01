@@ -18,6 +18,7 @@ interface HomePageProps {
   searchParams?: Promise<{
     auth?: string;
     auth_code?: string;
+    auth_ref?: string;
     taskPage?: string;
   }>;
 }
@@ -45,6 +46,10 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const authErrorCode = sanitizeAuthCallbackValue(
     parameters?.auth_code ?? "",
     80,
+  );
+  const authErrorReference = sanitizeAuthCallbackValue(
+    parameters?.auth_ref ?? "",
+    32,
   );
   const authErrorHint = authFailureHint(authErrorCode);
 
@@ -86,6 +91,12 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               {authErrorCode ? (
                 <div>
                   Error: <code className="font-mono">{authErrorCode}</code>
+                </div>
+              ) : null}
+              {authErrorReference ? (
+                <div>
+                  Reference:{" "}
+                  <code className="font-mono">{authErrorReference}</code>
                 </div>
               ) : null}
               {authErrorHint ? <div>{authErrorHint}</div> : null}

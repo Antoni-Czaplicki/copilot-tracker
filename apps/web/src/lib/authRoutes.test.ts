@@ -55,18 +55,30 @@ void test("Azure OAuth start sets short-lived PKCE state and verifier cookies", 
 });
 
 void test("Azure OAuth callback provider errors redirect safely and clear OAuth cookies", async () => {
-  const response = await callbackRoute.GET(
-    new NextRequest(
-      "https://copilot-tracker.example/api/auth/callback/azure-devops?error=access_denied&error_description=do-not-reflect",
+  const { response, warnings } = await captureWarnings(async () =>
+    await callbackRoute.GET(
+      new NextRequest(
+        "https://copilot-tracker.example/api/auth/callback/azure-devops?error=access_denied&error_description=do-not-reflect",
+      ),
     ),
   );
   const redirectUrl = new URL(assertHeader(response, "location"));
+  const authRef = redirectUrl.searchParams.get("auth_ref") ?? "";
+  const log = parseAuthLog(warnings);
 
   assert.equal(response.status, 307);
   assert.equal(redirectUrl.pathname, "/");
   assert.equal(redirectUrl.searchParams.get("auth"), "failed");
   assert.equal(redirectUrl.searchParams.get("auth_code"), "access_denied");
+  assert.match(authRef, /^[0-9a-f]{16}$/);
   assert.equal(redirectUrl.searchParams.has("error_description"), false);
+  assert.equal(log.authRef, authRef);
+  assert.equal(log.code, "access_denied");
+  assert.equal(log.event, "azure_oauth_callback_failed");
+  assert.equal(log.providerError, "access_denied");
+  assert.equal(log.providerErrorDescription, "do-not-reflect");
+  assert.equal(log.requestPath, "/api/auth/callback/azure-devops");
+  assert.equal(log.stage, "provider_error");
   assertCookie(
     response.headers.getSetCookie(),
     "copilot_tracker_oauth_state",
@@ -80,11 +92,13 @@ void test("Azure OAuth callback provider errors redirect safely and clear OAuth 
 });
 
 void test("Azure OAuth callback provider errors sanitize unsafe provider codes", async () => {
-  const response = await callbackRoute.GET(
-    new NextRequest(
-      `https://copilot-tracker.example/api/auth/callback/azure-devops?error=${encodeURIComponent(
-        " invalid\n\tclient ".padEnd(120, "x"),
-      )}&error_description=do-not-reflect`,
+  const { response } = await captureWarnings(async () =>
+    await callbackRoute.GET(
+      new NextRequest(
+        `https://copilot-tracker.example/api/auth/callback/azure-devops?error=${encodeURIComponent(
+          " invalid\n\tclient ".padEnd(120, "x"),
+        )}&error_description=do-not-reflect`,
+      ),
     ),
   );
   const redirectUrl = new URL(assertHeader(response, "location"));
@@ -97,11 +111,13 @@ void test("Azure OAuth callback provider errors sanitize unsafe provider codes",
 });
 
 void test("Azure OAuth callback provider errors fall back for blank unsafe codes", async () => {
-  const response = await callbackRoute.GET(
-    new NextRequest(
-      `https://copilot-tracker.example/api/auth/callback/azure-devops?error=${encodeURIComponent(
-        "\n\t",
-      )}`,
+  const { response } = await captureWarnings(async () =>
+    await callbackRoute.GET(
+      new NextRequest(
+        `https://copilot-tracker.example/api/auth/callback/azure-devops?error=${encodeURIComponent(
+          "\n\t",
+        )}`,
+      ),
     ),
   );
   const redirectUrl = new URL(assertHeader(response, "location"));
@@ -111,22 +127,32 @@ void test("Azure OAuth callback provider errors fall back for blank unsafe codes
 });
 
 void test("Azure OAuth callback state mismatch fails safely and clears OAuth cookies", async () => {
-  const response = await callbackRoute.GET(
-    new NextRequest(
-      "https://copilot-tracker.example/api/auth/callback/azure-devops?code=code&state=actual",
-      {
-        headers: {
-          cookie:
-            "copilot_tracker_oauth_state=expected; copilot_tracker_oauth_code_verifier=verifier",
+  const { response, warnings } = await captureWarnings(async () =>
+    await callbackRoute.GET(
+      new NextRequest(
+        "https://copilot-tracker.example/api/auth/callback/azure-devops?code=code&state=actual",
+        {
+          headers: {
+            cookie:
+              "copilot_tracker_oauth_state=expected; copilot_tracker_oauth_code_verifier=verifier",
+          },
         },
-      },
+      ),
     ),
   );
   const redirectUrl = new URL(assertHeader(response, "location"));
+  const log = parseAuthLog(warnings);
 
   assert.equal(response.status, 307);
   assert.equal(redirectUrl.searchParams.get("auth"), "failed");
   assert.equal(redirectUrl.searchParams.get("auth_code"), "invalid_oauth_state");
+  assert.equal(log.code, "invalid_oauth_state");
+  assert.equal(log.hasCode, true);
+  assert.equal(log.hasCodeVerifier, true);
+  assert.equal(log.hasExpectedState, true);
+  assert.equal(log.hasState, true);
+  assert.equal(log.stage, "oauth_state");
+  assert.equal(log.stateMatches, false);
   assertCookie(
     response.headers.getSetCookie(),
     "copilot_tracker_oauth_state",
@@ -140,9 +166,11 @@ void test("Azure OAuth callback state mismatch fails safely and clears OAuth coo
 });
 
 void test("Azure OAuth callback missing code or verifier fails safely", async () => {
-  const response = await callbackRoute.GET(
-    new NextRequest(
-      "https://copilot-tracker.example/api/auth/callback/azure-devops",
+  const { response } = await captureWarnings(async () =>
+    await callbackRoute.GET(
+      new NextRequest(
+        "https://copilot-tracker.example/api/auth/callback/azure-devops",
+      ),
     ),
   );
   const redirectUrl = new URL(assertHeader(response, "location"));
@@ -176,4 +204,26 @@ function assertCookie(cookies: string[], name: string, expectedPart: string) {
     assert.fail(`${name} cookie should be set`);
   }
   assert.equal(cookie.includes(expectedPart), true);
+}
+
+async function captureWarnings(action: () => Promise<Response>) {
+  const warnings: string[] = [];
+  const originalWarn = console.warn;
+  console.warn = (...values: unknown[]) => {
+    warnings.push(values.map(String).join(" "));
+  };
+  try {
+    return {
+      response: await action(),
+      warnings,
+    };
+  } finally {
+    console.warn = originalWarn;
+  }
+}
+
+function parseAuthLog(warnings: string[]) {
+  assert.equal(warnings.length, 1);
+  const parsed = JSON.parse(warnings[0] ?? "{}") as Record<string, unknown>;
+  return parsed;
 }

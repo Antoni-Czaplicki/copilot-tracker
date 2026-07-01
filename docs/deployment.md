@@ -70,6 +70,11 @@ The app must allow delegated Azure DevOps access for:
 
 If the real login returns `auth_code=invalid_client`, check the Azure client ID,
 client secret, tenant/account type, and redirect URI before debugging app code.
+The public failure URL also includes `auth_ref`, a short diagnostic reference.
+Use that value to find the matching `azure_oauth_callback_failed` JSON line in
+Dokploy/server logs. Those logs include redacted provider descriptions and
+callback stage details; browser URLs and page text must never include provider
+`error_description`, tokens, cookies, or client secrets.
 
 ## Production Smoke Checks
 

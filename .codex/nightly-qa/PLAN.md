@@ -411,3 +411,14 @@
 - [x] Document exact deployed SHA smoke usage
 - [x] Run broad validation
 - [x] Commit, push, smoke production, and poll CI
+
+## Loop 45 - Redacted Auth Diagnostics
+
+- [x] Re-sync latest `7d88d23` CI, production smoke, and Chrome auth retry evidence
+- [x] Confirm no Dokploy MCP is exposed; use Dokploy Chrome UI and Termius/SSH fallback for deployment logs/host fixes
+- [x] Add redacted structured Azure OAuth callback failure log events for Dokploy/server logs
+- [x] Add client-safe `auth_ref` failure URL/page display for correlating browser failures to server logs
+- [x] Add tests for diagnostic references, log redaction, provider-error logging, and OAuth state diagnostics
+- [x] Document auth diagnostics/logging contract
+- [x] Run typecheck, lint, root tests, production web build, extension compile, live known-stale smoke, and diff check
+- [ ] Commit, push, smoke production, poll CI, and verify deployed auth_ref/log behavior

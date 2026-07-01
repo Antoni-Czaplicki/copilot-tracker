@@ -1984,3 +1984,22 @@
 - PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha d948d06` passed against production.
 - LIMITATION: production still reports unknown health build metadata, so exact deployed commit proof remains unavailable until Dokploy/runtime metadata is configured.
 - Next: continue with Chrome signed-in production E2E and/or Termius/Dokploy metadata configuration.
+
+## 2026-07-01 09:14:03 CEST - Loop 45 Validation
+
+- PASS: latest pushed commit `7d88d23 Record exact smoke QA poll` completed successfully on both GitHub Actions workflows.
+- PASS/WARN: production smoke still passes in known-stale exact-SHA mode; remaining smoke warnings are build metadata only.
+- CONFIRMED: no Dokploy MCP appears exposed in this Codex session; use Chrome for Dokploy UI/logs and Termius/SSH for host-level fixes.
+- Added redacted structured Azure OAuth callback diagnostics with `auth_ref` correlation.
+- Public failure redirects/pages now carry safe `auth_code` plus `auth_ref`; provider details remain server-log-only.
+- PASS: `pnpm --filter @copilot-tracker/web test` (125 tests)
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (7 smoke tests + 125 web tests + 26 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 7d88d23`
+- PASS: `git diff --check`
+- Next: commit/push, poll CI, deploy, and verify the real Chrome `invalid_client` flow logs a matching Dokploy `authRef`.
