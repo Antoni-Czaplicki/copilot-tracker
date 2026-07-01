@@ -220,3 +220,5 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | UI-212 | Web | PASS | Session bulk editor shows a common task only when all session requests agree | Automated | Extracted session grid model coverage; web tests passed |
 | UI-213 | Web | PASS | Request token/cost labels distinguish complete, partial, missing, unpriced, and priced requests | Automated | Extracted session grid model coverage; web tests passed |
 | UI-214 | Web | PASS | Focused session anchor ids remain stable for punctuation and spaces | Automated | Extracted session grid model coverage; web tests passed |
+| EXT-215 | Extension | PASS | Status bar task and token text formats short/long task ids, standard numbers, compact token totals, and small costs | Automated | Extracted `statusFormatting`; extension tests passed |
+| EXT-216 | Extension | PASS | Session estimated cost tooltip marks cost as a lower bound when any request has incomplete token data | Automated | Extracted `statusFormatting`; extension tests passed |

@@ -13,12 +13,20 @@ import {
   writeRequestUploadState,
 } from "../requestUploadCache";
 import {
+  compactStatusText,
+  formatCompactNumber,
+  formatCurrency,
+  formatEstimatedSessionCost,
+  formatNumber,
+} from "../statusFormatting";
+import {
   TrackerClient,
   TrackerClientError,
   parseTrackerServerUrl,
 } from "../trackerClient";
 import type { AzureDevOpsTokenOptions } from "../azureDevOpsAuth";
 import type { CopilotChatRequest, WorkspaceContext } from "../types";
+import type { SessionTokenStats } from "../sessionTokenStats";
 import { currentSessionTokenStats } from "../sessionTokenStats";
 import { getTaskFromBranch } from "../workspaceContext";
 
@@ -59,6 +67,38 @@ suite("Extension Test Suite", () => {
         }),
       ]),
       6,
+    );
+  });
+
+  test("Formats status bar task and token text", () => {
+    assert.strictEqual(compactStatusText("short-task", 12), "short-task");
+    assert.strictEqual(
+      compactStatusText("very-long-task-name", 10),
+      "very-long…",
+    );
+    assert.strictEqual(formatNumber(1_234_567), "1,234,567");
+    assert.strictEqual(formatCompactNumber(1_234), "1.2K");
+    assert.strictEqual(formatCurrency(0.00045), "$0.0005");
+  });
+
+  test("Formats estimated session cost as lower bound when token data is incomplete", () => {
+    assert.strictEqual(
+      formatEstimatedSessionCost(
+        createSessionStats({
+          estimatedUsd: 0.00045,
+          incompleteTokenRequestCount: 0,
+        }),
+      ),
+      "$0.0005",
+    );
+    assert.strictEqual(
+      formatEstimatedSessionCost(
+        createSessionStats({
+          estimatedUsd: 1.25,
+          incompleteTokenRequestCount: 2,
+        }),
+      ),
+      "$1.25+ lower bound",
     );
   });
 
@@ -718,6 +758,22 @@ function createWorkspaceContext(): WorkspaceContext {
     branch: "main",
     defaultTask: null,
     selectedTask: null,
+  };
+}
+
+function createSessionStats(
+  overrides: Partial<SessionTokenStats> = {},
+): SessionTokenStats {
+  return {
+    sessionId: "session-1",
+    sessionTitle: "Implement login",
+    requestCount: 1,
+    incompleteTokenRequestCount: 0,
+    inputTokens: 100,
+    outputTokens: 200,
+    totalTokens: 300,
+    estimatedUsd: 0.0001,
+    ...overrides,
   };
 }
 

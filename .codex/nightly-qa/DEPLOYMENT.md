@@ -271,3 +271,15 @@
 ## 2026-07-01 05:15 CEST CI Poll
 
 - PASS: GitHub Actions for `4e96bf2 Add chat request merge coverage` completed successfully on both CI and extension build workflows.
+
+## 2026-07-01 05:16 CEST Production Poll
+
+- PUSHED: `12eb414 Add request session grid coverage`.
+- IN PROGRESS: GitHub Actions for `12eb414` started after push.
+- PASS: production `/api/health` returned HTTP 200 with `ok=true` and `database.ok=true`.
+- LIMITATION: production `/api/health` still reports `sha="unknown"` and `builtAt="unknown"`.
+- PASS: production Azure OAuth start redirect includes state, PKCE `S256`, client id, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
+
+## 2026-07-01 05:19 CEST CI Poll
+
+- PASS: GitHub Actions for `12eb414 Add request session grid coverage` completed successfully on both CI and extension build workflows.

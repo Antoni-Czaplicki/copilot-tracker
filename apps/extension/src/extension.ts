@@ -30,6 +30,12 @@ import {
   currentSessionTokenStats,
 } from "./sessionTokenStats";
 import {
+  compactStatusText,
+  formatCompactNumber,
+  formatEstimatedSessionCost,
+  formatNumber,
+} from "./statusFormatting";
+import {
   type AzureDevOpsWorkItem,
   TrackerClient,
   getTrackerConfig,
@@ -47,7 +53,6 @@ const extensionId = "copilot-tracker";
 const lastBranchPromptKey = "lastBranchPrompt";
 const taskHistoryKey = "taskHistory";
 const maxTaskHistoryEntries = 200;
-const maxStatusTaskLength = 28;
 
 interface TaskHistoryEntry {
   workspaceId: string;
@@ -967,40 +972,6 @@ function requestUploadScope(serverUrl: string) {
   } catch {
     return serverUrl;
   }
-}
-
-function formatNumber(value: number) {
-  return new Intl.NumberFormat("en-US").format(value);
-}
-
-function formatCompactNumber(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    notation: "compact",
-    maximumFractionDigits: 1,
-  }).format(value);
-}
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: value < 1 ? 4 : 2,
-  }).format(value);
-}
-
-function formatEstimatedSessionCost(stats: SessionTokenStats) {
-  const formatted = formatCurrency(stats.estimatedUsd);
-  return stats.incompleteTokenRequestCount > 0
-    ? `${formatted}+ lower bound`
-    : formatted;
-}
-
-function compactStatusText(value: string) {
-  if (value.length <= maxStatusTaskLength) {
-    return value;
-  }
-
-  return `${value.slice(0, maxStatusTaskLength - 1)}…`;
 }
 
 function getRepositoryDisplayName(workspaceContext: WorkspaceContext) {

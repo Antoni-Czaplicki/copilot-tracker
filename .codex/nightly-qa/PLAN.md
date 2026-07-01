@@ -44,4 +44,13 @@
 - [x] Add task fallback/override/clearing tests
 - [x] Add token label/session anchor tests
 - [x] Run local validation
+- [x] Commit, push, and smoke production
+- [x] Verify CI completion for `12eb414`
+
+## Loop 6 - Extension Status Formatting Coverage
+
+- [x] Extract extension status formatting helpers
+- [x] Add task truncation tests
+- [x] Add session token number/cost formatting tests
+- [x] Run local validation
 - [ ] Commit, push, and smoke production

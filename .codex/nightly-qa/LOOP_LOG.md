@@ -894,3 +894,34 @@
 - PASS: GitHub Actions for `4e96bf2 Add chat request merge coverage` completed successfully on both CI and extension build workflows.
 - PASS: `git diff --check`
 - Next: commit, push, production smoke, then continue.
+
+## 2026-07-01 05:16:31 CEST - Loop 5 End
+
+- Committed and pushed request session grid coverage as `12eb414 Add request session grid coverage`.
+- GitHub Actions for `12eb414` are in progress.
+- PASS: production `/api/health` returns HTTP 200 with `ok=true` and `database.ok=true`.
+- LIMITATION: production `/api/health` still reports `version.sha="unknown"` and `builtAt="unknown"`.
+- PASS: sanitized production Azure OAuth start redirects to Microsoft with PKCE `S256`, state, client id, and required Azure DevOps scopes.
+- Next: continue with the next high-value gap and poll CI.
+
+## 2026-07-01 05:17:29 CEST - Loop 6 Start
+
+- Started a focused extension status-bar formatting coverage slice.
+- Target behavior: status task text truncates predictably, hover token counts use readable number formatting, compact status token totals stay short, and estimated cost shows a lower-bound marker when session data is incomplete.
+- Current git state: post-push QA logs modified from Loop 5; no new code changes yet.
+- Next: extract private formatting helpers from `extension.ts`, add extension tests, and validate.
+
+## 2026-07-01 05:19:20 CEST - Loop 6 Validation
+
+- Extracted extension status bar formatting helpers from `extension.ts` into `statusFormatting`.
+- Added extension tests for long-task truncation, standard/compact number formatting, small USD cost formatting, and lower-bound estimated cost text when token data is incomplete.
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS: `pnpm --filter ./apps/extension lint`
+- PASS: `pnpm --filter ./apps/extension test` (18 tests)
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (79 web tests + 18 extension VS Code tests)
+- PASS: GitHub Actions for `12eb414 Add request session grid coverage` completed successfully on both CI and extension build workflows.
+- PASS: `git diff --check`
+- Next: commit, push, production smoke, then continue.

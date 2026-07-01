@@ -613,3 +613,18 @@
 - PASS: `pnpm --filter @copilot-tracker/web test` (79 tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm test` (79 web tests + 16 extension VS Code tests)
+
+## 2026-07-01 - Extension Status Formatting Coverage
+
+- Extracted status bar and hover formatting helpers from `extension.ts` into `statusFormatting`.
+- Added tests for long task truncation, standard and compact token-number display, small USD cost formatting, and lower-bound cost wording for incomplete session token data.
+
+## Checks
+
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS: `pnpm --filter ./apps/extension lint`
+- PASS: `pnpm --filter ./apps/extension test` (18 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (79 web tests + 18 extension VS Code tests)
