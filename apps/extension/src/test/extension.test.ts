@@ -103,7 +103,7 @@ suite("Extension Test Suite", () => {
     assert.strictEqual(changedPlan.requestsToUpload[0]?.selectedTask, "456");
   });
 
-  test("Upload cache state is stored per workspace", async () => {
+  test("Upload cache state is stored per workspace and server scope", async () => {
     const store = new MemoryMemento();
     const workspaceContext = createWorkspaceContext();
     const state = {
@@ -113,17 +113,38 @@ suite("Extension Test Suite", () => {
       },
     };
 
-    await writeRequestUploadState(store, workspaceContext, state);
+    await writeRequestUploadState(
+      store,
+      workspaceContext,
+      state,
+      "https://tracker-a.example.com",
+    );
 
     assert.deepStrictEqual(
-      readRequestUploadState(store, workspaceContext),
+      readRequestUploadState(
+        store,
+        workspaceContext,
+        "https://tracker-a.example.com",
+      ),
       state,
     );
     assert.deepStrictEqual(
-      readRequestUploadState(store, {
-        ...workspaceContext,
-        workspaceId: "other-workspace",
-      }),
+      readRequestUploadState(
+        store,
+        {
+          ...workspaceContext,
+          workspaceId: "other-workspace",
+        },
+        "https://tracker-a.example.com",
+      ),
+      { version: 1, entries: {} },
+    );
+    assert.deepStrictEqual(
+      readRequestUploadState(
+        store,
+        workspaceContext,
+        "https://tracker-b.example.com",
+      ),
       { version: 1, entries: {} },
     );
   });

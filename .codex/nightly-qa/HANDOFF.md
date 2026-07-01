@@ -8,7 +8,7 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 
 - Full browser/VS Code E2E testing not started yet.
 - Web/API/auth automated tests are still thin but no longer absent; the new web test harness covers payload schemas, cost estimation, GitHub login normalization, and auth callback code sanitization.
-- Extension OTel sync still parses the full file, but unchanged request records are no longer reposted unless stable metadata changes.
+- Extension OTel sync still parses the full file, but unchanged request records are no longer reposted unless stable metadata, workspace, or target server changes.
 - Production smoke passed at 2026-07-01 02:32 CEST: homepage, health, database readiness, Azure PKCE redirect/scopes, provider-error privacy, work-items auth gate, admin export auth gate, and Chrome homepage/login-link check all passed.
 - Production Azure login is blocked: real Chrome auth flow returned `auth_code=invalid_client` at 2026-07-01 02:36 CEST.
 - Exact deployed commit is still not provable because `/api/health` reports `version.sha="unknown"`; README and `docs/deployment.md` now document passing `COPILOT_TRACKER_BUILD_SHA` and `COPILOT_TRACKER_BUILD_TIME` from Dokploy/build configuration.

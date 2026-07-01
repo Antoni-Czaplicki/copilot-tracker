@@ -51,6 +51,16 @@
 - PASS: `pnpm --filter @copilot-tracker/web typecheck`
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env and build metadata
 
+## 2026-07-01 - Extension Upload Cache Server Scope
+
+- Scoped OTel upload cache entries by hashed tracker server origin as well as workspace id.
+- This prevents switching `copilot-tracker.serverUrl` from skipping unchanged historical records that the new server has never received.
+- Added/updated extension tests for per-workspace and per-server cache isolation.
+
+## Checks
+
+- PASS: `pnpm --filter ./apps/extension test`
+
 ## 2026-07-01 - Deployment Contract Documentation
 
 - Added `docs/deployment.md` with the production Docker/Dokploy environment contract, build metadata requirements, Azure app registration checklist, and smoke checks.

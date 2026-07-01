@@ -247,3 +247,16 @@
 - Preserved completed empty-result feedback as `No matches` after the query result returns.
 - Validation passed: web test, lint, typecheck, and placeholder production build.
 - Next: inspect diff, commit/push picker UX, then poll CI/production.
+
+## 2026-07-01 03:36:42 CEST - Loop 3 Progress
+
+- Committed and pushed WorkItemPicker debounce UX polish as `9dd76d3 Polish work item picker debounce state`.
+- Validation before commit: web test, lint, typecheck, and placeholder production build passed.
+- Next: poll CI/production and continue remaining route/integration/UX gaps.
+
+## 2026-07-01 03:42:18 CEST - Loop 3 Progress
+
+- Fixed OTel upload cache scoping so signatures are separated by tracker server origin and workspace.
+- This preserves unchanged-upload skipping while ensuring server URL changes upload historical records to the new destination.
+- Validation passed: `pnpm --filter ./apps/extension test` reported 9 passing tests.
+- Next: inspect diff, commit/push server-scoped cache, then poll CI/production.

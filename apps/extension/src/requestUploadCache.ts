@@ -25,8 +25,11 @@ interface RequestUploadStateStore {
 export function readRequestUploadState(
   store: RequestUploadStateStore,
   workspaceContext: WorkspaceContext,
+  uploadScope = "default",
 ): RequestUploadState {
-  const stored = store.get<unknown>(requestUploadStateKey(workspaceContext));
+  const stored = store.get<unknown>(
+    requestUploadStateKey(workspaceContext, uploadScope),
+  );
   if (!isRequestUploadState(stored)) {
     return { version: requestUploadStateVersion, entries: {} };
   }
@@ -38,8 +41,9 @@ export async function writeRequestUploadState(
   store: RequestUploadStateStore,
   workspaceContext: WorkspaceContext,
   state: RequestUploadState,
+  uploadScope = "default",
 ) {
-  await store.update(requestUploadStateKey(workspaceContext), state);
+  await store.update(requestUploadStateKey(workspaceContext, uploadScope), state);
 }
 
 export function planRequestUpload(
@@ -72,8 +76,15 @@ export function planRequestUpload(
   };
 }
 
-function requestUploadStateKey(workspaceContext: WorkspaceContext) {
-  return `requestUploadSignatures:${workspaceContext.workspaceId}`;
+function requestUploadStateKey(
+  workspaceContext: WorkspaceContext,
+  uploadScope: string,
+) {
+  const scopeHash = createHash("sha256")
+    .update(uploadScope)
+    .digest("hex")
+    .slice(0, 16);
+  return `requestUploadSignatures:${scopeHash}:${workspaceContext.workspaceId}`;
 }
 
 function requestUploadSignature(request: CopilotChatRequest) {

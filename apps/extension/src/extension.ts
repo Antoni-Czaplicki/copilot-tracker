@@ -923,9 +923,14 @@ async function performCopilotSessionSync(
         (request) => request.totalTokens === null,
       ).length,
     });
+    const uploadScope = requestUploadScope(config.serverUrl);
     const uploadPlan = planRequestUpload(
       requests,
-      readRequestUploadState(context.globalState, workspaceContext),
+      readRequestUploadState(
+        context.globalState,
+        workspaceContext,
+        uploadScope,
+      ),
     );
     logInfo("OTel session sync upload selection completed", {
       requestCount: requests.length,
@@ -938,6 +943,7 @@ async function performCopilotSessionSync(
       context.globalState,
       workspaceContext,
       uploadPlan.nextState,
+      uploadScope,
     );
     lastSessionStats = currentSessionTokenStats(requests);
     lastSyncStats = {
@@ -961,6 +967,14 @@ async function performCopilotSessionSync(
     await sendEvent(context, client, "session-sync-failed", {
       message: lastSyncError,
     });
+  }
+}
+
+function requestUploadScope(serverUrl: string) {
+  try {
+    return parseTrackerServerUrl(serverUrl).origin;
+  } catch {
+    return serverUrl;
   }
 }
 
