@@ -84,3 +84,11 @@
 - STALE: production `/?auth=failed&auth_code=invalid_client` still showed the stable error code but not the new safe `invalid_client` operator hint, so the auth-hint UI had not deployed yet.
 - PASS: production `/?auth=failed&auth_code=unexpected_provider_blob` did not show invented hint copy for an unknown code.
 - LIMITATION: production `/api/health` still reports `version.sha="unknown"`, so stale-build detection remains indirect.
+
+## 2026-07-01 03:46 CEST CI Poll
+
+- PASS: GitHub Actions for `0e63df4 Replace extension sample test` completed successfully on both CI and extension build workflows.
+
+## 2026-07-01 03:48 CEST CI Poll
+
+- PASS: GitHub Actions for `eb93d5e Fix homepage task example spacing` completed successfully on both CI and extension build workflows.

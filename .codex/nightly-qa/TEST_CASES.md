@@ -171,3 +171,4 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | AUTH-163 | Auth | PASS | Unknown auth failure codes do not display invented guidance | Automated | Added unknown-code test; web tests passed |
 | EXT-164 | Extension | PASS | Extension cost estimator prices known model input/output token splits | Automated | Replaced placeholder sample test; extension tests passed |
 | UI-165 | Web | PASS | Homepage task-detection sentence renders spacing between the example branch and following text | Code review + build | Fixed explicit JSX space; web test/lint/typecheck/build passed |
+| DOC-166 | Docs | PASS | README documents task clearing and the current web API route surface | Docs review | Updated README; `git diff --check` passed |

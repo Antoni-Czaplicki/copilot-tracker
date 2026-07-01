@@ -405,3 +405,27 @@
 - Fixed homepage task-detection copy spacing so `feature/124-login` and `all map` do not run together.
 - Validation passed: web test, lint, typecheck, and placeholder production build.
 - Next: inspect diff, commit/push landing copy spacing fix, then poll CI/production.
+
+## 2026-07-01 03:46:22 CEST - Loop 3 Progress
+
+- Committed and pushed homepage task example spacing as `eb93d5e Fix homepage task example spacing`.
+- Local tree is clean after push.
+- GitHub Actions for `0e63df4` completed successfully on both CI and extension build workflows.
+- GitHub Actions for `eb93d5e` are in progress.
+- Production health still returns OK with database ready and `version.sha="unknown"`.
+- Next: continue the next non-auth-blocked improvement while CI runs.
+
+## 2026-07-01 03:48:03 CEST - Loop 3 Progress
+
+- GitHub Actions for `eb93d5e` completed successfully on both CI and extension build workflows.
+- Verified `apps/web/.env.example` exists and matches the current env contract.
+- Scanned app/docs/workflow paths for `Sample test`, placeholder sample text, `TODO`, and `FIXME`; none remained in the scanned source/docs paths.
+- Confirmed extension activation `workspaceFolders` logs are covered by the logger redaction key list.
+- Next: continue the next non-auth-blocked improvement.
+
+## 2026-07-01 03:48:57 CEST - Loop 3 Progress
+
+- Updated README task docs to mention clearing manual assignments back to branch-derived defaults or no task.
+- Expanded the README Web API list for bulk task updates, Azure DevOps work-item search, GitHub login mapping, and current admin export types.
+- Validation passed: `git diff --check`.
+- Next: inspect diff, commit/push README docs alignment, then continue.

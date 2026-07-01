@@ -52,6 +52,15 @@
 - PASS: `pnpm --filter @copilot-tracker/web typecheck`
 - PASS: `pnpm --filter @copilot-tracker/web build` with current placeholder production env names
 
+## 2026-07-01 - README API/Task Docs Alignment
+
+- Documented that the web dashboard can clear manual task assignments back to the branch-derived default or no task.
+- Expanded the Web API list to include bulk task updates, Azure DevOps work-item search, GitHub login mapping, and all admin export types.
+
+## Checks
+
+- PASS: `git diff --check`
+
 ## 2026-07-01 - Extension Partial Token Cost Display
 
 - Added incomplete-token request counting for the current session status tooltip.

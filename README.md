@@ -36,7 +36,9 @@ The default task is derived from the current Git branch when the branch clearly 
 
 Developers can override the selected task from the extension command. When the branch changes and the manual task no longer matches the branch-derived task, the extension asks whether to switch.
 
-The web dashboard also lets users and admins reassign stored request records to a different task.
+The web dashboard also lets users and admins reassign stored request records to
+a different task or clear a manual assignment back to the branch-derived default
+or no task.
 
 ## Token Policy
 
@@ -163,7 +165,11 @@ The extension signs in through VS Code's Microsoft authentication provider and t
 - `POST /api/events`
 - `POST /api/chat-requests/batch`
 - `PATCH /api/chat-requests/:requestRecordId`
-- `GET /api/admin/export?type=tasks`
+- `PATCH /api/chat-requests/bulk`
+- `GET /api/azure-devops/work-items?query=...`
+- `PATCH /api/users/me/github-login`
+- `PATCH /api/admin/users/:userId/github-login`
+- `GET /api/admin/export?type=requests|developers|tasks|developer-tasks|models|github-billing`
 - `GET /api/admin/github-billing/sync`
 - `GET /api/auth/azure-devops`
 - `GET /api/auth/callback/azure-devops`
