@@ -389,4 +389,14 @@
 - [x] Wire smoke verifier tests into the root `pnpm test` flow
 - [x] Run focused smoke tests
 - [x] Run typecheck, lint, root tests, production web build, extension compile, and live known-stale smoke
+- [x] Commit, push, smoke production, and poll CI
+
+## Loop 43 - Health Freshness Headers
+
+- [x] Re-sync latest `71783ad` CI, production smoke, and nightly status
+- [x] Inspect health response helper, route headers, and Next config behavior
+- [x] Expand `/api/health` freshness headers for browser, CDN, proxy, and surrogate caches
+- [x] Configure Next to emit the same freshness headers for `/api/health`
+- [x] Add regression coverage for the expanded health header contract
+- [x] Run typecheck, lint, root tests, production web build, extension compile, live known-stale smoke, and diff check
 - [ ] Commit, push, smoke production, and poll CI

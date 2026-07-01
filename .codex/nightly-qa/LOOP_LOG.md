@@ -1920,3 +1920,25 @@
 - PASS: `pnpm --filter ./apps/extension compile`
 - PASS/WARN: `pnpm smoke:production -- --allow-known-stale` against production
 - Next: commit, push, smoke production, poll CI, and continue if needed.
+
+## 2026-07-01 08:21:29 CEST - Loop 43 Start
+
+- Latest pushed commit before this loop: `71783ad Test production smoke verifier`; working tree contains only the intended health freshness header source changes plus nightly QA log updates.
+- Focus: source-side hardening for `/api/health` freshness headers, including Next route header configuration for browser/CDN/proxy cache bypass.
+- Remaining blockers/risks carried forward: production Azure login returns `invalid_client`; Docker daemon unavailable; deployed build metadata remains `unknown`; production still appears stale for provider-error callback behavior.
+- Next: rerun full validation, update durable QA ledgers, commit/push, poll GitHub Actions, and run production smoke in known-stale mode.
+
+## 2026-07-01 08:23:45 CEST - Loop 43 Validation
+
+- Added expanded shared `/api/health` freshness headers: `cache-control`, `cdn-cache-control`, `expires`, `pragma`, and `surrogate-control`.
+- Configured Next to emit the shared health freshness headers for `/api/health`.
+- Added regression coverage for the expanded health header contract; web tests now report 123 tests.
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (3 smoke tests + 123 web tests + 26 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS: `pnpm smoke:production -- --allow-known-stale`
+- PASS: `git diff --check`
+- STILL KNOWN-STALE: production health metadata/cache header and provider-error callback behavior remain stale until deployment proves freshness.
+- Next: commit, push, poll GitHub Actions, and re-run production smoke.

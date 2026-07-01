@@ -664,3 +664,10 @@
 - PASS: GitHub Actions for `1384cfe Add production smoke verifier` completed successfully on both CI and Build extension workflows.
 - ADDED: smoke verifier tests now run locally and in root `pnpm test`, so verifier behavior is covered without production network dependency.
 - PASS/WARN: `pnpm smoke:production -- --allow-known-stale` still reports the known production freshness warnings.
+
+## 2026-07-01 08:23 CEST Production Poll
+
+- SOURCE FIX READY: `/api/health` now shares expanded browser/intermediary freshness headers between the route response helper and Next route header configuration.
+- PASS: local placeholder-env web production build accepts the `/api/health` header configuration.
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale` still reaches production successfully.
+- STALE/LIMITATION: production currently still reports `sha="unknown"`, `builtAt="unknown"`, missing visible `Cache-Control`, and stale provider-error callback code until the deployment proves freshness.

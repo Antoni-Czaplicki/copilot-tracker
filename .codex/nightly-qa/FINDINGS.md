@@ -79,6 +79,7 @@
 9. [FIXED] `apps/web/.env.example` omitted the build metadata variables and deployment smoke docs did not mention the health no-store header.
 10. [FIXED] `pnpm audit --prod --audit-level moderate` reported vulnerable `postcss <8.5.10` through Next; existing package-level overrides were ignored by pnpm 11. Security overrides now live in `pnpm-workspace.yaml`, the lockfile resolves Next to `postcss@8.5.15`, and audit passes.
 11. [OPEN] Production Chrome smoke shows safe auth failure copy, but the newer `role="alert"` auth failure semantics are not live; together with unknown build metadata/no visible health no-store header, this keeps deployed freshness unproven.
+12. [FIXED] `/api/health` freshness relied only on route response headers; source now also configures explicit Next route headers and broader no-store/no-cache directives for browser and intermediary caches.
 
 ## Auth / Security / Privacy
 

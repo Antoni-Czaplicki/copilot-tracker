@@ -289,3 +289,6 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | DEP-281 | Deployment | PASS | Production smoke verifier passes against a mocked fresh deployment | Automated | Added local HTTP-server smoke verifier test; root tests passed |
 | DEP-282 | Deployment | PASS | Production smoke verifier fails strict mode against mocked stale metadata/cache/auth-code behavior | Automated | Added local HTTP-server smoke verifier test; root tests passed |
 | DEP-283 | Deployment | PASS | Production smoke verifier known-stale mode reports warnings without failing mocked stale behavior | Automated | Added local HTTP-server smoke verifier test; root tests passed |
+| DEP-284 | Deployment | PASS | Health freshness helper emits browser and intermediary no-store/no-cache headers | Automated | Added `healthCacheHeaders` regression coverage; web/root tests passed |
+| DEP-285 | Deployment | PASS | Ready and unhealthy health responses share the expanded freshness header contract | Automated | Updated `healthResponseInit` coverage; web/root tests passed |
+| DEP-286 | Deployment | PASS | Next production build accepts `/api/health` route header configuration sourced from the shared helper | Build/lint | `pnpm -r lint`, `pnpm -r typecheck`, and placeholder-env `pnpm --filter @copilot-tracker/web build` passed |

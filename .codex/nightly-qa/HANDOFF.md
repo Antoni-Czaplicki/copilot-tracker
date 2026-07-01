@@ -124,3 +124,10 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - `1384cfe Add production smoke verifier` passed both GitHub Actions workflows.
 - Added local tests for `pnpm smoke:production` and wired them into root `pnpm test`.
 - Latest root validation passed 3 smoke tests, 122 web tests, and 26 extension tests.
+
+## 2026-07-01 08:23 CEST Continuation Update
+
+- Added source-side `/api/health` freshness hardening: shared no-store/no-cache headers now cover route responses and Next route header configuration.
+- Latest broad validation passed typecheck, lint, root tests, placeholder-env web build, extension compile, live known-stale production smoke, and diff check.
+- Root tests now cover 3 smoke verifier tests, 123 web tests, and 26 extension tests.
+- Remaining risks are unchanged until deploy freshness is proven: production health metadata/cache headers still look stale, provider-error callback still returns `provider_error`, and signed-in Azure E2E is blocked by `invalid_client`.

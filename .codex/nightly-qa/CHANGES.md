@@ -1092,3 +1092,19 @@
 - PASS: `pnpm test` (122 web tests + 25 extension VS Code tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm --filter ./apps/extension compile`
+
+## 2026-07-01 - Health Freshness Headers
+
+- Expanded the shared health response freshness contract from bare `Cache-Control: no-store` to browser/intermediary no-cache headers.
+- Reused the same shared header object from `next.config.ts` so Next emits `/api/health` freshness headers even if platform routing handles the response differently.
+- Added regression coverage for the expanded health header contract.
+
+## Checks
+
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (3 smoke tests + 123 web tests + 26 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS: `pnpm smoke:production -- --allow-known-stale`
+- PASS: `git diff --check`
