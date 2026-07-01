@@ -1,10 +1,10 @@
 # Nightly QA Status
 
-- Current time: 2026-07-01 02:36:29 CEST
+- Current time: 2026-07-01 02:38:33 CEST
 - Current loop: 2
 - State: implementation and validation in progress
-- Focus: production auth flow classified
+- Focus: branch task detection docs/copy aligned
 - Blocker: production Azure login returns `invalid_client`; Docker daemon unavailable; exact deployed commit cannot be proven until build SHA is configured
-- Next action: commit auth blocker logs, wait for latest CI, continue non-auth-blocked gaps
-- Last known git state: full verification logs pushed at `59a09b0 Record full verification sweep`
+- Next action: commit docs/copy alignment, wait for latest CI, continue non-auth-blocked gaps
+- Last known git state: auth blocker logs pushed at `3d9a7a0 Record production auth blocker`
 - Production target: https://copilot-tracker.antek.page

@@ -48,6 +48,17 @@
 - PASS: `pnpm --filter @copilot-tracker/web lint`
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env and build metadata
 
+## 2026-07-01 - Branch Task Detection Copy Alignment
+
+- Updated README and homepage copy to match the safer branch task parser.
+- Removed stale documentation saying unmatched branches fall back to the full branch name.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env and build metadata
+
 ## 2026-07-01 - Full Current-Head Verification
 
 - Re-ran full local validation after loop 2 commits.

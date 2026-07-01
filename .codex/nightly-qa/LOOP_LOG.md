@@ -138,3 +138,10 @@
 - Result: production returned home with `auth=failed&auth_code=invalid_client`; no provider description was reflected.
 - Classified full signed-in production E2E as blocked by external Azure client configuration.
 - Next: commit auth blocker logs and continue non-auth-blocked testing/fixes.
+
+## 2026-07-01 02:38:33 CEST - Loop 2 Progress
+
+- Committed and pushed auth blocker logs as `3d9a7a0 Record production auth blocker`.
+- Updated README and homepage copy to match safer branch task detection behavior.
+- Validated with web typecheck, lint, and placeholder production build.
+- Next: commit docs/copy alignment and continue non-auth-blocked gaps.

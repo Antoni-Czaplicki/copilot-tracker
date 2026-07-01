@@ -26,13 +26,13 @@ The extension sets Copilot OTel content capture to `false` and does not store pr
 
 ## Task Detection
 
-The default task is derived from the current Git branch using Azure DevOps numeric work item ids:
+The default task is derived from the current Git branch when the branch clearly contains an Azure DevOps work item id:
 
 - `124` becomes `124`
 - `124v2` becomes `124`
 - `feature/456-login` becomes `456`
 - `feature/ABC-123-login` becomes `123`
-- `main` becomes `main`
+- `main`, detached commit labels, and version-like branch names do not create a default task
 
 Developers can override the selected task from the extension command. When the branch changes and the manual task no longer matches the branch-derived task, the extension asks whether to switch.
 

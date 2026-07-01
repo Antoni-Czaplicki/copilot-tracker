@@ -141,14 +141,14 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         <CardContent>
           <p className="text-muted-foreground">
             On each sync, the extension reads the current Git branch and uses
-            the first number as the Azure DevOps work item id. Branches like{" "}
+            clear Azure DevOps work item patterns for the default task. Branches
+            like{" "}
             <strong>124</strong>, <strong>124v2</strong>, and{" "}
             <strong>feature/124-login</strong>
-            all map to task <strong>124</strong>. If there is no number, it
-            falls back to the full branch name. Developers can override the task
-            from VS Code or later in this dashboard; when the branch changes,
-            the extension asks before switching away from a manually selected
-            task.
+            all map to task <strong>124</strong>. Branches without a clear work
+            item id stay unassigned until developers choose a task from VS Code
+            or later in this dashboard; when the branch changes, the extension
+            asks before switching away from a manually selected task.
           </p>
         </CardContent>
       </Card>
