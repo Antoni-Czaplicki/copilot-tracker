@@ -476,4 +476,5 @@
 - [x] Add redacted `orgAccessProbeResult` and `orgAccessProbeStatus` diagnostics
 - [x] Add tests for probe failure and probe-based success
 - [x] Run focused web tests, typecheck, lint, extension compile/test, web build, root tests, live production smoke, and diff check
-- [ ] Commit, push, poll CI/deploy, and retry signed-in Chrome dashboard/work-item E2E
+- [x] Commit, push, poll CI/deploy, and retry signed-in Chrome dashboard/work-item E2E
+- [x] Record deployed probe result showing configured-org WIQL probe returns HTTP 401

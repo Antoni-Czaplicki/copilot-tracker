@@ -2127,3 +2127,13 @@
 - PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 9a3acb1` passed hard gates; warnings remain limited to unknown build metadata/SHA.
 - PASS: `git diff --check`
 - Next: commit/push direct configured-org probe, poll CI/deploy, then retry production Chrome auth.
+
+## 2026-07-01 11:04:24 CEST - Loop 50 Deploy Verification
+
+- PUSHED: `01650a4 Probe configured Azure DevOps org access`.
+- PASS: GitHub Actions CI and Build extension completed successfully for `01650a4`.
+- PASS: Dokploy deployments list shows `01650a4` done.
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 01650a4` passed all hard gates; warnings remain limited to unknown build metadata/SHA.
+- FAIL/EXPECTED: real Chrome production login still returns `auth_code=profile_or_org_check_failed` with safe `auth_ref`.
+- PASS: matching Dokploy log now includes direct configured-org probe diagnostics.
+- DIAGNOSIS: profile lookup succeeds, profile id is present, accounts API succeeds with one returned account, account-list match fails, and configured-org WIQL probe returns HTTP 401. Remaining auth work is production Azure DevOps org/user access/consent configuration, not an app-code parser or redirect issue.

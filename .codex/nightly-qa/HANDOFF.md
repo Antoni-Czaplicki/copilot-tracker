@@ -219,3 +219,11 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - The probe is fail-closed and accepts only valid successful WIQL JSON; failures are logged as redacted `orgAccessProbeResult`/`orgAccessProbeStatus`.
 - Validation passed: focused web tests 132/132, typecheck, lint, extension compile/test, production-style web build, clean root `pnpm test`, live known-stale production smoke, and diff check.
 - Next: commit/push the probe change, wait for CI/Dokploy, then retry Chrome login and, if successful, verify dashboard and Azure work-item search.
+
+## 2026-07-01 11:04 CEST Final Auth Diagnosis
+
+- `01650a4 Probe configured Azure DevOps org access` passed CI/build and deployed successfully in Dokploy.
+- Real Chrome login still fails safely with `profile_or_org_check_failed`.
+- The new matching Dokploy log gives the useful final split: profile lookup succeeds, accounts API succeeds and returns one account, account-list org matching fails, and the configured Azure DevOps org WIQL probe returns HTTP 401.
+- App-code auth flow is now well-instrumented and fail-closed. The next fix is configuration/access: set `AZURE_DEVOPS_ORG` to the org actually accessible to the signed-in user, add/repair that user's Azure DevOps org membership/visibility, or ensure Azure DevOps work-item consent/access for the configured org.
+- After that change, rerun Chrome login. If it succeeds, immediately verify dashboard load and `/api/azure-devops/work-items` search from the web UI.

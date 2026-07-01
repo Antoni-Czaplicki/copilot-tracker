@@ -768,3 +768,12 @@
 - FAIL/NEXT: real Chrome production login still returns `auth_code=profile_or_org_check_failed`; the user-provided matching log still shows profile OK/status 200, account count 1, and org membership not matched.
 - LOCAL CHANGE: source now adds a direct configured Azure DevOps org WIQL probe after account-list matching fails, with redacted probe result/status diagnostics.
 - NEXT: deploy the probe and retry Chrome login. If login still fails, use the new `orgAccessProbeResult`/`orgAccessProbeStatus` log fields to distinguish configured-org access failure from account-list naming mismatch.
+
+## 2026-07-01 11:04 CEST Org Probe Deploy Verification
+
+- PASS: `01650a4 Probe configured Azure DevOps org access` completed GitHub Actions CI and Build extension.
+- PASS: Dokploy deployments list shows `01650a4` done.
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 01650a4` passed all hard gates; warnings remain limited to unknown build metadata/SHA.
+- FAIL/NEXT: real Chrome production login still returns `auth_code=profile_or_org_check_failed`.
+- PASS: matching Dokploy log includes deployed probe diagnostics: profile OK/status 200, profile id present, account-list OK/status 200 with one account, account-list org not matched, and configured-org WIQL probe HTTP 401.
+- DIAGNOSIS: production OAuth/profile code is working; remaining blocker is configured Azure DevOps org access for the signed-in user/token. Fix `AZURE_DEVOPS_ORG`, user org membership/visibility, or work-item consent/access for that org.
