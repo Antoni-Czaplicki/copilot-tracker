@@ -39,6 +39,7 @@
 13. [PARTIAL] WorkItemPicker search threshold and error-message mapping now have direct coverage; rendered keyboard/listbox behavior still needs component/browser tests.
 14. [PARTIAL] Request session grouping, focused-session ordering, task fallback, token labels, and anchors now have pure coverage; rendered browser/component interaction tests are still missing.
 15. [FIXED] GitHub username editor collapsed safe server validation errors into a generic `Failed` message.
+16. [FIXED] Frontend mutation/search helpers duplicated JSON `{ error }` parsing and could display blank server error strings instead of a useful fallback.
 
 ## API / Backend
 

@@ -28,6 +28,7 @@ import {
   sessionAnchor,
 } from "@/lib/requestSessionsGridModel";
 import { estimateRequestsCost, formatCurrency } from "@/lib/pricing";
+import { responseErrorMessage } from "@/lib/responseErrors";
 import { cn } from "@/lib/utils";
 
 import { Badge } from "./ui/badge";
@@ -549,16 +550,7 @@ function SessionSelectionCheckbox({
 }
 
 async function readMutationError(response: Response) {
-  try {
-    const payload = (await response.json()) as { error?: unknown };
-    if (typeof payload.error === "string") {
-      return payload.error;
-    }
-  } catch {
-    // The generic message below is enough when the server sends no JSON body.
-  }
-
-  return "Could not update task assignments.";
+  return responseErrorMessage(response, "Could not update task assignments.");
 }
 
 async function readMutationResult(response: Response) {

@@ -241,3 +241,6 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | AUTH-233 | Auth | PASS | Azure auth failure hints cover invalid grant, token exchange failure, provider error, and callback failure without exposing provider details | Automated | Expanded `authFailureHint` coverage; web tests passed |
 | DEP-234 | Deployment | PASS | Health responses use ready/unhealthy status codes and `Cache-Control: no-store` for freshness probes | Automated | Added `healthResponseInit` coverage; web tests passed |
 | DEP-235 | Deployment | PASS | Env examples and deployment contract document non-secret build metadata variables and health no-store smoke expectations | Docs review + validation | Updated `.env.example` and `docs/deployment.md`; typecheck/lint/tests/build passed |
+| UI-236 | Web | PASS | Shared response-error reader trims safe server error strings before displaying them | Automated | Added `responseErrors` coverage; web tests passed |
+| UI-237 | Web | PASS | Shared response-error reader ignores empty, non-string, array, malformed, and empty responses and uses caller fallbacks | Automated | Added `responseErrors` coverage; web tests passed |
+| UI-238 | Web | PASS | Task editing, session mutations, billing sync, GitHub mapping, and WorkItemPicker reuse the shared safe error parser | Code review + automated | Rewired helpers; web/root tests passed |

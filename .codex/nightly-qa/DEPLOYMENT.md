@@ -139,6 +139,18 @@
 - LOCAL: deployment smoke docs now expect `/api/health` to send `Cache-Control: no-store`.
 - LIMITATION: production `/api/health` still reports `sha="unknown"`, `builtAt="unknown"`, and no visible `Cache-Control` header as of the loop start poll; recheck after the docs/env commit deploys.
 
+## 2026-07-01 06:17 CEST Production Poll
+
+- PUSHED: `69a50f6 Align deployment metadata docs`.
+- IN PROGRESS: GitHub Actions for `69a50f6` started after push.
+- PASS: production `/api/health` returned HTTP 200 with `ok=true` and `database.ok=true`.
+- LIMITATION: production `/api/health` still reports `sha="unknown"`, `builtAt="unknown"`, and no visible `Cache-Control` header.
+- PASS: production Azure OAuth start redirect includes state, PKCE `S256`, client id, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
+
+## 2026-07-01 06:20 CEST CI Poll
+
+- PASS: GitHub Actions for `69a50f6 Align deployment metadata docs` completed successfully on both CI and extension build workflows.
+
 ## 2026-07-01 04:33 CEST Production Poll
 
 - PUSHED: `16d5c67 Normalize health build metadata`.

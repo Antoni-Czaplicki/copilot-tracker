@@ -1340,3 +1340,33 @@
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm --filter ./apps/extension compile`
 - Next: commit, push, smoke production, and continue.
+
+## 2026-07-01 06:17:32 CEST - Loop 21 End
+
+- Committed and pushed deployment metadata docs alignment as `69a50f6 Align deployment metadata docs`.
+- GitHub Actions for `69a50f6` are in progress.
+- PASS: production `/api/health` returns HTTP 200 with `ok=true` and `database.ok=true`.
+- STALE/LIMITATION: production `/api/health` still reports `version.sha="unknown"`, `builtAt="unknown"`, and no visible `Cache-Control` header.
+- PASS: sanitized production Azure OAuth start redirects to Microsoft with PKCE `S256`, state, client id, and required Azure DevOps scopes.
+- Current git state after push: clean.
+- Next: start the next loop and continue while CI/deploy catches up.
+
+## 2026-07-01 06:18:01 CEST - Loop 22 Start
+
+- Previous pushed commit: `69a50f6 Align deployment metadata docs`; GitHub Actions were still in progress at the prior poll.
+- Current blocker remains external Azure OAuth `invalid_client`, unavailable Docker daemon, and unproven production commit metadata/cache-header freshness.
+- Next: inspect remaining findings and route/component code for another focused regression or UX hardening slice.
+
+## 2026-07-01 06:20:36 CEST - Loop 22 Validation
+
+- PASS: GitHub Actions for `69a50f6 Align deployment metadata docs` completed successfully on both CI and extension build workflows.
+- Added `readResponseError` / `responseErrorMessage` for shared safe parsing of JSON `{ error }` response bodies.
+- Reused the helper in task editing, request session bulk/session mutation errors, GitHub billing sync, GitHub-login mapping, and WorkItemPicker Azure DevOps search error handling.
+- Added tests for trimming server error strings and falling back on empty, non-string, array, malformed, or empty responses.
+- PASS: `pnpm --filter @copilot-tracker/web test` (105 tests)
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (105 web tests + 23 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`
+- Next: commit, push, smoke production, and continue.

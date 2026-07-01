@@ -817,3 +817,18 @@
 - PASS: `pnpm test` (102 web tests + 23 extension VS Code tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm --filter ./apps/extension compile`
+
+## 2026-07-01 - Shared Frontend Response Errors
+
+- Added a shared `readResponseError` / `responseErrorMessage` helper for safe JSON `{ error }` response parsing.
+- Reused it in task editing, request session bulk/session mutations, GitHub billing sync, GitHub-login mapping, and WorkItemPicker search errors.
+- Added regression coverage for trimmed error strings and fallback behavior for empty/non-string/non-object/non-JSON responses.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web test` (105 tests)
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (105 web tests + 23 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`

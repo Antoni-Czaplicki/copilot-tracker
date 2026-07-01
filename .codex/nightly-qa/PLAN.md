@@ -176,4 +176,15 @@
 - [x] Inspect `.env.example`, README, extension README, and deployment docs for drift
 - [x] Implement the highest-value documentation or code hardening slice found
 - [x] Run focused and broad validation
+- [x] Commit, push, and smoke production
+- [x] Verify CI completion for `69a50f6`
+- [ ] Verify production health includes `Cache-Control: no-store`
+
+## Loop 22 - Shared Frontend Error Messages
+
+- [x] Re-sync prior commit CI status
+- [x] Identify duplicated frontend response error parsing
+- [x] Add shared response-error helper and tests
+- [x] Wire task editing, session bulk assignment, GitHub billing sync, GitHub login mapping, and work-item search helpers
+- [x] Run focused web tests and broad validation
 - [ ] Commit, push, and smoke production

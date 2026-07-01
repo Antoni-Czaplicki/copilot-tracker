@@ -3,6 +3,8 @@
 import type { SyntheticEvent } from "react";
 import { useState } from "react";
 
+import { responseErrorMessage } from "@/lib/responseErrors";
+
 import { Button } from "./ui/button";
 import { WorkItemPicker } from "./work-item-picker";
 
@@ -116,14 +118,5 @@ export function TaskEditor({
 }
 
 async function readTaskMutationError(response: Response) {
-  try {
-    const payload = (await response.json()) as { error?: unknown };
-    if (typeof payload.error === "string") {
-      return payload.error;
-    }
-  } catch {
-    // Keep the fallback below when the server does not return JSON.
-  }
-
-  return "Could not update task.";
+  return responseErrorMessage(response, "Could not update task.");
 }

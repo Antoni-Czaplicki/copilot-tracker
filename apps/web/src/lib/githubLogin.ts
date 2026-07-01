@@ -1,3 +1,5 @@
+import { responseErrorMessage } from "./responseErrors";
+
 export function normalizeGithubLogin(value: unknown): string | null {
   if (typeof value !== "string") {
     return null;
@@ -21,14 +23,5 @@ export function normalizeGithubLogin(value: unknown): string | null {
 }
 
 export async function githubLoginMutationErrorMessage(response: Response) {
-  try {
-    const payload = (await response.json()) as { error?: unknown };
-    if (typeof payload.error === "string" && payload.error.trim()) {
-      return payload.error;
-    }
-  } catch {
-    // Fall through to the generic message for non-JSON or empty bodies.
-  }
-
-  return "Failed to save GitHub username.";
+  return responseErrorMessage(response, "Failed to save GitHub username.");
 }

@@ -4,6 +4,8 @@ import { RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { responseErrorMessage } from "@/lib/responseErrors";
+
 import { Button } from "./ui/button";
 
 export function GithubBillingSyncButton() {
@@ -71,15 +73,5 @@ export function GithubBillingSyncButton() {
 }
 
 async function syncErrorMessage(response: Response) {
-  try {
-    const payload = (await response.json()) as { error?: unknown };
-    if (typeof payload.error === "string") {
-      return payload.error;
-    }
-  } catch {
-    // Fall back to the generic message below when the response is not JSON.
-  }
-
-  return "Sync failed.";
+  return responseErrorMessage(response, "Sync failed.");
 }
-
