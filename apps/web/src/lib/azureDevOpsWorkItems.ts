@@ -57,6 +57,14 @@ export async function searchAzureDevOpsWorkItems({
     return [];
   }
 
+  const workItemId = parseWorkItemId(normalizedQuery);
+  if (workItemId !== null) {
+    return fetchWorkItems(accessToken, [workItemId]);
+  }
+  if (/^\d+$/u.test(normalizedQuery)) {
+    return [];
+  }
+
   const ids = await queryWorkItemIds(accessToken, normalizedQuery, limit);
   if (ids.length === 0) {
     return [];
@@ -103,13 +111,7 @@ async function queryWorkItemIds(
 export function buildWiqlQueries(query: string, limit: number) {
   const safeLimit = safeSearchLimit(limit);
   const workItemId = parseWorkItemId(query);
-  if (workItemId !== null) {
-    return [
-      `SELECT TOP ${safeLimit} [System.Id] FROM WorkItems WHERE [System.Id] = ${workItemId}`,
-    ];
-  }
-
-  if (/^\d+$/u.test(query)) {
+  if (workItemId !== null || /^\d+$/u.test(query)) {
     return [];
   }
 

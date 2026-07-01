@@ -18,13 +18,9 @@ const {
 const workItemsRoute = await import("../app/api/azure-devops/work-items/route");
 const originalFetch = globalThis.fetch;
 
-void test("buildWiqlQueries creates safe numeric work-item id lookups", () => {
-  assert.deepEqual(buildWiqlQueries("000123", 99), [
-    "SELECT TOP 50 [System.Id] FROM WorkItems WHERE [System.Id] = 123",
-  ]);
-  assert.deepEqual(buildWiqlQueries("42", 0), [
-    "SELECT TOP 1 [System.Id] FROM WorkItems WHERE [System.Id] = 42",
-  ]);
+void test("buildWiqlQueries leaves numeric work-item ids to direct batch lookup", () => {
+  assert.deepEqual(buildWiqlQueries("000123", 99), []);
+  assert.deepEqual(buildWiqlQueries("42", 0), []);
 });
 
 void test("buildWiqlQueries rejects unsafe numeric ids", () => {
@@ -122,6 +118,47 @@ void test("searchAzureDevOpsWorkItems fetches matching ids and maps batch fields
     /CONTAINS WORDS 'login'/,
   );
   assert.deepEqual(requestJson(requests[1]).ids, [123, 456]);
+});
+
+void test("searchAzureDevOpsWorkItems fetches numeric ids directly without WIQL", async (context) => {
+  const requests = mockFetch(context, [
+    Response.json({
+      value: [
+        {
+          id: 17_198,
+          fields: {
+            "System.Title": "Existing task",
+            "System.TeamProject": "Main Project",
+          },
+        },
+      ],
+    }),
+  ]);
+
+  const items = await searchAzureDevOpsWorkItems({
+    accessToken: "access-token",
+    query: "  17198  ",
+  });
+
+  assert.deepEqual(items, [
+    {
+      id: 17_198,
+      title: "Existing task",
+      state: null,
+      type: null,
+      project: "Main Project",
+      assignedTo: null,
+      changedAt: null,
+      url: "https://dev.azure.com/placeholder-org/Main%20Project/_workitems/edit/17198",
+    },
+  ]);
+  assert.equal(requests.length, 1);
+  assert.equal(
+    String(requests[0]?.input),
+    "https://dev.azure.com/placeholder-org/_apis/wit/workitemsbatch?api-version=7.1",
+  );
+  assert.deepEqual(requestJson(requests[0]).ids, [17_198]);
+  assert.equal(requestJson(requests[0]).errorPolicy, "Omit");
 });
 
 void test("searchAzureDevOpsWorkItems falls back to contains query after unsafe words query", async (context) => {
