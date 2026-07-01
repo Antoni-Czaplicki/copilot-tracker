@@ -9,6 +9,7 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - Full browser/VS Code E2E testing not started yet.
 - Web/API/auth automated tests are still missing.
 - Production smoke passed at 2026-07-01 02:32 CEST: homepage, health, database readiness, Azure PKCE redirect/scopes, provider-error privacy, work-items auth gate, admin export auth gate, and Chrome homepage/login-link check all passed.
+- Production Azure login is blocked: real Chrome auth flow returned `auth_code=invalid_client` at 2026-07-01 02:36 CEST.
 - Exact deployed commit is still not provable because `/api/health` reports `version.sha="unknown"`; Dokploy should pass `COPILOT_TRACKER_BUILD_SHA` as a build/runtime variable.
 - Docker image build could not run because the Docker daemon was unavailable.
 

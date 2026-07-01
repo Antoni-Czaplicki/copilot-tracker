@@ -35,3 +35,9 @@
 - PASS: `/api/admin/export?type=bogus` returned auth-gated status for unauthenticated request.
 - PASS: Chrome verified live homepage title/copy and the login link remains a document-navigation anchor to `/api/auth/azure-devops`.
 - LIMITATION: `/api/health` reports `version.sha="unknown"` because the Dokploy/Docker build is not passing `COPILOT_TRACKER_BUILD_SHA`; exact deployed commit cannot be proven from production yet.
+
+## 2026-07-01 02:36 CEST Chrome Auth Flow
+
+- BLOCKED: real Chrome Azure login flow returned to the app home with `auth=failed&auth_code=invalid_client`.
+- PASS: failure redirect did not include `auth_description` and did not reflect provider description details.
+- Impact: production signed-in dashboard, Azure DevOps work-item search with web session tokens, admin flows, and request editing cannot be verified through the real production account until the external Azure app/client configuration is fixed.

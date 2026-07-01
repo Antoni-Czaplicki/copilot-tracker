@@ -130,3 +130,11 @@
 - Re-ran full current-head local checks: repo typecheck, repo lint, extension tests, and web production build all passed.
 - GitHub build-extension run for `76454ea` passed; CI was still in progress.
 - Next: commit verification logs and continue remaining gaps.
+
+## 2026-07-01 02:36:29 CEST - Loop 2 Progress
+
+- Committed and pushed full verification logs as `59a09b0 Record full verification sweep`.
+- Tried real Chrome Azure login flow using existing browser session.
+- Result: production returned home with `auth=failed&auth_code=invalid_client`; no provider description was reflected.
+- Classified full signed-in production E2E as blocked by external Azure client configuration.
+- Next: commit auth blocker logs and continue non-auth-blocked testing/fixes.

@@ -104,7 +104,7 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | AUTH-096 | Auth | PENDING | Callback provider error redirects failed state and clears OAuth cookies | Automated | |
 | AUTH-097 | Auth | PENDING | Callback state mismatch redirects invalid state and clears cookies | Automated | Security |
 | AUTH-098 | Auth | PENDING | Callback missing code/verifier fails with invalid OAuth state | Automated | |
-| AUTH-099 | Auth | PENDING | Callback token exchange failure redirects proper auth failure | Automated | |
+| AUTH-099 | Auth | PASS | Callback token exchange failure redirects proper auth failure | Automated | Production Chrome flow returned `auth=failed&auth_code=invalid_client` without reflected description |
 | AUTH-100 | Auth | PENDING | Callback token exchange exception class path preserves useful safe details | Automated | |
 | AUTH-101 | Auth | PENDING | Callback profile/org failure redirects `profile_or_org_check_failed` | Automated | |
 | AUTH-102 | Auth | PENDING | Callback success creates/loads session and redirects `/dashboard` | Automated | Regression |

@@ -40,6 +40,7 @@
 
 ## Auth / Security / Privacy
 
+0. [P1] Production Azure login returns `auth_code=invalid_client`, blocking full signed-in production E2E verification.
 1. [FIXED in `f85f30e`] OAuth callback can 500 after token exchange if profile lookup/session creation throws, leaving OAuth cookies until expiry.
 2. [FIXED in `f85f30e`] OAuth provider error details are reflected into public redirect URLs and homepage UI.
 3. [FIXED locally, recovery pending] Azure token encryption falls back to `AZURE_DEVOPS_CLIENT_SECRET`; app now avoids the client-secret fallback and does not persist session tokens when the dedicated key is missing.
