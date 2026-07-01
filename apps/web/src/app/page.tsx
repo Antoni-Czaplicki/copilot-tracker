@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { currentUser } from "@/lib/auth";
+import { authFailureHint, sanitizeAuthCallbackValue } from "@/lib/authCallback";
 import { readDatabase } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
@@ -41,7 +42,11 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   }
 
   const authError = parameters?.auth;
-  const authErrorCode = formatAuthMessage(parameters?.auth_code, 80);
+  const authErrorCode = sanitizeAuthCallbackValue(
+    parameters?.auth_code ?? "",
+    80,
+  );
+  const authErrorHint = authFailureHint(authErrorCode);
 
   return (
     <main className="grid gap-4">
@@ -67,6 +72,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                 that your account belongs to the configured organization.
               </div>
               {authErrorCode ? <div>Error: {authErrorCode}</div> : null}
+              {authErrorHint ? <div>{authErrorHint}</div> : null}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -159,17 +165,4 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 function parsePage(value: string | undefined) {
   const page = Number(value);
   return Number.isInteger(page) && page > 0 ? page : 1;
-}
-
-function formatAuthMessage(value: string | undefined, maxLength: number) {
-  let sanitized = "";
-  for (const character of value ?? "") {
-    const code = character.codePointAt(0) ?? 0;
-    sanitized += code < 32 || code === 127 ? " " : character;
-  }
-
-  return sanitized
-    .replaceAll(/\s+/gu, " ")
-    .trim()
-    .slice(0, maxLength);
 }

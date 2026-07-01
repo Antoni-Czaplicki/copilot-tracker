@@ -357,3 +357,20 @@
 - Added schema coverage for nullable task assignment payloads.
 - Validation passed: web test suite now reports 20 tests, plus web lint, typecheck, and placeholder production build.
 - Next: inspect diff, commit/push web task clearing support, then poll CI/production.
+
+## 2026-07-01 03:36:00 CEST - Loop 3 Progress
+
+- Committed and pushed web task clearing as `be7beec Support clearing web task assignments`.
+- Local tree is clean after push.
+- GitHub Actions for `be7beec` are in progress.
+- Production health still returns OK with database ready and `version.sha="unknown"`.
+- Next: continue the next non-auth-blocked improvement while CI runs.
+
+## 2026-07-01 03:38:37 CEST - Loop 3 Progress
+
+- GitHub Actions for `be7beec` completed successfully on both CI and extension build workflows.
+- Added safe, code-specific Azure OAuth failure hints for stable auth failure codes while continuing to suppress provider descriptions.
+- Reused the shared auth callback sanitizer on the homepage and removed duplicate local sanitization logic.
+- Added tests for common auth hints and unknown-code suppression.
+- Validation passed: web test suite now reports 22 tests, plus web lint, typecheck, and placeholder production build.
+- Next: inspect diff, commit/push auth failure hints, then poll CI/production.

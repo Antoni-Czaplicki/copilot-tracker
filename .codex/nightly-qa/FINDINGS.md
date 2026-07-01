@@ -56,3 +56,4 @@
 5. [FIXED in `d260639`] Extension info logs and context UI include raw local paths, remote URLs, and storage paths.
 6. [PARTIAL] Web auth tests now cover callback code sanitization; PKCE/state cookies, callback route branches, session creation, profile/org checks, and work-item status mapping still need route/integration coverage.
 7. [FIXED] Extension tracker events sent local OS username even though the backend already stamps authenticated user identity.
+8. [FIXED] Login failure UI showed stable OAuth codes but did not give safe, actionable hints for common Azure failures such as `invalid_client`.

@@ -28,6 +28,19 @@
 - PASS: `pnpm --filter @copilot-tracker/web typecheck`
 - PASS: `pnpm --filter @copilot-tracker/web lint`
 
+## 2026-07-01 - Auth Failure Hints
+
+- Added safe, code-specific Azure OAuth failure hints for stable callback codes such as `invalid_client`, `invalid_oauth_state`, and `profile_or_org_check_failed`.
+- Reused the shared auth callback sanitizer on the homepage instead of duplicating sanitization logic.
+- Added tests for common auth failure hints and unknown-code suppression.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web test` (22 tests)
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web build` with current placeholder production env names
+
 ## 2026-07-01 - Extension Partial Token Cost Display
 
 - Added incomplete-token request counting for the current session status tooltip.

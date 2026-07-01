@@ -166,3 +166,6 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | UI-158 | Web | PASS | Bulk selected request assignment can clear selected rows | Code review + build | Selected toolbar clear action sends nullable assignment; web test/lint/typecheck/build passed |
 | UI-159 | Web | PASS | Session assignment controls can clear every request in a session | Code review + build | Session clear action sends nullable assignment; web test/lint/typecheck/build passed |
 | API-160 | API/Backend | PASS | Task assignment payload schema accepts `selectedTask: null` for clearing while still rejecting empty strings | Automated | Added web `node:test` coverage; web tests passed |
+| AUTH-161 | Auth | PASS | Login failure UI maps `invalid_client` to a safe operator hint without provider descriptions | Automated + build | Added `authFailureHint` coverage; web test/lint/typecheck/build passed |
+| AUTH-162 | Auth | PASS | Login failure UI maps invalid OAuth state/PKCE failures to a safe retry/cookie hint | Automated + build | Added `authFailureHint` coverage; web test/lint/typecheck/build passed |
+| AUTH-163 | Auth | PASS | Unknown auth failure codes do not display invented guidance | Automated | Added unknown-code test; web tests passed |
