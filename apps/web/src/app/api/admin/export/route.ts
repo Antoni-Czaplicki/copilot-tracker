@@ -14,6 +14,17 @@ import { readDatabase } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
+const exportTypes = [
+  "requests",
+  "developers",
+  "tasks",
+  "developer-tasks",
+  "models",
+  "github-billing",
+] as const;
+
+type ExportType = (typeof exportTypes)[number];
+
 export async function GET(request: NextRequest) {
   const user = await currentUser();
   if (!isAdmin(user)) {
@@ -21,7 +32,16 @@ export async function GET(request: NextRequest) {
   }
 
   const database = await readDatabase();
-  const type = request.nextUrl.searchParams.get("type") ?? "requests";
+  const type = parseExportType(
+    request.nextUrl.searchParams.get("type") ?? "requests",
+  );
+  if (type === null) {
+    return NextResponse.json(
+      { error: "unsupported export type" },
+      { status: 400 },
+    );
+  }
+
   const csv = exportCsv(type, database);
   return new NextResponse(csv, {
     headers: {
@@ -32,11 +52,43 @@ export async function GET(request: NextRequest) {
 }
 
 function exportCsv(
-  type: string,
+  type: ExportType,
   database: Awaited<ReturnType<typeof readDatabase>>,
 ) {
   const chatRequests = filterMeaningfulChatRequests(database.chatRequests);
   switch (type) {
+    case "requests": {
+      return toCsv(
+        [
+          "requestRecordId",
+          "userLogin",
+          "userId",
+          "githubLogin",
+          "sessionTitle",
+          "branch",
+          "selectedTask",
+          "modelId",
+          "inputTokens",
+          "outputTokens",
+          "totalTokens",
+          "capturedAt",
+        ],
+        chatRequests.map((row) => [
+          row.requestRecordId,
+          row.userLogin,
+          row.userId,
+          row.githubLogin,
+          row.sessionTitle,
+          row.branch,
+          row.selectedTask,
+          row.modelId,
+          row.inputTokens,
+          row.outputTokens,
+          row.totalTokens,
+          row.capturedAt,
+        ]),
+      );
+    }
     case "developers": {
       return toCsv(
         [
@@ -166,39 +218,15 @@ function exportCsv(
         ]),
       );
     }
-    default: {
-      return toCsv(
-        [
-          "requestRecordId",
-          "userLogin",
-          "userId",
-          "githubLogin",
-          "sessionTitle",
-          "branch",
-          "selectedTask",
-          "modelId",
-          "inputTokens",
-          "outputTokens",
-          "totalTokens",
-          "capturedAt",
-        ],
-        chatRequests.map((row) => [
-          row.requestRecordId,
-          row.userLogin,
-          row.userId,
-          row.githubLogin,
-          row.sessionTitle,
-          row.branch,
-          row.selectedTask,
-          row.modelId,
-          row.inputTokens,
-          row.outputTokens,
-          row.totalTokens,
-          row.capturedAt,
-        ]),
-      );
-    }
   }
+}
+
+function parseExportType(value: string): ExportType | null {
+  return isExportType(value) ? value : null;
+}
+
+function isExportType(value: string): value is ExportType {
+  return exportTypes.includes(value as ExportType);
 }
 
 function toCsv(headers: string[], rows: unknown[][]) {

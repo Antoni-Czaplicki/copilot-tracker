@@ -20,7 +20,14 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const date = request.nextUrl.searchParams.get("date") ?? undefined;
+    const date = parseBillingDate(request.nextUrl.searchParams.get("date"));
+    if (date === null) {
+      return NextResponse.json(
+        { error: "date must be a valid YYYY-MM-DD value" },
+        { status: 400 },
+      );
+    }
+
     return NextResponse.json(await syncGithubCopilotBillingUsage(date));
   } catch (error) {
     return NextResponse.json(
@@ -32,4 +39,24 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   return GET(request);
+}
+
+function parseBillingDate(value: string | null) {
+  if (value === null || value === "") {
+    return;
+  }
+
+  if (!/^\d{4}-\d{2}-\d{2}$/u.test(value)) {
+    return null;
+  }
+
+  const date = new Date(`${value}T00:00:00.000Z`);
+  if (
+    Number.isNaN(date.getTime()) ||
+    date.toISOString().slice(0, 10) !== value
+  ) {
+    return null;
+  }
+
+  return value;
 }

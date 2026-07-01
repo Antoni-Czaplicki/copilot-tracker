@@ -29,3 +29,11 @@
 - Validated with repo typecheck, lint, extension tests, placeholder production web build, and local health smoke.
 - Docker image build is blocked because Docker daemon is not running.
 - Next: commit/push deployment slice and poll production for deployment freshness.
+
+## 2026-07-01 02:08:25 CEST - Loop 1 Progress
+
+- Committed and pushed deployment health checks as `03c390b Add deployment health checks`.
+- Production remained stale immediately after push: `/api/health` returned 404 and provider-error redirect still reflected descriptions.
+- Implemented API boundary validation for malformed GitHub login JSON, admin export type whitelist, and billing sync date validation.
+- Validated API slice with web typecheck, lint, and placeholder production build.
+- Next: commit/push API validation and poll production again.

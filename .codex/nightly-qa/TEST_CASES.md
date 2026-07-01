@@ -68,14 +68,14 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | API-060 | API/Backend | PENDING | Admin export tasks type includes cost and repo/branch columns | Automated | |
 | API-061 | API/Backend | PENDING | Admin export developer-tasks aggregates correctly | Automated | |
 | API-062 | API/Backend | PENDING | Admin export models type includes expected headers/rows | Automated | |
-| API-063 | API/Backend | PENDING | Admin export unknown type returns 400 after validation | Automated | Finding target |
+| API-063 | API/Backend | PASS | Admin export unknown type returns 400 after validation | Automated | Implemented route validation; build/lint/typecheck passed |
 | API-064 | API/Backend | PENDING | CSV escaping handles quotes, commas, and newlines | Automated | |
 | API-065 | API/Backend | PENDING | Export uses filtered meaningful requests for aggregate tabs | Automated | |
 | API-066 | API/Backend | PENDING | Billing sync admin path returns sync result | Automated | |
 | API-067 | API/Backend | PENDING | Billing sync POST aliases GET behavior if retained | Automated | |
 | API-068 | API/Backend | PENDING | Billing sync cron secret bearer works and missing secret fails | Automated | |
 | API-069 | API/Backend | PENDING | User GitHub login patch validates and normalizes usernames | Automated | |
-| API-070 | API/Backend | PENDING | User GitHub login patch malformed JSON returns 400 | Automated | Finding target |
+| API-070 | API/Backend | PASS | User GitHub login patch malformed JSON returns 400 | Automated | Implemented route validation; build/lint/typecheck passed |
 | API-071 | API/Backend | PENDING | Updating user GitHub login cascades to chat requests and events | Automated + DB | |
 | API-072 | API/Backend | PENDING | `readUserBySessionId` deletes/invalidates expired sessions | Automated | |
 | API-073 | API/Backend | PENDING | `readSessionAzureDevOpsTokens` returns null on decryption failure | Automated | |

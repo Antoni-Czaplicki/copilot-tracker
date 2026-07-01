@@ -46,3 +46,15 @@
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env and build metadata
 - PASS: local `next start` health smoke returned `503` with `database.ok=false` and build SHA when no local database was available
 - BLOCKED: Docker image build could not run because the local Docker daemon socket was unavailable
+
+## 2026-07-01 - API Boundary Validation
+
+- Added malformed JSON handling for user and admin GitHub login PATCH routes.
+- Added admin export `type` whitelist validation so unknown export types return 400 instead of silently dumping request CSV.
+- Added billing sync `date` validation for real `YYYY-MM-DD` calendar dates before reaching GitHub sync logic.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env and build metadata
