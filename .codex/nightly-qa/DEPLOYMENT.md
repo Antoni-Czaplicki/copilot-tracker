@@ -48,3 +48,10 @@
 - PASS: `.dockerignore` excludes `.codex` so nightly QA logs are not copied into Docker build contexts.
 - PASS: `docker compose config` renders app/Postgres services and build/runtime metadata arguments with local fallbacks.
 - LIMITATION: production `/api/health` still reports `version.sha="unknown"` until the deploy platform passes `COPILOT_TRACKER_BUILD_SHA` and `COPILOT_TRACKER_BUILD_TIME`.
+
+## 2026-07-01 03:53 CEST Chrome Production Smoke
+
+- PASS: real Chrome loaded the production homepage at `https://copilot-tracker.antek.page/` with title `Copilot Tracker`.
+- PASS: login remains a document-navigation link to `/api/auth/azure-devops`.
+- BLOCKED: following the real auth flow still returns to `/?auth=failed&auth_code=invalid_client`.
+- PASS: the visible login failure UI shows a stable `invalid_client` code and does not expose provider descriptions or secret values.

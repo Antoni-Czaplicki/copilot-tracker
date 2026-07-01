@@ -272,3 +272,17 @@
 - Removed local OS username from extension tracker events; events now use generic `vscode-extension` while the backend stamps authenticated identity.
 - Validation passed: `pnpm --filter ./apps/extension test` reported 9 passing tests.
 - Next: inspect diff, commit/push event privacy, then poll CI/production.
+
+## 2026-07-01 03:51:24 CEST - Loop 3 Progress
+
+- Committed and pushed extension event user privacy as `7cfd221 Avoid local usernames in extension events`.
+- Validation before commit: `pnpm --filter ./apps/extension test` passed with 9 tests.
+- Next: poll CI/production and continue remaining gaps.
+
+## 2026-07-01 03:53:18 CEST - Loop 3 Progress
+
+- Ran real Chrome production smoke: homepage title/copy and login anchor passed.
+- Real Chrome auth flow still returns `auth_code=invalid_client`, matching the known external Azure client blocker.
+- Verified the visible failure UI remains safe: stable code only, no provider description or secret values.
+- Closed the Chrome tab/session.
+- Next: continue non-auth-blocked improvements while latest CI runs.
