@@ -55,6 +55,8 @@ void test("workItemsFromSearchPayload filters malformed work-item search results
       workItems: [
         { id: 123, title: "Valid", state: 12 },
         { id: "124", title: "Wrong id" },
+        { id: -1, title: "Negative id" },
+        { id: 2_147_483_648, title: "Too large id" },
         { id: 125, title: null },
         null,
       ],

@@ -1,5 +1,7 @@
 import { readResponseError } from "./responseErrors";
 
+const maxAzureDevOpsWorkItemId = 2_147_483_647;
+
 export interface WorkItemSearchItem {
   id: number;
   title: string;
@@ -52,6 +54,8 @@ function workItemFromValue(value: unknown): WorkItemSearchItem | null {
   if (
     typeof id !== "number" ||
     !Number.isSafeInteger(id) ||
+    id <= 0 ||
+    id > maxAzureDevOpsWorkItemId ||
     typeof title !== "string"
   ) {
     return null;

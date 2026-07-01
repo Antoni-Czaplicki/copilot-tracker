@@ -281,3 +281,4 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | AUTH-273 | Auth/API | PASS | Azure OAuth callback does not reflect provider `error_description` when preserving provider error codes | Automated | Route test asserts `error_description` is absent from redirect params; web/root tests passed |
 | AUTH-274 | Auth/API | PASS | Azure OAuth callback sanitizes and truncates unsafe provider error code values | Automated | Added control-character/collapse/truncation route coverage; web/root tests passed |
 | AUTH-275 | Auth/API | PASS | Azure OAuth callback falls back to `provider_error` when the provider error code sanitizes to blank | Automated | Added blank unsafe provider-error route coverage; web/root tests passed |
+| UI-276 | Web | PASS | WorkItemPicker successful search payload normalizer rejects non-positive and too-large Azure DevOps IDs | Automated | Expanded malformed work-item payload regression; web/root tests passed |

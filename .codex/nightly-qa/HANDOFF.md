@@ -79,3 +79,9 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - `294cf69 Guard extension work item ids` passed both GitHub Actions workflows.
 - Chrome production smoke passed homepage/login-link checks and safe `invalid_client` auth failure copy checks.
 - Chrome production smoke still showed no `role="alert"` node on the auth failure page, so production freshness remains unproven alongside unknown health build metadata and missing visible health no-store header.
+
+## 2026-07-01 07:34 CEST Update
+
+- `4538973 Preserve Azure provider auth codes` passed both GitHub Actions workflows.
+- Production still returns `auth_code=provider_error` for a direct provider-error callback, so the provider-code preservation change has not visibly deployed yet.
+- Added and validated web WorkItemPicker ID-bound parity with backend/extension filtering; next action is commit/push.

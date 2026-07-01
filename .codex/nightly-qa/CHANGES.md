@@ -1021,3 +1021,18 @@
 - PASS: `pnpm test` (122 web tests + 25 extension VS Code tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm --filter ./apps/extension compile`
+
+## 2026-07-01 - Work Item Picker Id Bounds
+
+- Aligned web WorkItemPicker result normalization with backend and extension Azure DevOps work-item ID bounds.
+- Filtered non-positive and above-PostgreSQL-int successful result IDs before they can render in task search suggestions.
+- Expanded malformed work-item search payload coverage for negative and too-large IDs.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web test` (122 tests)
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (122 web tests + 25 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`

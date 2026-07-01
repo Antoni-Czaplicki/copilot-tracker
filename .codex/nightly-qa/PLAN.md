@@ -335,4 +335,14 @@
 - [x] Add provider-code sanitization, blank fallback, and `access_denied` hint coverage
 - [x] Run focused web auth tests
 - [x] Run broad validation
+- [x] Commit, push, smoke production, and poll CI
+
+## Loop 37 - Work Item Picker Id Bounds
+
+- [x] Re-sync CI/deploy state for `4538973`
+- [x] Inspect web task assignment picker and request-session task workflows
+- [x] Align web WorkItemPicker payload ID filtering with backend/extension bounds
+- [x] Expand malformed work-item payload regression coverage
+- [x] Run focused web tests
+- [x] Run broad validation
 - [ ] Commit, push, smoke production, and poll CI

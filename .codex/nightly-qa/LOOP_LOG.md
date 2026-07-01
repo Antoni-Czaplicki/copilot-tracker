@@ -1786,3 +1786,31 @@
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm --filter ./apps/extension compile`
 - Next: commit, push, smoke production, poll CI, and continue.
+
+## 2026-07-01 07:31:56 CEST - Loop 36 Push/Poll
+
+- Committed and pushed provider-code preservation as `4538973 Preserve Azure provider auth codes`.
+- GitHub Actions for `4538973` are in progress on both CI and Build extension workflows.
+- PASS: production `/api/health` returns HTTP 200 with `ok=true` and `database.ok=true`.
+- PASS: production Azure OAuth start redirects to Microsoft with PKCE `S256`, state, client id, and required Azure DevOps scopes.
+- STALE/LIMITATION: direct provider-error callback still redirects with `auth_code=provider_error`, so production has not yet picked up the new `access_denied` preservation behavior.
+- Next: poll CI/deploy and continue with the next local scan if deploy remains delayed.
+
+## 2026-07-01 07:32:58 CEST - Loop 37 Start
+
+- Previous pushed commit: `4538973 Preserve Azure provider auth codes`; GitHub Actions were still in progress at the prior poll.
+- Production callback behavior had not yet picked up `4538973`.
+- Next: align web WorkItemPicker successful result ID filtering with the backend and extension Azure DevOps ID bounds.
+
+## 2026-07-01 07:34:22 CEST - Loop 37 Validation
+
+- PASS: GitHub Actions for `4538973 Preserve Azure provider auth codes` completed successfully on both CI and Build extension workflows.
+- STALE/LIMITATION: production provider-error callback still returns `auth_code=provider_error`, so `4538973` is not live yet.
+- Added web WorkItemPicker ID-bound filtering for non-positive and above-`2_147_483_647` successful result IDs.
+- PASS: `pnpm --filter @copilot-tracker/web test` (122 tests)
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (122 web tests + 25 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`
+- Next: commit, push, smoke production, poll CI, and continue.

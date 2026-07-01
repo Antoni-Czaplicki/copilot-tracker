@@ -602,3 +602,19 @@
 - PASS: Chrome auth route reaches `/?auth=failed&auth_code=invalid_client`.
 - PASS: visible auth failure copy gives safe invalid-client guidance and does not expose provider description/secrets.
 - STALE/LIMITATION: Chrome DOM has no `role="alert"` node on the auth failure page, so the latest auth alert semantics are not visibly deployed.
+
+## 2026-07-01 07:31 CEST Production Poll
+
+- PUSHED: `4538973 Preserve Azure provider auth codes`.
+- IN PROGRESS: GitHub Actions for `4538973` started on both CI and Build extension workflows.
+- PASS: production `/api/health` returned HTTP 200 with `ok=true` and `database.ok=true`.
+- PASS: production Azure OAuth start redirect includes state, PKCE `S256`, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
+- STALE/LIMITATION: provider-error callback still redirects with `auth_code=provider_error`, so the new provider-code behavior is not live yet.
+- STALE/LIMITATION: production `/api/health` still reports `sha="unknown"`, `builtAt="unknown"`, and no visible `Cache-Control` header.
+
+## 2026-07-01 07:34 CEST Production Poll
+
+- PASS: GitHub Actions for `4538973 Preserve Azure provider auth codes` completed successfully on both CI and Build extension workflows.
+- PASS: production `/api/health` returned HTTP 200 with `ok=true` and `database.ok=true`.
+- STALE/LIMITATION: direct provider-error callback still redirects with `auth_code=provider_error`; deployed frontend/backend freshness remains unproven.
+- STALE/LIMITATION: production `/api/health` still reports `sha="unknown"`, `builtAt="unknown"`, and no visible `Cache-Control` header.
