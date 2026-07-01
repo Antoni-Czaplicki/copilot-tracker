@@ -13,7 +13,8 @@
     "format": "prettier . --write",
     "lint": "pnpm -r lint",
     "smoke:production": "node scripts/smoke-production.mjs",
-    "test": "pnpm test:web && pnpm --filter ./apps/extension test",
+    "test": "pnpm test:smoke && pnpm test:web && pnpm --filter ./apps/extension test",
+    "test:smoke": "node --test scripts/*.test.mjs",
     "test:web": "pnpm --filter @copilot-tracker/web test",
     "typecheck": "pnpm -r typecheck"
   },

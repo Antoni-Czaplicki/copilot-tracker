@@ -380,4 +380,13 @@
 - [x] Add strict production smoke script with known-stale warning mode
 - [x] Document `pnpm smoke:production`
 - [x] Validate script syntax, strict failure behavior, known-stale warning mode, typecheck, lint, and full tests
+- [x] Commit, push, smoke production, and poll CI
+
+## Loop 42 - Production Smoke Verifier Tests
+
+- [x] Re-sync latest `1384cfe` CI and production state
+- [x] Add local HTTP-server tests for fresh, strict stale, and known-stale smoke outcomes
+- [x] Wire smoke verifier tests into the root `pnpm test` flow
+- [x] Run focused smoke tests
+- [x] Run typecheck, lint, root tests, production web build, extension compile, and live known-stale smoke
 - [ ] Commit, push, smoke production, and poll CI

@@ -1060,6 +1060,24 @@
 - PASS: `pnpm -r lint`
 - PASS: `pnpm test` (122 web tests + 26 extension VS Code tests)
 
+## 2026-07-01 - Production Smoke Verifier Tests
+
+- Added local HTTP-server tests for `scripts/smoke-production.mjs`.
+- Covered fresh deploy success, strict stale deploy failure, and `--allow-known-stale` warning behavior.
+- Wired `pnpm test:smoke` into the root `pnpm test` command so CI runs the smoke verifier tests without touching production.
+
+## Checks
+
+- PASS: `pnpm test:smoke` (3 tests)
+- PASS: `node --check scripts/smoke-production.test.mjs`
+- PASS: `git diff --check`
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (3 smoke tests + 122 web tests + 26 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale`
+
 ## 2026-07-01 - Work Item Picker Id Bounds
 
 - Aligned web WorkItemPicker result normalization with backend and extension Azure DevOps work-item ID bounds.

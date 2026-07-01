@@ -118,3 +118,9 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - `cf5ade1 Correct final nightly QA poll logs` passed both GitHub Actions workflows.
 - Added `pnpm smoke:production` plus `--allow-known-stale` mode to make deploy freshness checks repeatable.
 - Strict smoke mode currently fails production as expected because metadata/cache/provider-code freshness remain stale; known-stale mode passes with warnings.
+
+## 2026-07-01 08:14 CEST Continuation Update
+
+- `1384cfe Add production smoke verifier` passed both GitHub Actions workflows.
+- Added local tests for `pnpm smoke:production` and wired them into root `pnpm test`.
+- Latest root validation passed 3 smoke tests, 122 web tests, and 26 extension tests.

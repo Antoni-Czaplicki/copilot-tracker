@@ -658,3 +658,9 @@
 - ADDED: `pnpm smoke:production` codifies the production smoke contract.
 - EXPECTED FAIL: strict `pnpm smoke:production` fails current production because build metadata/cache header/provider-code freshness are still stale.
 - PASS/WARN: `pnpm smoke:production -- --allow-known-stale` exits successfully while warning on those freshness gaps.
+
+## 2026-07-01 08:14 CEST Production Poll
+
+- PASS: GitHub Actions for `1384cfe Add production smoke verifier` completed successfully on both CI and Build extension workflows.
+- ADDED: smoke verifier tests now run locally and in root `pnpm test`, so verifier behavior is covered without production network dependency.
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale` still reports the known production freshness warnings.

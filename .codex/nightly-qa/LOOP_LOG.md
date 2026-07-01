@@ -1904,3 +1904,19 @@
 - PASS: `pnpm -r lint`
 - PASS: `pnpm test` (122 web tests + 26 extension VS Code tests)
 - Next: commit, push, smoke production, poll CI, and continue if needed.
+
+## 2026-07-01 08:14:36 CEST - Loop 42 Validation
+
+- PASS: latest pushed commit `1384cfe Add production smoke verifier` completed successfully on both CI and Build extension workflows.
+- Added `scripts/smoke-production.test.mjs` with local HTTP-server coverage for fresh deployment success, strict stale deployment failure, and known-stale warning mode.
+- Wired `pnpm test:smoke` into the root `pnpm test` flow so CI exercises the smoke verifier without calling production.
+- PASS: `pnpm test:smoke` (3 tests)
+- PASS: `node --check scripts/smoke-production.test.mjs`
+- PASS: `git diff --check`
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (3 smoke tests + 122 web tests + 26 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale` against production
+- Next: commit, push, smoke production, poll CI, and continue if needed.
