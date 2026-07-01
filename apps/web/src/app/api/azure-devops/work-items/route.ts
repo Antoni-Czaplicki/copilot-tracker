@@ -9,6 +9,7 @@ import {
 } from "@/lib/auth";
 import {
   AzureDevOpsWorkItemsError,
+  azureDevOpsWorkItemsClientStatus,
   searchAzureDevOpsWorkItems,
 } from "@/lib/azureDevOpsWorkItems";
 import { parseBearerToken } from "@/lib/authIdentity";
@@ -35,7 +36,7 @@ export async function GET(request: NextRequest) {
     if (error instanceof AzureDevOpsWorkItemsError) {
       return NextResponse.json(
         { error: error.code },
-        { status: toClientStatus(error.status) },
+        { status: azureDevOpsWorkItemsClientStatus(error.status) },
       );
     }
 
@@ -61,12 +62,4 @@ async function getAzureDevOpsAccessToken(request: NextRequest) {
   }
 
   return readAzureDevOpsSessionAccessToken(sessionId);
-}
-
-function toClientStatus(status: number) {
-  if (status === 401 || status === 403 || status === 429) {
-    return status;
-  }
-
-  return 502;
 }

@@ -1195,3 +1195,31 @@
 - PASS: `pnpm test` (94 web tests + 23 extension VS Code tests)
 - PASS: `git diff --check`
 - Next: commit, push, smoke production, and continue.
+
+## 2026-07-01 05:58:34 CEST - Loop 16 End
+
+- Committed and pushed GitHub-login payload validation as `2906354 Validate GitHub login JSON payloads`.
+- GitHub Actions for `2906354` are in progress.
+- PASS: production `/api/health` returns HTTP 200 with `ok=true` and `database.ok=true`.
+- LIMITATION: production `/api/health` still reports `version.sha="unknown"` and `builtAt="unknown"`.
+- PASS: sanitized production Azure OAuth start redirects to Microsoft with PKCE `S256`, state, client id, and required Azure DevOps scopes.
+- Next: continue with the next high-value gap and poll CI.
+
+## 2026-07-01 05:59:00 CEST - Loop 17 Start
+
+- Started Azure DevOps work-items API status mapping coverage while CI for `2906354` runs.
+- Finding: the route preserves 401/403/429 from Azure DevOps and maps other upstream errors to 502, but that client-facing contract is private and untested.
+- Current git state: post-push QA logs modified; no source changes pending yet.
+- Next: extract the mapping helper, add direct tests, validate, and continue.
+
+## 2026-07-01 06:00:11 CEST - Loop 17 Validation
+
+- PASS: GitHub Actions for `2906354 Validate GitHub login JSON payloads` completed successfully on both CI and extension build workflows.
+- Extracted `azureDevOpsWorkItemsClientStatus` from the work-items route.
+- Added tests that preserve 401/403/429 for auth/rate-limit failures and map other upstream statuses to 502.
+- PASS: `pnpm --filter @copilot-tracker/web test` (96 tests)
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (96 web tests + 23 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- Next: commit, push, smoke production, and continue.

@@ -396,3 +396,15 @@
 ## 2026-07-01 05:56 CEST CI Poll
 
 - PASS: GitHub Actions for `5b06f76 Harden session token crypto` completed successfully on both CI and extension build workflows.
+
+## 2026-07-01 05:58 CEST Production Poll
+
+- PUSHED: `2906354 Validate GitHub login JSON payloads`.
+- IN PROGRESS: GitHub Actions for `2906354` started after push.
+- PASS: production `/api/health` returned HTTP 200 with `ok=true` and `database.ok=true`.
+- LIMITATION: production `/api/health` still reports `sha="unknown"` and `builtAt="unknown"`.
+- PASS: production Azure OAuth start redirect includes state, PKCE `S256`, client id, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
+
+## 2026-07-01 06:00 CEST CI Poll
+
+- PASS: GitHub Actions for `2906354 Validate GitHub login JSON payloads` completed successfully on both CI and extension build workflows.

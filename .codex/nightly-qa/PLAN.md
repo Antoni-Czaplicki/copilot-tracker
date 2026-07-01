@@ -134,4 +134,12 @@
 - [x] Use the helper in user/admin GitHub-login PATCH routes
 - [x] Add tests for valid object, malformed JSON, arrays, strings, and null
 - [x] Run focused web tests and broad validation
+- [x] Commit, push, and smoke production
+- [x] Verify CI completion for `2906354`
+
+## Loop 17 - Work Item API Status Mapping
+
+- [x] Extract Azure DevOps work-item client status mapping
+- [x] Add tests for 401/403/429 passthrough and generic 502 fallback
+- [x] Run focused web tests and broad validation
 - [ ] Commit, push, and smoke production

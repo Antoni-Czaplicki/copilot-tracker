@@ -746,3 +746,16 @@
 - PASS: `pnpm -r typecheck`
 - PASS: `pnpm -r lint`
 - PASS: `pnpm test` (94 web tests + 23 extension VS Code tests)
+
+## 2026-07-01 - Azure Work Item Status Mapping Coverage
+
+- Extracted the Azure DevOps work-item upstream-to-client status mapping into `azureDevOpsWorkItemsClientStatus`.
+- Added tests for 401/403/429 passthrough and 400/404/500 mapping to 502.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web test` (96 tests)
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (96 web tests + 23 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env

@@ -35,6 +35,14 @@ export class AzureDevOpsWorkItemsError extends Error {
   }
 }
 
+export function azureDevOpsWorkItemsClientStatus(status: number) {
+  if (status === 401 || status === 403 || status === 429) {
+    return status;
+  }
+
+  return 502;
+}
+
 export async function searchAzureDevOpsWorkItems({
   accessToken,
   query,

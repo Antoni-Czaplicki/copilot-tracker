@@ -11,6 +11,7 @@ process.env.AZURE_DEVOPS_ORG ??= "placeholder-org";
 
 const {
   AzureDevOpsWorkItemsError,
+  azureDevOpsWorkItemsClientStatus,
   buildWiqlQueries,
   searchAzureDevOpsWorkItems,
 } = await import("./azureDevOpsWorkItems");
@@ -186,6 +187,18 @@ void test("searchAzureDevOpsWorkItems maps repeated rate limits to a typed error
       error.status === 429,
   );
   assert.equal(requests.length, 3);
+});
+
+void test("azureDevOpsWorkItemsClientStatus preserves auth and rate-limit statuses", () => {
+  assert.equal(azureDevOpsWorkItemsClientStatus(401), 401);
+  assert.equal(azureDevOpsWorkItemsClientStatus(403), 403);
+  assert.equal(azureDevOpsWorkItemsClientStatus(429), 429);
+});
+
+void test("azureDevOpsWorkItemsClientStatus maps other upstream errors to bad gateway", () => {
+  assert.equal(azureDevOpsWorkItemsClientStatus(400), 502);
+  assert.equal(azureDevOpsWorkItemsClientStatus(404), 502);
+  assert.equal(azureDevOpsWorkItemsClientStatus(500), 502);
 });
 
 void test("work-items route returns an empty result for blank queries without auth", async () => {
