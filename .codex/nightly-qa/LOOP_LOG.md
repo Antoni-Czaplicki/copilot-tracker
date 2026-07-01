@@ -2066,3 +2066,14 @@
 - PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha e614348`
 - PASS: `git diff --check`
 - Next: commit/push profile/org diagnostics, poll CI, wait for deploy, and retry Chrome login to collect the new redacted Dokploy diagnostic fields.
+
+## 2026-07-01 10:32:28 CEST - Loop 48 Deploy Verification
+
+- PUSHED: `7020999 Add profile org auth diagnostics`.
+- PASS: GitHub Actions CI for `7020999` completed successfully.
+- PASS: GitHub Actions Build extension for `7020999` completed successfully.
+- PASS: Dokploy deployments list shows `7020999` deployed successfully.
+- PASS/WARN: post-deploy `pnpm smoke:production -- --allow-known-stale --expect-sha 7020999` passed all hard gates, warning only on unknown build metadata/SHA.
+- PASS: fresh real Chrome login returned safe `auth_code=profile_or_org_check_failed` with `auth_ref`.
+- PASS: matching Dokploy log contains deployed redacted diagnostics: profile lookup OK, profile HTTP 200, profile id present, org membership HTTP 200, one account returned, organization membership not matched.
+- Next: fix configured Azure DevOps org value or signed-in user's organization membership/visibility, then rerun Chrome signed-in dashboard and Azure work-item E2E.

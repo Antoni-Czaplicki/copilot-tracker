@@ -453,4 +453,4 @@
 - [x] Add focused tests for profile request failures, org membership misses, and callback log fields
 - [x] Update deployment docs and QA logs
 - [x] Run broad validation
-- [ ] Commit, push, poll CI, and verify deployed diagnostic behavior
+- [x] Commit, push, poll CI, and verify deployed diagnostic behavior

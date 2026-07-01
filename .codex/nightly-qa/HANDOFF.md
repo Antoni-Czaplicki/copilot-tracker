@@ -196,3 +196,10 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - Added local redacted profile/org diagnostics for that failure stage; after deploy, use the browser `auth_ref` to find `profileResult`, `profileStatus`, `orgMembershipResult`, `orgMembershipStatus`, and `orgMembershipAccountCount` in Dokploy logs.
 - Public behavior remains safe: no provider descriptions, tokens, profile payloads, organization names, or secrets in URLs/page text.
 - Focused validation passed: web tests now 128 and web typecheck passes.
+
+## 2026-07-01 10:32 CEST Profile/Org Diagnostics Verified
+
+- `7020999 Add profile org auth diagnostics` passed GitHub Actions CI and Build extension, deployed in Dokploy, and production smoke passed all hard gates.
+- Real Chrome login still fails safely with `auth_code=profile_or_org_check_failed`.
+- Matching Dokploy log now proves profile lookup succeeds and org matching fails: profile OK/status 200/profile id present; org membership request OK/status 200; one account returned; configured organization not matched.
+- Next operator action: check `AZURE_DEVOPS_ORG` against the account returned for the signed-in user, or adjust the signed-in user's Azure DevOps organization membership/visibility. Then rerun Chrome login and dashboard/work-item E2E.

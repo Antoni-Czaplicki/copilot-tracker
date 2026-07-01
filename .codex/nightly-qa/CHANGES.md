@@ -1200,3 +1200,7 @@
 - PASS: `pnpm --filter ./apps/extension compile`
 - PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha e614348`
 - PASS: `git diff --check`
+- PASS: `7020999` passed GitHub Actions CI and Build extension after push.
+- PASS: `7020999` deployed successfully in Dokploy.
+- PASS/WARN: post-deploy `pnpm smoke:production -- --allow-known-stale --expect-sha 7020999`.
+- PASS: real Chrome + Dokploy logs verified deployed profile/org diagnostics.

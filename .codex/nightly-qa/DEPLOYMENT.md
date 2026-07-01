@@ -742,3 +742,12 @@
 - PASS/PROGRESS: real Chrome production login no longer returns `auth_code=invalid_client`; the confidential Web app redirect/token exchange issue is cleared.
 - FAIL/NEXT: real Chrome production login now returns `auth_code=profile_or_org_check_failed` with a safe `auth_ref`.
 - LOCAL FIX IN PROGRESS: callback logging now includes redacted profile/org diagnostic fields for this stage, without logging tokens, profile payloads, org names, or secrets.
+
+## 2026-07-01 10:32 CEST Profile/Org Diagnostics Deploy Verification
+
+- PASS: `7020999 Add profile org auth diagnostics` completed successfully on GitHub Actions CI and Build extension workflows.
+- PASS: Dokploy deployments list shows `7020999` deployed successfully.
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 7020999` passed all hard gates; warnings remain limited to unknown build metadata/SHA.
+- PASS: real Chrome production login still returns a safe public `auth_code=profile_or_org_check_failed` plus `auth_ref`, with no provider details in the URL.
+- PASS: matching Dokploy log event now includes redacted profile/org diagnostics.
+- DIAGNOSIS: `profileResult=ok`, `profileStatus=200`, `hasProfileId=true`, `orgMembershipResult=not_matched`, `orgMembershipStatus=200`, and `orgMembershipAccountCount=1`. The remaining production auth issue is configured organization membership matching, not token exchange or profile lookup.
