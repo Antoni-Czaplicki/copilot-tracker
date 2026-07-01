@@ -36,6 +36,42 @@ export function emptyWorkItemSearchMessage(value: string) {
     : "No Azure DevOps matches";
 }
 
+export function workItemPickerStatusText({
+  canSearch,
+  errorMessage,
+  query,
+  resultMatchesQuery,
+  searchActive,
+  visibleState,
+  visibleWorkItemCount,
+}: {
+  canSearch: boolean;
+  errorMessage: string | null;
+  query: string;
+  resultMatchesQuery: boolean;
+  searchActive: boolean;
+  visibleState: "idle" | "loading" | "error";
+  visibleWorkItemCount: number;
+}) {
+  if (!searchActive) {
+    return null;
+  }
+
+  if (visibleState === "loading") {
+    return "Searching";
+  }
+
+  if (visibleState === "error") {
+    return errorMessage ?? "Search failed";
+  }
+
+  if (resultMatchesQuery && visibleWorkItemCount === 0 && canSearch) {
+    return emptyWorkItemSearchMessage(query);
+  }
+
+  return null;
+}
+
 export function sortWorkItemSearchItems(items: WorkItemSearchItem[]) {
   return [...items].sort(
     (left, right) =>

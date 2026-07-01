@@ -9,6 +9,7 @@ import {
   nextWorkItemActiveIndex,
   safeWorkItemUrl,
   sortWorkItemSearchItems,
+  workItemPickerStatusText,
   workItemsFromSearchPayload,
   workItemSearchErrorMessage,
 } from "./workItemPicker";
@@ -32,6 +33,36 @@ void test("emptyWorkItemSearchMessage distinguishes numeric ids from text querie
   assert.equal(
     emptyWorkItemSearchMessage("login"),
     "No Azure DevOps matches",
+  );
+});
+
+void test("workItemPickerStatusText stays quiet for inactive selected values", () => {
+  assert.equal(
+    workItemPickerStatusText({
+      canSearch: true,
+      errorMessage: null,
+      query: "17198",
+      resultMatchesQuery: false,
+      searchActive: false,
+      visibleState: "idle",
+      visibleWorkItemCount: 0,
+    }),
+    null,
+  );
+});
+
+void test("workItemPickerStatusText reports empty active searches", () => {
+  assert.equal(
+    workItemPickerStatusText({
+      canSearch: true,
+      errorMessage: null,
+      query: "17198",
+      resultMatchesQuery: true,
+      searchActive: true,
+      visibleState: "idle",
+      visibleWorkItemCount: 0,
+    }),
+    "No Azure DevOps match for this ID",
   );
 });
 

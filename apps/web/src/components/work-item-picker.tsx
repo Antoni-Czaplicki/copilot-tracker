@@ -19,11 +19,11 @@ import { useEffect, useId, useMemo, useState } from "react";
 import type { WorkItemSearchItem } from "@/lib/workItemPicker";
 import {
   canSearchWorkItems,
-  emptyWorkItemSearchMessage,
   isTerminalWorkItemState,
   nextWorkItemActiveIndex,
   safeWorkItemUrl,
   sortWorkItemSearchItems,
+  workItemPickerStatusText,
   workItemsFromSearchPayload,
   workItemSearchErrorMessage,
 } from "@/lib/workItemPicker";
@@ -128,23 +128,21 @@ export function WorkItemPicker({
   );
 
   const statusText = useMemo(() => {
-    if (visibleState === "loading") {
-      return "Searching";
-    }
-
-    if (visibleState === "error") {
-      return errorMessage ?? "Search failed";
-    }
-
-    if (visibleWorkItems.length === 0 && canSearch) {
-      return emptyWorkItemSearchMessage(normalizedValue);
-    }
-
-    return null;
+    return workItemPickerStatusText({
+      canSearch,
+      errorMessage,
+      query: normalizedValue,
+      resultMatchesQuery,
+      searchActive,
+      visibleState,
+      visibleWorkItemCount: visibleWorkItems.length,
+    });
   }, [
     canSearch,
     errorMessage,
     normalizedValue,
+    resultMatchesQuery,
+    searchActive,
     visibleState,
     visibleWorkItems.length,
   ]);
