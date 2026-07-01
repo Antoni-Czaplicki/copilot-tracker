@@ -106,3 +106,9 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - Final production smoke: `/api/health` is HTTP 200 with `ok=true` and `database.ok=true`; `/api/auth/azure-devops` redirects to Microsoft with PKCE `S256`, state, and required scopes.
 - Remaining production freshness risk: `/api/health` still reports `sha="unknown"`/`builtAt="unknown"` with no visible `Cache-Control` header, and direct provider-error callback still returns `auth_code=provider_error`.
 - Documented test cases now reach `DOC-278`.
+
+## 2026-07-01 07:59 CEST Final Poll
+
+- `22d34f0 Record final nightly QA status` passed both GitHub Actions workflows.
+- Production health and Azure auth-start redirect checks still pass.
+- Remaining risks are unchanged: production build metadata/cache header are still not visible, provider-error callback behavior still appears stale, and signed-in production Azure E2E remains blocked by `invalid_client`.

@@ -1882,3 +1882,12 @@
 - STALE/LIMITATION: production `/api/health` still reports `sha="unknown"`, `builtAt="unknown"`, and no visible `Cache-Control` header.
 - Documented test cases now reach `DOC-278`.
 - Next: commit final QA log updates and wait for that log-only commit's CI.
+
+## 2026-07-01 07:59:51 CEST - Loop 40 Final Poll
+
+- PASS: final QA log commit `22d34f0 Record final nightly QA status` completed successfully on both CI and Build extension workflows.
+- PASS: final production `/api/health` remains HTTP 200 with `ok=true` and `database.ok=true`.
+- PASS: final production Azure OAuth start redirect goes to Microsoft with PKCE `S256`, state, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
+- PASS/PARTIAL: direct provider-error callback hides `error_description`, but still returns stale `auth_code=provider_error` instead of the newer preserved `access_denied` code.
+- STALE/LIMITATION: production `/api/health` still reports `sha="unknown"`, `builtAt="unknown"`, and no visible `Cache-Control` header.
+- Current HEAD observed as `22d34f0`; worktree was clean before this status correction.
