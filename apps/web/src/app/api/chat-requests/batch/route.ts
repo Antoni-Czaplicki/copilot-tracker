@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     {
       ok: true,
       received: payload.data.requests.length,
-      accepted: payload.data.requests.length,
+      accepted: upserted,
       upserted,
     },
     { status: 202 },

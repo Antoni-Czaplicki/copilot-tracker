@@ -73,3 +73,11 @@
 - Implemented Drizzle migration env contract: no silent localhost `DATABASE_URL` fallback.
 - Validated with web typecheck, lint, and placeholder production build.
 - Next: commit/push Drizzle contract and poll CI/production.
+
+## 2026-07-01 02:22:21 CEST - Loop 1 Progress
+
+- Committed and pushed Drizzle env contract as `44ed412 Require database URL for migrations`.
+- Production remained without `/api/health`; current commit CI was in progress at last check.
+- Updated batch ingest response semantics so `accepted` reflects processed/upserted requests while `received` keeps the raw input count.
+- Validated with web typecheck and lint.
+- Next: commit/push response semantics and poll CI/production.

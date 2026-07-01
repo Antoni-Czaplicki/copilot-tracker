@@ -59,6 +59,16 @@
 - PASS: `pnpm --filter @copilot-tracker/web lint`
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env and build metadata
 
+## 2026-07-01 - Batch Ingest Response Counts
+
+- Changed `/api/chat-requests/batch` so `accepted` reports processed/upserted unique requests instead of raw received payload count.
+- Kept `received` in the response for raw input visibility.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+
 ## 2026-07-01 - Drizzle Migration Env Contract
 
 - Removed the silent localhost `DATABASE_URL` fallback from `apps/web/drizzle.config.ts`.
