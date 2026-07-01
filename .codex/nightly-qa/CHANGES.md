@@ -72,6 +72,16 @@
 - PASS: `pnpm --filter @copilot-tracker/web typecheck`
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env and build metadata
 
+## 2026-07-01 - Token Payload Integer Bounds
+
+- Added PostgreSQL `integer` upper bounds to token count payload validation so oversized token values fail schema validation before DB insert.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env and build metadata
+
 ## 2026-07-01 - Leaderboard Privacy Gate
 
 - Restricted `/leaderboard` to admins while preserving the existing feature flag.

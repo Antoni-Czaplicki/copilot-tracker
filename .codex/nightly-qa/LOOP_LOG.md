@@ -58,3 +58,11 @@
 - Implemented leaderboard privacy gate: `/leaderboard` and nav link are admin-only while still controlled by the existing feature flag.
 - Validated with web lint, typecheck, and placeholder production build.
 - Next: commit/push leaderboard gate and poll production.
+
+## 2026-07-01 02:18:52 CEST - Loop 1 Progress
+
+- Committed and pushed leaderboard privacy gate as `91d2a7a Restrict leaderboard to admins`.
+- GitHub Actions for recent commits are passing/in progress; production still had `/api/health` 404 at last poll.
+- Implemented token payload integer bounds to prevent PostgreSQL integer overflow failures.
+- Validated with web typecheck, lint, and placeholder production build.
+- Next: commit/push token bounds and poll CI/production.

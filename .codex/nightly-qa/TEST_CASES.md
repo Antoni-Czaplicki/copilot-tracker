@@ -36,7 +36,7 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | API-028 | API/Backend | PENDING | `POST /api/chat-requests/batch` unauthenticated returns 401 | Automated | |
 | API-029 | API/Backend | PENDING | `POST /api/chat-requests/batch` valid payload returns 202 and reported counts | Automated | |
 | API-030 | API/Backend | PENDING | `POST /api/chat-requests/batch` malformed payload returns 400 | Automated | |
-| API-031 | API/Backend | PENDING | `POST /api/chat-requests/batch` over-max array returns 400 | Automated | |
+| API-031 | API/Backend | PASS | `POST /api/chat-requests/batch` over-max array and oversized integer fields return 400 | Automated | Token integer upper bound implemented; build/lint/typecheck passed |
 | API-032 | API/Backend | PENDING | Batch ingest dedupes duplicate `requestRecordId` in same payload | Automated + DB | |
 | API-033 | API/Backend | PENDING | Batch ingest preserves richer request data when duplicates conflict | Automated property/domain | |
 | API-034 | API/Backend | PENDING | Batch ingest computes `totalTokens` and `tokenSource` for normal/partial/missing data | Automated | |

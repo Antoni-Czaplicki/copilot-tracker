@@ -24,7 +24,7 @@
 
 1. [FIXED locally, commit pending] Malformed JSON can crash authenticated GitHub login PATCH routes instead of returning structured 400.
 2. [FIXED locally, commit pending] Billing sync accepts malformed date query values and can surface opaque upstream errors.
-3. [P2] Token payload schema allows values larger than PostgreSQL `integer` columns can persist.
+3. [FIXED locally, commit pending] Token payload schema allows values larger than PostgreSQL `integer` columns can persist.
 4. [P2] Batch ingest `accepted` count reports received requests, not deduped or persisted rows.
 5. [FIXED locally, commit pending] Admin export `type` query should be enum-validated.
 6. [P2] Web API/domain tests are missing.

@@ -3,7 +3,13 @@ import { z } from "zod";
 const nullableString = z.string().max(2048).nullable();
 const shortNullableString = z.string().max(512).nullable();
 const timestampNullableString = z.string().max(64).nullable();
-const nonNegativeInteger = z.number().int().nonnegative().nullable();
+const maxPostgresInteger = 2_147_483_647;
+const nonNegativeInteger = z
+  .number()
+  .int()
+  .nonnegative()
+  .max(maxPostgresInteger)
+  .nullable();
 
 const workspaceContextSchema = {
   workspaceId: z.string().trim().min(1).max(256),
