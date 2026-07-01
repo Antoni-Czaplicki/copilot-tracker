@@ -319,3 +319,21 @@
 ## 2026-07-01 05:31 CEST CI Poll
 
 - PASS: GitHub Actions for `88b55a0 Add extension dashboard URL coverage` completed successfully on both CI and extension build workflows.
+
+## 2026-07-01 05:32 CEST Production Poll
+
+- PUSHED: `439b174 Add extension task history coverage`.
+- IN PROGRESS: GitHub Actions for `439b174` started after push.
+- PASS: production `/api/health` returned HTTP 200 with `ok=true` and `database.ok=true`.
+- LIMITATION: production `/api/health` still reports `sha="unknown"` and `builtAt="unknown"`.
+- PASS: production Azure OAuth start redirect includes state, PKCE `S256`, client id, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
+
+## 2026-07-01 05:34 CEST CI and Chrome Poll
+
+- PASS: GitHub Actions for `439b174 Add extension task history coverage` completed successfully on both CI and extension build workflows.
+- PASS: real Chrome loaded production homepage with title `Copilot Tracker`.
+- PASS: production homepage exposes `/api/auth/azure-devops` login links.
+- PASS: real Chrome auth navigation returns safely to `/?auth=failed&auth_code=invalid_client`.
+- PASS: provider `error_description` is not visible in Chrome URL/body text.
+- PASS: production now renders the safe `invalid_client` hint about Azure app registration.
+- LIMITATION: exact deployed commit is still not provable because health metadata remains `unknown`.

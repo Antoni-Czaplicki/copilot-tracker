@@ -674,3 +674,18 @@
 - PASS: `pnpm --filter ./apps/extension test` (23 tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm test` (81 web tests + 23 extension VS Code tests)
+
+## 2026-07-01 - Task History Resolver Robustness
+
+- Made `createTaskResolverFromHistory` sort a copy of history internally so callers cannot accidentally pass unsorted task history.
+- Updated the attribution test to use deliberately unsorted history.
+
+## Checks
+
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS: `pnpm --filter ./apps/extension lint`
+- PASS: `pnpm --filter ./apps/extension test` (23 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (81 web tests + 23 extension VS Code tests)

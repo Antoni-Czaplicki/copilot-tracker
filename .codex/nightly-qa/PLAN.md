@@ -78,4 +78,19 @@
 - [x] Add history validation and sorting tests
 - [x] Add request-time task attribution tests
 - [x] Run local validation
+- [x] Commit, push, and smoke production
+- [x] Verify CI completion for `439b174`
+
+## Loop 10 - Chrome Production Smoke
+
+- [x] Verify homepage in real Chrome
+- [x] Verify auth redirect failure path in real Chrome
+- [x] Confirm provider details are not exposed
+- [x] Confirm safe `invalid_client` hint renders in production
+
+## Loop 11 - Task History Resolver Robustness
+
+- [x] Defensively sort history inside resolver helper
+- [x] Update tests to pass unsorted history
+- [x] Run local validation
 - [ ] Commit, push, and smoke production

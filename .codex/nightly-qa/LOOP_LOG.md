@@ -1020,3 +1020,44 @@
 - PASS: GitHub Actions for `88b55a0 Add extension dashboard URL coverage` completed successfully on both CI and extension build workflows.
 - PASS: `git diff --check`
 - Next: commit, push, production smoke, then continue.
+
+## 2026-07-01 05:32:50 CEST - Loop 9 End
+
+- Committed and pushed extension task history coverage as `439b174 Add extension task history coverage`.
+- GitHub Actions for `439b174` are in progress.
+- PASS: production `/api/health` returns HTTP 200 with `ok=true` and `database.ok=true`.
+- LIMITATION: production `/api/health` still reports `version.sha="unknown"` and `builtAt="unknown"`.
+- PASS: sanitized production Azure OAuth start redirects to Microsoft with PKCE `S256`, state, client id, and required Azure DevOps scopes.
+- Next: continue with the next high-value gap and poll CI.
+
+## 2026-07-01 05:34:02 CEST - Loop 10 Chrome Production Smoke
+
+- PASS: GitHub Actions for `439b174 Add extension task history coverage` completed successfully on both CI and extension build workflows.
+- PASS: Chrome loaded `https://copilot-tracker.antek.page/` with title `Copilot Tracker`.
+- PASS: Chrome DOM check found two `/api/auth/azure-devops` login links.
+- PASS: Chrome auth navigation returned to `/?auth=failed&auth_code=invalid_client`.
+- PASS: Chrome auth failure did not expose provider `error_description` details in the URL/body.
+- PASS: Chrome production now shows the safe `invalid_client` operator hint text about Azure app registration.
+- LIMITATION: full signed-in Azure DevOps E2E remains blocked until production Azure OAuth client configuration is fixed.
+- Next: continue with the next high-value gap.
+
+## 2026-07-01 05:34:44 CEST - Loop 11 Start
+
+- Started a small follow-up on the new task-history helper.
+- Finding: `createTaskResolverFromHistory` should sort the history defensively instead of depending on callers to pass already sorted entries.
+- Current git state: post-Chrome-smoke QA logs modified; no code changes yet.
+- Next: sort defensively inside the helper and adjust tests to pass deliberately unsorted history.
+
+## 2026-07-01 05:35:58 CEST - Loop 11 Validation
+
+- Updated `createTaskResolverFromHistory` to sort a copy of history internally.
+- Adjusted the request-time attribution test to pass deliberately unsorted history so the resolver contract is explicit.
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS: `pnpm --filter ./apps/extension lint`
+- PASS: `pnpm --filter ./apps/extension test` (23 tests)
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (81 web tests + 23 extension VS Code tests)
+- PASS: `git diff --check`
+- Next: commit, push, production smoke, then continue.

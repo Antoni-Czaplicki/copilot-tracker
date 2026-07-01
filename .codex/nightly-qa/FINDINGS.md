@@ -20,6 +20,7 @@
 16. [PARTIAL] Extension status bar text/cost formatting now has direct coverage; rendered VS Code status item hover/click behavior still needs integration verification.
 17. [PARTIAL] Extension dashboard deep-link URL construction now has direct coverage; actual `vscode.env.openExternal` behavior still needs rendered extension-host verification.
 18. [PARTIAL] Extension task-history parsing and request-time attribution now have pure coverage; live branch-change prompt interaction still needs rendered extension-host verification.
+19. [FIXED] Task history resolver depended on pre-sorted history input even though the helper is exported for reuse.
 
 ## Web UX
 

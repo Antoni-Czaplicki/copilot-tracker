@@ -230,3 +230,4 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | EXT-222 | Extension | PASS | Task history reader ignores malformed entries and sorts valid task states by timestamp | Automated | Extracted `taskHistory`; extension tests passed |
 | EXT-223 | Extension | PASS | OTel request task resolver assigns historical branch/default/selected task based on request start time | Automated | Extracted `taskHistory`; extension tests passed |
 | EXT-224 | Extension | PASS | OTel request task resolver falls back to branch default or workspace fallback when manual selection is cleared | Automated | Extracted `taskHistory`; extension tests passed |
+| EXT-225 | Extension | PASS | OTel request task resolver handles unsorted task-history input defensively | Automated | Resolver now sorts a copy internally; extension tests passed |

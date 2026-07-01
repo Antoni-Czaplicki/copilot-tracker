@@ -17,6 +17,8 @@ export function createTaskResolverFromHistory(
   history: TaskHistoryEntry[],
   fallback: WorkspaceContext,
 ): RequestTaskResolver {
+  const sortedHistory = sortTaskHistory(history);
+
   return (request) => {
     const requestTime = timestampOrZero(
       request.requestStartedAt ?? request.requestCompletedAt,
@@ -26,7 +28,7 @@ export function createTaskResolverFromHistory(
     }
 
     let match: TaskHistoryEntry | undefined;
-    for (const entry of history) {
+    for (const entry of sortedHistory) {
       const entryTime = timestampOrZero(entry.timestamp);
       if (entryTime === 0) {
         continue;
@@ -55,11 +57,7 @@ export function readTaskHistoryFromValue(value: unknown): TaskHistoryEntry[] {
     return [];
   }
 
-  return value
-    .filter(isTaskHistoryEntry)
-    .sort(
-      (a, b) => timestampOrZero(a.timestamp) - timestampOrZero(b.timestamp),
-    );
+  return sortTaskHistory(value.filter(isTaskHistoryEntry));
 }
 
 export function getTaskHistorySource(
@@ -80,6 +78,12 @@ function isTaskHistoryEntry(value: unknown): value is TaskHistoryEntry {
     isNullableString(value.defaultTask) &&
     isNullableString(value.selectedTask) &&
     typeof value.source === "string"
+  );
+}
+
+function sortTaskHistory(history: TaskHistoryEntry[]) {
+  return [...history].sort(
+    (a, b) => timestampOrZero(a.timestamp) - timestampOrZero(b.timestamp),
   );
 }
 

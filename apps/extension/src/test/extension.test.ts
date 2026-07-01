@@ -167,16 +167,16 @@ suite("Extension Test Suite", () => {
     const resolver = createTaskResolverFromHistory(
       [
         createTaskHistoryEntry({
-          branch: "feature/123-login",
-          defaultTask: "123",
-          selectedTask: "123",
-          timestamp: "2026-07-01T00:00:00.000Z",
-        }),
-        createTaskHistoryEntry({
           branch: "feature/456-api",
           defaultTask: "456",
           selectedTask: "789",
           timestamp: "2026-07-01T00:10:00.000Z",
+        }),
+        createTaskHistoryEntry({
+          branch: "feature/123-login",
+          defaultTask: "123",
+          selectedTask: "123",
+          timestamp: "2026-07-01T00:00:00.000Z",
         }),
       ],
       createWorkspaceContext(),
