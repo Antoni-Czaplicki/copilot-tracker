@@ -158,4 +158,12 @@
 
 - [x] Add coverage for remaining stable auth failure hints
 - [x] Run focused web tests and broad validation
+- [x] Commit, push, and smoke production
+- [x] Verify CI completion for `93df1e2`
+
+## Loop 20 - Health Response Cache Control
+
+- [x] Add tested health response init helper
+- [x] Send `Cache-Control: no-store` from `/api/health`
+- [x] Run focused web tests and broad validation
 - [ ] Commit, push, and smoke production

@@ -432,3 +432,15 @@
 ## 2026-07-01 06:07 CEST CI Poll
 
 - PASS: GitHub Actions for `5a921fe Add cron auth coverage` completed successfully on both CI and extension build workflows.
+
+## 2026-07-01 06:08 CEST Production Poll
+
+- PUSHED: `93df1e2 Expand auth failure hint coverage`.
+- IN PROGRESS: GitHub Actions for `93df1e2` started after push.
+- PASS: production `/api/health` returned HTTP 200 with `ok=true` and `database.ok=true`.
+- LIMITATION: production `/api/health` still reports `sha="unknown"` and `builtAt="unknown"`.
+- PASS: production Azure OAuth start redirect includes state, PKCE `S256`, client id, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
+
+## 2026-07-01 06:10 CEST CI Poll
+
+- PASS: GitHub Actions for `93df1e2 Expand auth failure hint coverage` completed successfully on both CI and extension build workflows.

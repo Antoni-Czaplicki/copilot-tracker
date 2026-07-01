@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { readBuildInfo } from "@/lib/buildInfo";
 import { db } from "@/lib/db";
+import { healthResponseInit } from "@/lib/healthResponse";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,7 @@ export async function GET() {
       version: readBuildInfo(),
       time: new Date().toISOString(),
     },
-    { status: ok ? 200 : 503 },
+    healthResponseInit(ok),
   );
 }
 

@@ -1283,3 +1283,33 @@
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - Milestone: automated suites now run 123 tests total in the standard root command.
 - Next: commit, push, smoke production, and continue.
+
+## 2026-07-01 06:08:39 CEST - Loop 19 End
+
+- Committed and pushed auth failure hint coverage as `93df1e2 Expand auth failure hint coverage`.
+- GitHub Actions for `93df1e2` are in progress.
+- PASS: production `/api/health` returns HTTP 200 with `ok=true` and `database.ok=true`.
+- LIMITATION: production `/api/health` still reports `version.sha="unknown"` and `builtAt="unknown"`.
+- PASS: sanitized production Azure OAuth start redirects to Microsoft with PKCE `S256`, state, client id, and required Azure DevOps scopes.
+- Next: continue with the next high-value gap and poll CI.
+
+## 2026-07-01 06:09:25 CEST - Loop 20 Start
+
+- GitHub Actions for `93df1e2 Expand auth failure hint coverage`: extension build succeeded; CI still in progress.
+- Current git state: post-push QA logs modified; no source changes pending yet.
+- Finding: `/api/health` is dynamic but does not explicitly send a no-store header, which is useful for deploy freshness and readiness polling.
+- Next: add a tiny response-init helper, cover status/cache behavior, and use it in the health route.
+
+## 2026-07-01 06:10:29 CEST - Loop 20 Validation
+
+- PASS: GitHub Actions for `93df1e2 Expand auth failure hint coverage` completed successfully on both CI and extension build workflows.
+- Added `healthResponseInit` and wired `/api/health` responses to send `Cache-Control: no-store`.
+- Added tests for ready 200 and unhealthy 503 response init behavior.
+- PASS: `pnpm --filter @copilot-tracker/web test` (102 tests)
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (102 web tests + 23 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- Next: commit, push, smoke production, and continue.

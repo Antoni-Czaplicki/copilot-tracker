@@ -789,3 +789,18 @@
 - PASS: `pnpm -r lint`
 - PASS: `pnpm test` (100 web tests + 23 extension VS Code tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+
+## 2026-07-01 - Health Response Cache Control
+
+- Added a tested `healthResponseInit` helper.
+- Updated `/api/health` to send `Cache-Control: no-store` on both ready and unhealthy responses.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web test` (102 tests)
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (102 web tests + 23 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env

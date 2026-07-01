@@ -86,3 +86,4 @@
 15. [FIXED] Azure DevOps work-item upstream status mapping was route-private and lacked direct regression coverage for 401/403/429 passthrough and 502 fallback.
 16. [FIXED] GitHub billing sync cron authorization used raw header equality instead of the shared hardened bearer parser and lacked direct fail-closed coverage.
 17. [FIXED] Some stable Azure auth failure hints were not directly covered, leaving safe operator guidance vulnerable to accidental drift.
+18. [FIXED] `/api/health` did not explicitly send `Cache-Control: no-store`, which weakens freshness checks behind intermediaries.
