@@ -247,4 +247,17 @@
 - [x] Make auth failure/misconfigured cards `role="alert"` with assertive live region
 - [x] Add destructive visual emphasis and monospace error code display
 - [x] Run broad validation
+- [x] Commit, push, and smoke production
+- [x] Verify CI completion for `a12045b`
+
+## Loop 29 - Dependency and Release Readiness
+
+- [x] Re-sync git and CI state for `a12045b`
+- [x] Inspect package metadata and GitHub workflows
+- [x] Run extension VSIX packaging check
+- [x] Run production dependency audit
+- [x] Move enforceable security overrides to `pnpm-workspace.yaml`
+- [x] Refresh lockfile and installed modules
+- [x] Verify audit passes and PostCSS resolves to the patched version
+- [x] Run broad validation
 - [ ] Commit, push, and smoke production

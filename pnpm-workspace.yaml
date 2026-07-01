@@ -1,6 +1,10 @@
 packages:
   - "apps/*"
   - "packages/*"
+overrides:
+  diff: "^8.0.4"
+  postcss: "^8.5.15"
+  serialize-javascript: "^7.0.6"
 allowBuilds:
   '@vscode/vsce-sign': false
   esbuild: true

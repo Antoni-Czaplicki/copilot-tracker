@@ -17,10 +17,6 @@
     "typecheck": "pnpm -r typecheck"
   },
   "prettier": "@solvro/config/prettier",
-  "overrides": {
-    "diff": "^8.0.4",
-    "serialize-javascript": "^7.0.6"
-  },
   "devDependencies": {
     "@next/eslint-plugin-next": "^16.2.9",
     "@solvro/config": "^2.3.4",

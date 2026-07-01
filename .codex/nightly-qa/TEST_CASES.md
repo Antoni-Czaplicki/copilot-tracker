@@ -255,3 +255,7 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | API-247 | API/Backend | PASS | Shared JSON payload reader returns parsed arrays and scalar JSON values for downstream schema validation | Automated | Added `readJsonPayload` coverage; web/root tests passed |
 | API-248 | API/Backend | PASS | Event and chat request mutation routes share the tested malformed JSON fallback helper | Code review + automated | Reused `readJsonPayload`; web/root tests passed |
 | UI-249 | Web | PASS | Auth failure and misconfigured notices render as assertive alert regions with stronger error-code emphasis | Code review + build | Added alert semantics/destructive styling; typecheck/lint/tests/build passed |
+| DEP-250 | Dependency/Security | PASS | Production dependency audit has no known moderate-or-higher vulnerabilities | Manual command | `pnpm audit --prod --audit-level moderate` passed after moving overrides to `pnpm-workspace.yaml` |
+| DEP-251 | Dependency/Security | PASS | Next and shadcn resolve to patched `postcss@8.5.15` with no vulnerable nested PostCSS copy | Manual command | `pnpm why postcss --prod` reports a single `postcss@8.5.15` version |
+| DEP-252 | Deployment | PASS | Extension VSIX packaging still succeeds after dependency override/lockfile changes | Manual command | `pnpm --filter ./apps/extension package` passed; generated artifact removed |
+| DEP-253 | CI/Release | PASS | Latest pushed commit `a12045b` completed both CI and extension artifact workflows | GitHub Actions | `gh run list` showed success for CI and Build extension workflows |

@@ -1531,3 +1531,36 @@
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm --filter ./apps/extension compile`
 - Next: commit, push, smoke production, and continue.
+
+## 2026-07-01 06:45:49 CEST - Loop 28 End
+
+- Committed and pushed auth failure alert UX polish as `a12045b Improve auth failure alert UX`.
+- GitHub Actions for `a12045b` are in progress.
+- PASS: production `/api/health` returns HTTP 200 with `ok=true` and `database.ok=true`.
+- STALE/LIMITATION: production `/api/health` still reports `version.sha="unknown"`, `builtAt="unknown"`, and no visible `Cache-Control` header.
+- PASS: sanitized production Azure OAuth start redirects to Microsoft with PKCE `S256`, state, client id, and required Azure DevOps scopes.
+- Current git state after push: clean.
+- Next: start the next loop and continue while CI/deploy catches up.
+
+## 2026-07-01 06:46:20 CEST - Loop 29 Start
+
+- Previous pushed commit: `a12045b Improve auth failure alert UX`; GitHub Actions were still in progress at the prior poll.
+- Current blocker remains external Azure OAuth `invalid_client`, unavailable Docker daemon, and unproven production commit metadata/cache-header freshness.
+- Next: inspect package scripts/metadata and run dependency/release readiness checks.
+
+## 2026-07-01 06:50:51 CEST - Loop 29 Validation
+
+- PASS: GitHub Actions for `a12045b Improve auth failure alert UX` completed successfully on both CI and extension build workflows.
+- Reviewed package metadata/workflows; extension metadata includes publisher, repository, homepage, bugs URL, license, README, changelog, and VSIX packaging workflow.
+- FOUND: `pnpm audit --prod --audit-level moderate` reported one moderate production dependency issue: vulnerable `postcss <8.5.10` through Next.
+- Initial package-level override attempt did not affect pnpm 11; pnpm reported that `pnpm.overrides` in `package.json` is ignored and the existing top-level `overrides` were not changing the dependency graph.
+- FIXED: moved security overrides into `pnpm-workspace.yaml` and refreshed `pnpm-lock.yaml`; this also made the existing `diff` and `serialize-javascript` pins enforceable.
+- PASS: `pnpm audit --prod --audit-level moderate` reports no known vulnerabilities.
+- PASS: `pnpm why postcss --prod` reports a single patched `postcss@8.5.15` used by Next and shadcn.
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (109 web tests + 25 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS: `pnpm --filter ./apps/extension package`; generated VSIX removed after verification.
+- Next: commit, push, smoke production, and continue.

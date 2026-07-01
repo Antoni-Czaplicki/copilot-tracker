@@ -215,6 +215,14 @@
 
 - PASS: GitHub Actions for `72438f5 Share route JSON payload parsing` completed successfully on both CI and extension build workflows.
 
+## 2026-07-01 06:46 CEST Production Poll
+
+- PUSHED: `a12045b Improve auth failure alert UX`.
+- IN PROGRESS: GitHub Actions for `a12045b` started after push.
+- PASS: production `/api/health` returned HTTP 200 with `ok=true` and `database.ok=true`.
+- LIMITATION: production `/api/health` still reports `sha="unknown"`, `builtAt="unknown"`, and no visible `Cache-Control` header.
+- PASS: production Azure OAuth start redirect includes state, PKCE `S256`, client id, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
+
 ## 2026-07-01 04:33 CEST Production Poll
 
 - PUSHED: `16d5c67 Normalize health build metadata`.
@@ -535,3 +543,11 @@
 - PASS: production `/api/health` returned HTTP 200 with `ok=true` and `database.ok=true`.
 - STALE/LIMITATION: production `/api/health` still reports `sha="unknown"` and `builtAt="unknown"` and did not yet include `Cache-Control: no-store`.
 - PASS: production Azure OAuth start redirect includes state, PKCE `S256`, client id, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
+
+## 2026-07-01 06:50 CEST CI/Release Poll
+
+- PASS: GitHub Actions for `a12045b Improve auth failure alert UX` completed successfully on both CI and Build extension workflows.
+- PASS: local VSIX packaging still succeeds after lockfile changes; package includes README, changelog, license, package manifest, and compiled `out/` files.
+- PASS: production dependency audit now reports no known moderate-or-higher vulnerabilities after moving pnpm security overrides to `pnpm-workspace.yaml`.
+- PENDING: dependency override fix has not yet been pushed/deployed at this log point.
+- STALE/LIMITATION: production `/api/health` freshness and exact deployed commit remain unproven until production exposes build metadata and the expected no-store header.

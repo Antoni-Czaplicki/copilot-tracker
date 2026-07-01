@@ -31,3 +31,10 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 2. Continue converting high-risk findings into tests and small fixes.
 3. Run deeper Chrome/VS Code signed-in E2E flows after Azure client configuration is fixed.
 4. Keep production smoke polling while commits deploy.
+
+## 2026-07-01 06:50 CEST Update
+
+- Latest pushed commit before this update, `a12045b Improve auth failure alert UX`, passed both GitHub Actions workflows.
+- Found and fixed a production dependency audit issue: Next was resolving vulnerable `postcss@8.4.31`; pnpm security overrides now live in `pnpm-workspace.yaml`, and the lockfile resolves to patched `postcss@8.5.15`.
+- Latest checks also include PASS `pnpm audit --prod --audit-level moderate` and PASS `pnpm why postcss --prod` with one PostCSS version.
+- This dependency override fix is pending commit/push at the time of this handoff update.

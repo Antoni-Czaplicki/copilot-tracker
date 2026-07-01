@@ -904,3 +904,20 @@
 - PASS: `pnpm test` (109 web tests + 25 extension VS Code tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm --filter ./apps/extension compile`
+
+## 2026-07-01 - Enforce Pnpm Security Overrides
+
+- Moved dependency security overrides from ignored `package.json` fields to `pnpm-workspace.yaml`, which pnpm 11 reads for workspace settings.
+- Added a PostCSS override so Next resolves to patched `postcss@8.5.15` instead of the vulnerable nested `8.4.31`.
+- Refreshed `pnpm-lock.yaml`; existing `diff` and `serialize-javascript` security pins are now represented in the lockfile overrides block.
+
+## Checks
+
+- PASS: `pnpm audit --prod --audit-level moderate`
+- PASS: `pnpm why postcss --prod` reports only `postcss@8.5.15`
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (109 web tests + 25 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS: `pnpm --filter ./apps/extension package`
