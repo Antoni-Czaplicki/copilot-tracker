@@ -1341,6 +1341,46 @@
 - PASS: `pnpm --filter ./apps/extension compile`
 - Next: commit, push, smoke production, and continue.
 
+## 2026-07-01 07:18:13 CEST - Loop 34 End
+
+- Committed and pushed extension work-item ID guard as `294cf69 Guard extension work item ids`.
+- GitHub Actions for `294cf69` are in progress on both CI and Build extension workflows.
+- PASS: production `/api/health` returns HTTP 200 with `ok=true` and `database.ok=true`.
+- STALE/LIMITATION: production `/api/health` still reports `version.sha="unknown"`, `builtAt="unknown"`, and no visible `Cache-Control` header.
+- PASS: sanitized production Azure OAuth start redirects to Microsoft with PKCE `S256`, state, client id, and required Azure DevOps scopes.
+- Current git state after push: clean.
+- Next: start loop 35, poll CI/deploy, and continue improvement work.
+
+## 2026-07-01 07:19:25 CEST - Loop 35 Start
+
+- Previous pushed commit: `294cf69 Guard extension work item ids`; GitHub Actions were in progress at the prior poll.
+- Current blocker remains external Azure OAuth `invalid_client`, unavailable Docker daemon, and unproven production commit metadata/cache-header freshness.
+- Next: poll CI, use Chrome to verify production homepage/auth failure behavior, and document results.
+
+## 2026-07-01 07:22:11 CEST - Loop 35 Chrome Smoke
+
+- PASS: GitHub Actions for `294cf69 Guard extension work item ids` completed successfully on both CI and extension build workflows.
+- PASS: Chrome homepage smoke loaded `https://copilot-tracker.antek.page/` with title `Copilot Tracker`.
+- PASS: Chrome homepage showed two visible `/api/auth/azure-devops` links labelled `Log in with Azure DevOps`.
+- PASS: Chrome auth route navigation reached `https://copilot-tracker.antek.page/?auth=failed&auth_code=invalid_client`.
+- PASS: Visible auth failure text is safe and helpful; it does not expose `AADSTS`, `error_description`, or `client_secret`.
+- PARTIAL/STALE: production auth failure DOM has `role="alert"` count `0`, so the newer auth alert semantics are still not visibly deployed even though the text is safe.
+- Source check confirms `apps/web/src/app/page.tsx` does include `role="alert"` and `aria-live="assertive"` for auth failure/misconfigured cards; the mismatch is treated as production freshness/deploy behavior.
+- Browser tab was finalized/closed after smoke.
+- Next: continue loop 35 by either finding a source-side fix for remaining deployment freshness evidence or selecting another focused local improvement.
+
+## 2026-07-01 07:24:36 CEST - Loop 35 End
+
+- Closed loop 35 as a Chrome smoke/documentation loop with no source code change.
+- Current git state has only QA log updates from the smoke.
+- Next: start loop 36 and inspect the next local code/test/UX gap.
+
+## 2026-07-01 07:25:11 CEST - Loop 36 Start
+
+- Previous pushed commit: `294cf69 Guard extension work item ids`; GitHub Actions are green.
+- Current blocker remains external Azure OAuth `invalid_client`, unavailable Docker daemon, and unproven production freshness/metadata.
+- Next: scan TODOs/docs/loose validation surfaces and implement the next useful focused improvement.
+
 ## 2026-07-01 07:13:26 CEST - Loop 33 End
 
 - Committed and pushed GitHub billing sync method authorization hardening as `784ef08 Restrict billing sync GET to cron`.
@@ -1729,3 +1769,20 @@
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm --filter ./apps/extension compile`
 - Next: commit, push, smoke production, and continue.
+
+## 2026-07-01 07:28:29 CEST - Loop 36 Implementation
+
+- Re-synced git state; only nightly QA notes were dirty before this loop's source edit.
+- Targeted boundary scan found no TODO/FIXME backlog, then focused on auth/API JSON and query-param handling.
+- Chosen improvement: preserve sanitized Azure OAuth provider error codes in callback redirects instead of collapsing them all to `provider_error`.
+- Added route coverage for safe provider-code preservation, truncation/control-character sanitization, blank unsafe fallback, and a safe `access_denied` hint.
+
+## 2026-07-01 07:31:12 CEST - Loop 36 Validation
+
+- PASS: `pnpm --filter @copilot-tracker/web test` (122 tests)
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (122 web tests + 25 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`
+- Next: commit, push, smoke production, poll CI, and continue.

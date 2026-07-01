@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
   try {
     const providerError = request.nextUrl.searchParams.get("error");
     if (providerError) {
-      return failureResponse("provider_error");
+      return failureResponse(providerFailureCode(providerError));
     }
 
     const code = request.nextUrl.searchParams.get("code");
@@ -89,6 +89,10 @@ function authFailureRedirect(code: string) {
   url.searchParams.set("auth_code", sanitizeAuthCallbackValue(code, 80));
 
   return NextResponse.redirect(url);
+}
+
+function providerFailureCode(providerError: string) {
+  return sanitizeAuthCallbackValue(providerError, 80) || "provider_error";
 }
 
 function clearOauthCookies(response: NextResponse) {

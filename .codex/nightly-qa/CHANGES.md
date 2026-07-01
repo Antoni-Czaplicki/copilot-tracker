@@ -1006,3 +1006,18 @@
 - PASS: `pnpm test` (120 web tests + 25 extension VS Code tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm --filter ./apps/extension compile`
+
+## 2026-07-01 - Azure Provider Error Codes
+
+- Preserved sanitized OAuth provider error codes in the Azure callback redirect instead of collapsing every provider error to `provider_error`.
+- Kept provider `error_description` out of public redirect params and homepage UI.
+- Added fallback behavior for blank/unsafe provider error codes and a safe `access_denied` operator hint.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web test` (122 tests)
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (122 web tests + 25 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`

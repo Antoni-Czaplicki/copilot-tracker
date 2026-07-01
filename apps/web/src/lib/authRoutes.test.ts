@@ -65,7 +65,7 @@ void test("Azure OAuth callback provider errors redirect safely and clear OAuth 
   assert.equal(response.status, 307);
   assert.equal(redirectUrl.pathname, "/");
   assert.equal(redirectUrl.searchParams.get("auth"), "failed");
-  assert.equal(redirectUrl.searchParams.get("auth_code"), "provider_error");
+  assert.equal(redirectUrl.searchParams.get("auth_code"), "access_denied");
   assert.equal(redirectUrl.searchParams.has("error_description"), false);
   assertCookie(
     response.headers.getSetCookie(),
@@ -77,6 +77,37 @@ void test("Azure OAuth callback provider errors redirect safely and clear OAuth 
     "copilot_tracker_oauth_code_verifier",
     "Max-Age=0",
   );
+});
+
+void test("Azure OAuth callback provider errors sanitize unsafe provider codes", async () => {
+  const response = await callbackRoute.GET(
+    new NextRequest(
+      `https://copilot-tracker.example/api/auth/callback/azure-devops?error=${encodeURIComponent(
+        " invalid\n\tclient ".padEnd(120, "x"),
+      )}&error_description=do-not-reflect`,
+    ),
+  );
+  const redirectUrl = new URL(assertHeader(response, "location"));
+  const authCode = redirectUrl.searchParams.get("auth_code") ?? "";
+
+  assert.equal(response.status, 307);
+  assert.equal(authCode.length, 80);
+  assert.match(authCode, /^invalid client x+$/);
+  assert.equal(redirectUrl.searchParams.has("error_description"), false);
+});
+
+void test("Azure OAuth callback provider errors fall back for blank unsafe codes", async () => {
+  const response = await callbackRoute.GET(
+    new NextRequest(
+      `https://copilot-tracker.example/api/auth/callback/azure-devops?error=${encodeURIComponent(
+        "\n\t",
+      )}`,
+    ),
+  );
+  const redirectUrl = new URL(assertHeader(response, "location"));
+
+  assert.equal(response.status, 307);
+  assert.equal(redirectUrl.searchParams.get("auth_code"), "provider_error");
 });
 
 void test("Azure OAuth callback state mismatch fails safely and clears OAuth cookies", async () => {

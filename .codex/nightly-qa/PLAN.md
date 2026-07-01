@@ -314,4 +314,25 @@
 - [x] Align extension ID guard with backend/web positive Azure DevOps ID range
 - [x] Expand extension malformed payload test
 - [x] Run focused and broad validation
-- [ ] Commit, push, and smoke production
+- [x] Commit, push, and smoke production
+- [x] Verify CI completion for `294cf69`
+
+## Loop 35 - Chrome Production Smoke
+
+- [x] Re-sync git and CI state for `294cf69`
+- [x] Load and use Chrome control workflow
+- [x] Verify production homepage title and login links in Chrome
+- [x] Verify auth route reaches known `auth_code=invalid_client` state
+- [x] Verify visible failure copy stays safe
+- [x] Record missing production alert semantics as deployment freshness risk
+- [x] Choose next focused improvement or source-side freshness fix
+
+## Loop 36 - Azure Provider Error Codes
+
+- [x] Re-sync git and nightly status
+- [x] Scan TODOs and API/auth boundary surfaces
+- [x] Preserve sanitized OAuth provider error codes in callback redirects
+- [x] Add provider-code sanitization, blank fallback, and `access_denied` hint coverage
+- [x] Run focused web auth tests
+- [x] Run broad validation
+- [ ] Commit, push, smoke production, and poll CI

@@ -586,3 +586,19 @@
 - PASS: production `/api/health` returned HTTP 200 with `ok=true` and `database.ok=true`.
 - PASS: production Azure OAuth start redirect includes state, PKCE `S256`, client id, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
 - STALE/LIMITATION: production `/api/health` still reports `sha="unknown"`, `builtAt="unknown"`, and no visible `Cache-Control` header.
+
+## 2026-07-01 07:18 CEST Production Poll
+
+- PUSHED: `294cf69 Guard extension work item ids`.
+- PASS: GitHub Actions for `294cf69` completed successfully on both CI and Build extension workflows.
+- PASS: production `/api/health` returned HTTP 200 with `ok=true` and `database.ok=true`.
+- PASS: production Azure OAuth start redirect includes state, PKCE `S256`, client id, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
+- STALE/LIMITATION: production `/api/health` still reports `sha="unknown"`, `builtAt="unknown"`, and no visible `Cache-Control` header.
+
+## 2026-07-01 07:22 CEST Chrome Smoke
+
+- PASS: production homepage loads in Chrome with title `Copilot Tracker`.
+- PASS: Chrome sees two visible `/api/auth/azure-devops` login links labelled `Log in with Azure DevOps`.
+- PASS: Chrome auth route reaches `/?auth=failed&auth_code=invalid_client`.
+- PASS: visible auth failure copy gives safe invalid-client guidance and does not expose provider description/secrets.
+- STALE/LIMITATION: Chrome DOM has no `role="alert"` node on the auth failure page, so the latest auth alert semantics are not visibly deployed.

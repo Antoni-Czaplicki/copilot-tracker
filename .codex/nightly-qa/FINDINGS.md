@@ -78,6 +78,7 @@
 8. [FIXED] Extension VSIX packaging passed but `vsce` warned that the extension package had no LICENSE file in its package context.
 9. [FIXED] `apps/web/.env.example` omitted the build metadata variables and deployment smoke docs did not mention the health no-store header.
 10. [FIXED] `pnpm audit --prod --audit-level moderate` reported vulnerable `postcss <8.5.10` through Next; existing package-level overrides were ignored by pnpm 11. Security overrides now live in `pnpm-workspace.yaml`, the lockfile resolves Next to `postcss@8.5.15`, and audit passes.
+11. [OPEN] Production Chrome smoke shows safe auth failure copy, but the newer `role="alert"` auth failure semantics are not live; together with unknown build metadata/no visible health no-store header, this keeps deployed freshness unproven.
 
 ## Auth / Security / Privacy
 
@@ -101,3 +102,4 @@
 17. [FIXED] Some stable Azure auth failure hints were not directly covered, leaving safe operator guidance vulnerable to accidental drift.
 18. [FIXED] `/api/health` did not explicitly send `Cache-Control: no-store`, which weakens freshness checks behind intermediaries.
 19. [FIXED] GitHub billing sync still allowed signed-in admin GET requests to mutate state; GET is now cron-bearer only and admin/manual sync uses POST.
+20. [FIXED] OAuth callback provider errors collapsed all provider codes to `provider_error`, losing useful safe details such as `access_denied`.

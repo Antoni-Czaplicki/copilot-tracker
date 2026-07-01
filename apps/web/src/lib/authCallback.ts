@@ -13,6 +13,9 @@ export function sanitizeAuthCallbackValue(value: string, maxLength: number) {
 
 export function authFailureHint(code: string) {
   switch (code) {
+    case "access_denied": {
+      return "Azure denied the sign-in request. Retry login and confirm consent if prompted; if it repeats, check the app registration permissions.";
+    }
     case "invalid_client": {
       return "Azure rejected the configured OAuth client. Verify the client ID, client secret, tenant, redirect URI, and Azure DevOps delegated permissions in the app registration.";
     }

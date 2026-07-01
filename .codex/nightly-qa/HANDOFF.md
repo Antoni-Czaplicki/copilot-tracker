@@ -72,4 +72,10 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - `784ef08 Restrict billing sync GET to cron` passed both GitHub Actions workflows.
 - Aligned extension work-item result ID validation with web/backend Azure DevOps ID bounds.
 - Latest broad validation passed typecheck, lint, root tests, web build, and extension compile.
-- The extension work-item ID guard is pending commit/push at this update point.
+- The extension work-item ID guard was committed and pushed as `294cf69 Guard extension work item ids`; GitHub Actions were in progress at the latest poll.
+
+## 2026-07-01 07:22 CEST Update
+
+- `294cf69 Guard extension work item ids` passed both GitHub Actions workflows.
+- Chrome production smoke passed homepage/login-link checks and safe `invalid_client` auth failure copy checks.
+- Chrome production smoke still showed no `role="alert"` node on the auth failure page, so production freshness remains unproven alongside unknown health build metadata and missing visible health no-store header.

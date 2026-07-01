@@ -15,6 +15,7 @@ void test("sanitizeAuthCallbackValue truncates long provider codes", () => {
 });
 
 void test("authFailureHint explains common Azure OAuth failures safely", () => {
+  assert.match(authFailureHint("access_denied") ?? "", /consent/);
   assert.match(authFailureHint("invalid_client") ?? "", /client ID/);
   assert.match(authFailureHint("invalid_oauth_state") ?? "", /PKCE/);
   assert.match(authFailureHint("profile_or_org_check_failed") ?? "", /organization/);
