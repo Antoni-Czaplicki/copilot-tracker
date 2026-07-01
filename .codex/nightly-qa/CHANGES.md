@@ -1,5 +1,11 @@
 # Nightly QA Changes
 
+## 2026-07-01 - Deployment Docs Reload Fallback
+
+- Clarified that generated Docker build metadata proves the built image, while strict production smoke proves the running service.
+- Documented Dokploy General -> Reload as the first recovery when a Dockerfile deployment is marked done but `/api/health` still reports the previous SHA.
+- PASS: `git diff --check` and strict production smoke for deployed app commit `6477f9c`.
+
 ## 2026-07-01 - Work-Item Search Fallback And Empty State
 
 - Changed Azure DevOps text work-item search to continue from a successful empty `CONTAINS WORDS` query to the broader substring WIQL fallback.

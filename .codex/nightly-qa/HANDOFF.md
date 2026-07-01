@@ -300,3 +300,9 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - Strict production smoke passes for `6477f9c` after using Dokploy app `Reload`; the initial Dokploy "done" state still served `23e4df9`, so stale deploy detection is doing its job.
 - Live signed-in dashboard verification passed: numeric task `124` shows `No Azure DevOps match for this ID`, and text query `login` shows `No Azure DevOps matches`.
 - Remaining operational follow-up: understand why this Dokploy build needed a manual Reload after a successful Dockerfile build, or document Reload as the fallback when strict smoke catches stale production.
+
+## 2026-07-01 14:26 CEST Deployment Docs Updated
+
+- `docs/deployment.md` now documents the exact Dokploy stale-rollout recovery: if deployment is done but strict smoke still sees the previous SHA, use General -> Reload and rerun strict smoke.
+- The docs also clarify that generated build metadata proves the image, while production smoke proves the running service.
+- Local doc diff check passed, and production still passes strict smoke for deployed app commit `6477f9c`.

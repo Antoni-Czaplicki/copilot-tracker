@@ -384,3 +384,4 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | DEP-376 | Deployment/Dokploy | PARTIAL | Dokploy should roll service automatically after successful Dockerfile build | Dokploy UI + smoke | Deployment log showed correct image build and status done, but production stayed stale until manual Reload |
 | WEB-377 | Web/Dashboard | PASS | Deployed dashboard picker shows clearer numeric empty-state text | Chrome production dashboard | Task `124` displayed `No Azure DevOps match for this ID` |
 | WEB-378 | Web/Dashboard | PASS | Deployed dashboard picker shows clearer text-query empty-state text | Chrome production dashboard | Query `login` displayed `No Azure DevOps matches` |
+| DOC-379 | Docs/Deployment | PASS | Deployment docs explain Dokploy Reload recovery for stale SHA after done deployment | Manual doc review | Added generated-image-vs-running-service distinction and General -> Reload recovery steps |

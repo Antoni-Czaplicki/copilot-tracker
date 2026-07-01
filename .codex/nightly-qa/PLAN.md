@@ -559,3 +559,13 @@
 - [x] Commit/push the work-item search UX/API change
 - [x] Poll CI, Dokploy, production smoke, and live dashboard search after deploy
 - [x] Update logs, findings, test cases, and handoff
+
+## Loop 57 - Deployment Docs For Dokploy Reload Fallback
+
+- [x] Confirm `ee12b62` log-only closeout commit is pushed and CI-green
+- [x] Confirm production still serves deployed app commit `6477f9c`
+- [x] Update deployment docs to reflect generated build-info fallback accurately
+- [x] Document Dokploy `Reload` as the safe recovery when a Dockerfile build is done but strict smoke still sees the previous SHA
+- [x] Run diff/format checks and production smoke for deployed app commit
+- [ ] Commit and push docs/log updates
+- [ ] Poll CI and production smoke

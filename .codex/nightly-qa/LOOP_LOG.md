@@ -2296,3 +2296,18 @@
 - PASS: live signed-in Chrome dashboard showed numeric picker status `No Azure DevOps match for this ID` for task `124`, and text query `login` showed `No Azure DevOps matches`.
 - PASS: dashboard tab was reloaded back to the persisted task value `124` after the text-query check.
 - NEXT: investigate whether Dokploy can be configured to roll the service automatically after successful Dockerfile builds, or continue the next highest-value QA gap if this was a one-off deploy quirk.
+
+## 2026-07-01 14:25:28 CEST - Loop 57 Start
+
+- PUSHED: `ee12b62 Record work-item search deployment verification`.
+- PASS: GitHub Actions `CI` and `Build extension` completed successfully for `ee12b62`.
+- PASS: production strict smoke still passes for deployed app commit `6477f9c`; `ee12b62` only touched `.codex` progress logs and is outside the app build/watch paths.
+- FOCUS: update tracked deployment docs so future operators know to trust strict smoke over Dokploy's deployment list and to use app `Reload` when a completed Dockerfile build leaves production on the previous SHA.
+
+## 2026-07-01 14:26:36 CEST - Loop 57 Docs Validation
+
+- UPDATED: `docs/deployment.md` now explains that the generated build-info module proves image metadata, while strict production smoke proves the running service.
+- UPDATED: documented Dokploy General -> Reload as the first safe recovery when a completed Dockerfile deployment still serves the previous `version.sha`.
+- PASS: `git diff --check`.
+- PASS: strict `pnpm smoke:production -- --expect-sha 6477f9c` still passes for the deployed app commit.
+- NEXT: commit/push the docs update, poll CI, then continue the next QA gap.

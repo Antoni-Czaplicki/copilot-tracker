@@ -51,9 +51,8 @@ In Dokploy or another Docker builder, map those values to:
 
 For Dokploy Dockerfile builds, set the build args in the Environment tab's
 Build Time Arguments field and set the runtime values in the service
-environment variables. Do not assume Dokploy injects the Git commit into the
-container automatically; if those values are not configured explicitly,
-`/api/health` will continue to report `unknown`.
+environment variables when the platform can provide them. Do not assume Dokploy
+injects the Git commit into the container automatically.
 
 If production reports `version.sha="unknown"`, the deploy cannot be tied back
 to a commit from the health endpoint.
@@ -65,13 +64,19 @@ fall back to common source metadata variables (`SOURCE_COMMIT`, `GITHUB_SHA`,
 `COPILOT_TRACKER_BUILD_TIME` variables are still the preferred production
 contract because Dokploy does not guarantee those fallback names.
 
-As a safety net, the Dockerfile also writes
+As a safety net, the Dockerfile writes
 `apps/web/src/generated/buildInfo.generated.ts` before `next build`. That
 generated module is populated from explicit build args, common source metadata
 variables, or the minimal `.git` `HEAD`/ref metadata included in the Docker
 build context, so the server bundle can report the deployed commit. Runtime
 environment variables still take precedence over the generated module. The full
 `.git` directory is not copied into the final image.
+
+Dokploy build logs should show the generated module being written before
+`next build`, for example with the expected short SHA prefix. This proves the
+image contains the right build metadata, but it does not by itself prove the
+running service has switched to that image; the production smoke check is the
+source of truth.
 
 ## Azure App Registration
 
@@ -144,6 +149,20 @@ metadata, wrong expected SHA, missing `Cache-Control: no-store`, or old
 provider-error callback behavior. During investigation of a known stale deploy,
 use `pnpm smoke:production -- --allow-known-stale` to keep checking the hard
 health and OAuth redirect gates while reporting freshness problems as warnings.
+
+If Dokploy marks a Dockerfile deployment as done but strict smoke still reports
+the previous `version.sha`, first open the application in Dokploy and use
+General -> Reload. Then rerun:
+
+```sh
+pnpm smoke:production -- --expect-sha "$(git rev-parse --short HEAD)"
+```
+
+This reloads the application service without changing configuration and is the
+safe fallback when the image was built correctly but the running service did
+not switch to it. If Reload does not change `/api/health`, inspect the Dokploy
+deployment log and the Swarm/Docker service status before triggering a Rebuild
+or changing runtime environment.
 
 ## Local Container Smoke
 
