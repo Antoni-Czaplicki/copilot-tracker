@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 
+import { branchTaskSwitchPrompt } from "./branchTaskPrompt";
 import {
   createChatSessionTitleResolver,
   getDefaultWorkspaceStorageRoot,
@@ -625,30 +626,30 @@ async function maybePromptForBranchTask(
   previous: WorkspaceContext,
   next: WorkspaceContext,
 ) {
-  if (!next.defaultTask || next.selectedTask === next.defaultTask) {
+  const prompt = branchTaskSwitchPrompt(
+    previous,
+    next,
+    context.workspaceState.get<string>(lastBranchPromptKey),
+  );
+  if (!prompt) {
     return;
   }
 
-  const promptKey = `${previous.branch ?? "none"}->${next.branch ?? "none"}:${next.defaultTask}`;
-  if (context.workspaceState.get<string>(lastBranchPromptKey) === promptKey) {
-    return;
-  }
-
-  await context.workspaceState.update(lastBranchPromptKey, promptKey);
+  await context.workspaceState.update(lastBranchPromptKey, prompt.promptKey);
   logInfo("Prompting for branch task switch", {
     previousBranch: previous.branch,
     nextBranch: next.branch,
-    defaultTask: next.defaultTask,
+    defaultTask: prompt.task,
     selectedTask: next.selectedTask,
   });
   const choice = await vscode.window.showInformationMessage(
-    `Branch changed to ${next.branch}. Assign Copilot usage to ${next.defaultTask}?`,
+    `Branch changed to ${next.branch}. Assign Copilot usage to ${prompt.task}?`,
     "Switch task",
     "Keep current task",
   );
 
   if (choice === "Switch task") {
-    logInfo("Branch task switch accepted", { task: next.defaultTask });
+    logInfo("Branch task switch accepted", { task: prompt.task });
     await setSelectedTask(context, undefined);
     await refreshContext(context, client, "task-changed", {
       source: "branch-change-prompt",

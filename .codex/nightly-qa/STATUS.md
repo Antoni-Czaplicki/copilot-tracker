@@ -1,9 +1,9 @@
 # Nightly QA Status
 
-- Current time: 2026-07-01 15:00:41 CEST
+- Current time: 2026-07-01 15:13:21 CEST
 - Current loop: 60
-- State: Azure OAuth callback coverage is pushed, CI-green, and deployed; extension task-history no-task clearing fix is implemented locally and validated
-- Focus: commit/push the extension task-history fix, then verify CI/package workflow
+- State: Extension task-history no-task clearing fix is pushed and CI/package-green; workspace-scoped branch prompt hardening is implemented locally and validated
+- Focus: commit/push branch prompt hardening, then verify CI/package workflow
 - Blocker: Docker daemon is unavailable locally, so full local Docker image builds cannot be run on this machine. Dokploy built and deployed the Docker image successfully.
 - Latest completed pushed evidence: `6ed152d Cover Azure callback session outcomes`; GitHub Actions CI and Build extension passed, production rolled to the exact SHA after waiting for Dokploy, and strict production smoke passed.
 - Diagnosis: production web auth/session token persistence is working. Real VS Code sign-in now uses tracker web sign-in plus a VS Code URI callback, stores a tracker session token in SecretStorage, and uses that token for API calls while Azure DevOps tokens remain server-side.
@@ -13,6 +13,9 @@
 - Latest deployed change: WorkItemPicker ArrowUp/ArrowDown active-result movement is now a tested pure helper, covering bounds and stale-index clamping without adding a heavyweight DOM test stack.
 - Latest deployed change: the Azure OAuth callback route now has route-level success and safe session-failure coverage without changing production defaults.
 - Latest local change: extension task history now records explicit no-task clears and resolves those historical clear entries as `selectedTask: null` instead of falling back to the current task.
-- Latest checks: `pnpm --filter ./apps/extension compile`, `pnpm --filter ./apps/extension test` (31 tests), `pnpm -r typecheck`, `pnpm -r lint`, root `pnpm test`, and strict production smoke for deployed app commit `6ed152d` passed.
-- Next action: update logs, run diff check, commit/push the extension fix, then verify GitHub Actions.
+- Latest local change: branch-change task switch prompts now use a tested workspace-scoped prompt key, so the same branch transition in another workspace is not suppressed by a prior prompt.
+- Latest extension commit: `9d298f5 Fix extension task clear attribution`; GitHub Actions CI and Build extension passed.
+- Latest checks: `pnpm --filter ./apps/extension compile`, `pnpm --filter ./apps/extension test` (32 tests), `pnpm -r typecheck`, `pnpm -r lint`, root `pnpm test`, GitHub Actions CI, GitHub Actions Build extension, and strict production smoke for deployed app commit `6ed152d` passed.
+- Deployment note: `9d298f5` only changes extension/progress files; production web still serves `6ed152d` and passes strict smoke. No Dokploy reload was forced.
+- Next action: run diff check, commit/push branch prompt hardening, and verify GitHub Actions.
 - Production target: https://copilot-tracker.antek.page

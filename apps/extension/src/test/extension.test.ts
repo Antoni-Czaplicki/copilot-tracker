@@ -4,6 +4,7 @@ import * as os from "node:os";
 import * as path from "node:path";
 import * as vscode from "vscode";
 
+import { branchTaskSwitchPrompt } from "../branchTaskPrompt";
 import { trackerDashboardUrl } from "../dashboardUrl";
 import { formatLogDetails } from "../logger";
 import { readCopilotOtelRequests } from "../otel";
@@ -301,6 +302,58 @@ suite("Extension Test Suite", () => {
         ],
         "workspace-id",
       )?.selectedTask,
+      null,
+    );
+  });
+
+  test("Branch task prompts are scoped by workspace and skip repeated or unnecessary prompts", () => {
+    const previous = createWorkspaceContext({
+      branch: "feature/123-login",
+      defaultTask: "123",
+      selectedTask: "999",
+      workspaceId: "workspace-a",
+    });
+    const next = createWorkspaceContext({
+      branch: "feature/456-api",
+      defaultTask: "456",
+      selectedTask: "999",
+      workspaceId: "workspace-a",
+    });
+    const prompt = branchTaskSwitchPrompt(previous, next, undefined);
+
+    assert.deepStrictEqual(prompt, {
+      promptKey: "workspace-a:feature/123-login->feature/456-api:456",
+      task: "456",
+    });
+    assert.strictEqual(
+      branchTaskSwitchPrompt(previous, next, prompt?.promptKey),
+      null,
+    );
+    assert.deepStrictEqual(
+      branchTaskSwitchPrompt(
+        { ...previous, workspaceId: "workspace-b" },
+        { ...next, workspaceId: "workspace-b" },
+        prompt?.promptKey,
+      ),
+      {
+        promptKey: "workspace-b:feature/123-login->feature/456-api:456",
+        task: "456",
+      },
+    );
+    assert.strictEqual(
+      branchTaskSwitchPrompt(
+        previous,
+        { ...next, selectedTask: "456" },
+        undefined,
+      ),
+      null,
+    );
+    assert.strictEqual(
+      branchTaskSwitchPrompt(
+        previous,
+        { ...next, defaultTask: null },
+        undefined,
+      ),
       null,
     );
   });

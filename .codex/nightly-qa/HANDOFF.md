@@ -333,4 +333,7 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - Found and fixed an extension task attribution bug: clearing a manual task on a branch with no detected task id could leave later OTel requests assigned to the previous/current task.
 - Task history now records explicit no-task clears, resolves those historical entries as no task, and scopes latest-history duplicate checks by workspace.
 - Validation passes locally: extension compile, 31 extension tests, repo typecheck/lint, root tests, and production smoke for deployed `6ed152d`.
-- Next: commit/push the extension fix and verify GitHub Actions.
+- `9d298f5 Fix extension task clear attribution` is pushed and GitHub Actions CI/Build extension are green.
+- Production web still serves `6ed152d` and strict smoke passes; this commit is extension-only, so no Dokploy Reload was forced.
+- Added a second extension hardening slice locally: branch-change prompt de-duplication is now workspace-scoped and tested, preventing one workspace from suppressing a prompt in another workspace with the same branch transition.
+- Next: commit/push the branch prompt hardening and verify GitHub Actions.

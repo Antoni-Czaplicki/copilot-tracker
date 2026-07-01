@@ -601,4 +601,7 @@
 - [x] Add extension tests for branch-default behavior, explicit no-task clears, and latest history per workspace
 - [x] Run focused extension compile/test
 - [x] Run repo typecheck/lint and root tests
-- [ ] Commit, push, and verify CI/package workflow
+- [x] Commit, push, and verify CI/package workflow
+- [x] Verify production web remains healthy on prior deployed app build
+- [x] Extract and test workspace-scoped branch task prompt de-duplication
+- [ ] Commit, push, and verify branch prompt hardening

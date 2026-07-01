@@ -2372,3 +2372,20 @@
 - PASS: `pnpm -r lint`.
 - PASS: root `pnpm test`.
 - NEXT: update logs, run diff check, commit/push the extension fix, and verify CI/package workflow.
+
+## 2026-07-01 15:11:35 CEST - Loop 60 Extension Fix Closeout
+
+- PUSHED: `9d298f5 Fix extension task clear attribution`.
+- PASS: GitHub Actions `CI` completed successfully for `9d298f5`.
+- PASS: GitHub Actions `Build extension` completed successfully for `9d298f5`; VSIX packaging/upload succeeded.
+- PASS: production strict smoke still passes for deployed app commit `6ed152d`.
+- NOTE: production web still serves `6ed152d` after the extension-only commit, so no Dokploy Reload was forced. The extension package and CI are the relevant release signals for this slice.
+- FOUND: branch-change prompt de-duplication used a global key without `workspaceId`, so the same branch transition in another workspace could be incorrectly suppressed.
+- IMPLEMENTED: extracted `branchTaskSwitchPrompt` and included `workspaceId` in the prompt key.
+- ADDED: extension coverage that prompts only when needed, skips repeated prompts for the same workspace, and still prompts for the same branch transition in a different workspace.
+- PASS: `pnpm --filter ./apps/extension compile`.
+- PASS: `pnpm --filter ./apps/extension test` (32 tests).
+- PASS: `pnpm -r typecheck`.
+- PASS: `pnpm -r lint`.
+- PASS: root `pnpm test`.
+- NEXT: run diff check, commit/push branch prompt hardening, and verify CI/package workflow.

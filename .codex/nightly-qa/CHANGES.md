@@ -1415,3 +1415,9 @@
 - PASS: `pnpm -r lint`
 - PASS: `pnpm test`
 - PASS: strict `pnpm smoke:production -- --expect-sha 6ed152d`
+- PASS: GitHub Actions `CI` for `9d298f5`
+- PASS: GitHub Actions `Build extension` for `9d298f5`
+- PASS: post-push strict production smoke remains green for deployed app commit `6ed152d`
+- Added `branchTaskSwitchPrompt` so branch-change prompt de-duplication is tested and scoped by workspace id.
+- PASS: `pnpm --filter ./apps/extension test` (32 tests)
+- PASS: `pnpm -r typecheck`, `pnpm -r lint`, and root `pnpm test`
