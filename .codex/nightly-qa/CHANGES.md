@@ -862,3 +862,17 @@
 - PASS: `pnpm test` (107 web tests + 25 extension VS Code tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm --filter ./apps/extension compile`
+
+## 2026-07-01 - GitHub Billing Impossible-Date Guard
+
+- Added UTC calendar validation for GitHub billing response `timePeriod` values.
+- Added regression coverage so impossible dates such as February 31 fall back to the requested sync date.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web test` (108 tests)
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (108 web tests + 25 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`

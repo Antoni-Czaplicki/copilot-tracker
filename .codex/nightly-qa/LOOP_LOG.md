@@ -1432,3 +1432,42 @@
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm --filter ./apps/extension compile`
 - Next: commit, push, smoke production, and continue.
+
+## 2026-07-01 06:31:23 CEST - Loop 24 End
+
+- Committed and pushed GitHub billing response parsing hardening as `36b506e Harden GitHub billing response parsing`.
+- GitHub Actions for `36b506e` are in progress.
+- PASS: production `/api/health` returns HTTP 200 with `ok=true` and `database.ok=true`.
+- STALE/LIMITATION: production `/api/health` still reports `version.sha="unknown"`, `builtAt="unknown"`, and no visible `Cache-Control` header.
+- PASS: sanitized production Azure OAuth start redirects to Microsoft with PKCE `S256`, state, client id, and required Azure DevOps scopes.
+- Current git state after push: clean.
+- Next: start the next loop and continue while CI/deploy catches up.
+
+## 2026-07-01 06:33:17 CEST - Loop 25 Chrome Production Smoke
+
+- PASS: Chrome loaded `https://copilot-tracker.antek.page/` with title `Copilot Tracker`.
+- PASS: Chrome found visible plain login anchors with `href="/api/auth/azure-devops"` and text `Log in with Azure DevOps`.
+- BLOCKED/EXPECTED: navigating to the live auth route returned to `/?auth=failed&auth_code=invalid_client`.
+- PASS: the rendered page contains the stable `invalid_client` code and generic Azure app-registration guidance.
+- PASS: the rendered failure surface did not include provider `AADSTS`, `error_description`, or client-secret values.
+- CLEANUP: Chrome test tab finalized/closed.
+- Next: continue with the next code/test improvement while polling CI and production freshness.
+
+## 2026-07-01 06:34:09 CEST - Loop 26 Start
+
+- PASS: GitHub Actions for `36b506e Harden GitHub billing response parsing` completed successfully on both CI and extension build workflows.
+- Current blocker remains external Azure OAuth `invalid_client`, unavailable Docker daemon, and unproven production commit metadata/cache-header freshness.
+- Finding: GitHub billing response date parsing rejects malformed month/day values but still accepts impossible calendar dates such as February 31.
+- Next: add an actual calendar-date guard and regression coverage.
+
+## 2026-07-01 06:35:33 CEST - Loop 26 Validation
+
+- Added UTC calendar-date validation for GitHub billing response `timePeriod` values.
+- Added regression coverage for impossible dates falling back to the requested sync date.
+- PASS: `pnpm --filter @copilot-tracker/web test` (108 tests)
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (108 web tests + 25 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`
+- Next: commit, push, smoke production, and continue.

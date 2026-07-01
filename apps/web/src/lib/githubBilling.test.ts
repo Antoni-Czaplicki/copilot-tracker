@@ -93,3 +93,18 @@ void test("githubCopilotBillingRowsFromResponse tolerates malformed response sha
     [],
   );
 });
+
+void test("githubCopilotBillingRowsFromResponse falls back for impossible dates", () => {
+  const { usageDateValue } = githubCopilotBillingRowsFromResponse({
+    body: {
+      timePeriod: { year: 2026, month: 2, day: 31 },
+      usageItems: [],
+    },
+    fallbackDate: "2026-02-28",
+    fetchedAt: "2026-03-01T00:00:00.000Z",
+    scopeType: "organization",
+    scope: "example-org",
+  });
+
+  assert.equal(usageDateValue, "2026-02-28");
+});

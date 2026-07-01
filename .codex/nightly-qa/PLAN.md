@@ -209,4 +209,22 @@
 - [x] Add web regression tests
 - [x] Fix env-coupled test import and TypeScript guard found during validation
 - [x] Run focused web tests and broad validation
+- [x] Commit, push, and smoke production
+- [x] Verify CI completion for `36b506e`
+
+## Loop 25 - Chrome Production Smoke
+
+- [x] Load Chrome-control workflow
+- [x] Verify production homepage title and login anchors in Chrome
+- [x] Verify `/api/auth/azure-devops` real-browser flow returns `auth_code=invalid_client`
+- [x] Verify failure copy includes safe generic guidance and does not expose provider details
+- [x] Close Chrome test tab
+- [x] Continue next code/test improvement
+
+## Loop 26 - GitHub Billing Impossible Date Guard
+
+- [x] Re-sync prior commit CI status
+- [x] Reject impossible response time-period dates
+- [x] Add regression coverage
+- [x] Run focused and broad validation
 - [ ] Commit, push, and smoke production

@@ -62,6 +62,9 @@ function usageDate(body: unknown, fallback: string) {
   if (year === null || monthNumber === null || dayNumber === null) {
     return fallback;
   }
+  if (!isValidUtcDate(year, monthNumber, dayNumber)) {
+    return fallback;
+  }
 
   const month = String(monthNumber).padStart(2, "0");
   const day = String(dayNumber).padStart(2, "0");
@@ -95,6 +98,15 @@ function integerInRange(value: unknown, min: number, max: number) {
   }
 
   return value;
+}
+
+function isValidUtcDate(year: number, month: number, day: number) {
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return (
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day
+  );
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

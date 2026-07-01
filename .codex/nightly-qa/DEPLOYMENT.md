@@ -175,6 +175,25 @@
 
 - PASS: GitHub Actions for `bab82eb Harden extension tracker responses` completed successfully on both CI and extension build workflows.
 
+## 2026-07-01 06:31 CEST Production Poll
+
+- PUSHED: `36b506e Harden GitHub billing response parsing`.
+- IN PROGRESS: GitHub Actions for `36b506e` started after push.
+- PASS: production `/api/health` returned HTTP 200 with `ok=true` and `database.ok=true`.
+- LIMITATION: production `/api/health` still reports `sha="unknown"`, `builtAt="unknown"`, and no visible `Cache-Control` header.
+- PASS: production Azure OAuth start redirect includes state, PKCE `S256`, client id, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
+
+## 2026-07-01 06:33 CEST Chrome Production Smoke
+
+- PASS: real Chrome loaded the production homepage with title `Copilot Tracker`.
+- PASS: real Chrome confirmed visible login anchors use document navigation to `/api/auth/azure-devops`.
+- BLOCKED/EXPECTED: real Chrome auth navigation still returns `/?auth=failed&auth_code=invalid_client`.
+- PASS: rendered failure page contains stable `invalid_client` guidance and does not expose provider `AADSTS`, `error_description`, or secret values.
+
+## 2026-07-01 06:34 CEST CI Poll
+
+- PASS: GitHub Actions for `36b506e Harden GitHub billing response parsing` completed successfully on both CI and extension build workflows.
+
 ## 2026-07-01 04:33 CEST Production Poll
 
 - PUSHED: `16d5c67 Normalize health build metadata`.

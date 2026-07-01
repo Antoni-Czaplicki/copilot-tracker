@@ -58,6 +58,7 @@
 9. [FIXED] Admin export CSV/type helpers had no pure tests for type parsing, quoting, placeholder filtering, or billing export rows.
 10. [FIXED] Chat request batch token normalization and duplicate merge behavior were embedded in the database store without direct coverage.
 11. [FIXED] GitHub billing sync trusted `usageItems` and `timePeriod` response shapes from GitHub, which could crash or store invalid dates on malformed successful responses.
+12. [FIXED] GitHub billing response date parsing accepted numerically bounded but impossible calendar dates such as February 31.
 
 ## Deployment
 
