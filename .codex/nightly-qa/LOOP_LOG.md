@@ -116,3 +116,10 @@
 - Validated with web typecheck, lint, and placeholder production build.
 - Production still lacked `/api/health` at last poll; GitHub CI/builds were green or in progress.
 - Next: commit/push admin billing sync UX and poll CI/production.
+
+## 2026-07-01 02:33:13 CEST - Loop 2 Progress
+
+- Committed and pushed admin billing sync UX as `fd45703 Improve admin billing sync UX`.
+- Production smoke passed: homepage, `/api/health`, database readiness, Azure PKCE redirect/scopes, provider-error privacy, work-items auth gate, admin export auth gate, and Chrome homepage/login-link check.
+- Remaining deployment limitation: `/api/health` reports `version.sha="unknown"`, so exact deployed commit is not provable until Dokploy passes build metadata.
+- Next: commit production verification logs and continue with remaining gaps.

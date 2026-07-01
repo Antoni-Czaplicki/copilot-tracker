@@ -24,3 +24,14 @@
 - PASS: homepage returned HTTP 200.
 - PASS: provider-error callback no longer reflects `error_description`, so production is at least serving OAuth hardening from `f85f30e`.
 - STALE/BLOCKED: `/api/health` still returned 404, so production had not deployed `03c390b` or newer. The hard production encryption-key requirement may have blocked startup if the deployment environment lacks `COPILOT_TRACKER_TOKEN_ENCRYPTION_KEY`; recovery change is in progress to fail closed for token storage without blocking deployment.
+
+## 2026-07-01 02:32 CEST Production HTTP Checks
+
+- PASS: `GET /api/health` returned HTTP 200 with `ok=true` and `database.ok=true`.
+- PASS: homepage returned HTTP 200.
+- PASS: `/api/auth/azure-devops` returned a Microsoft redirect with PKCE challenge, `code_challenge_method=S256`, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
+- PASS: provider-error callback redirects with stable `auth_code=provider_error` and does not reflect `error_description`.
+- PASS: `/api/azure-devops/work-items?query=123` returned auth-gated status.
+- PASS: `/api/admin/export?type=bogus` returned auth-gated status for unauthenticated request.
+- PASS: Chrome verified live homepage title/copy and the login link remains a document-navigation anchor to `/api/auth/azure-devops`.
+- LIMITATION: `/api/health` reports `version.sha="unknown"` because the Dokploy/Docker build is not passing `COPILOT_TRACKER_BUILD_SHA`; exact deployed commit cannot be proven from production yet.

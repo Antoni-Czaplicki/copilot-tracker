@@ -9,12 +9,13 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - Production deployment not verified yet.
 - Full browser/VS Code E2E testing not started yet.
 - Web/API/auth automated tests are still missing.
-- Production was reachable but partially stale at 2026-07-01 02:13 CEST: OAuth privacy fix was live, but `/api/health` still returned 404, so the health/deployment commits had not landed.
+- Production smoke passed at 2026-07-01 02:32 CEST: homepage, health, database readiness, Azure PKCE redirect/scopes, provider-error privacy, work-items auth gate, admin export auth gate, and Chrome homepage/login-link check all passed.
+- Exact deployed commit is still not provable because `/api/health` reports `version.sha="unknown"`; Dokploy should pass `COPILOT_TRACKER_BUILD_SHA` as a build/runtime variable.
 - Docker image build could not run because the Docker daemon was unavailable.
 
 ## Next Steps
 
 1. Commit/push admin billing sync UX.
-2. Poll production `/api/health` until the health/deployment build is visible.
+2. Configure Dokploy build metadata so `/api/health` reports the deployed commit SHA.
 3. Continue converting high-risk findings into tests and small fixes.
 4. Run deeper Chrome/VS Code E2E flows after production freshness is proven.
