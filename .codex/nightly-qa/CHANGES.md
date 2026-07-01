@@ -409,3 +409,16 @@
 - PASS: `pnpm --filter @copilot-tracker/web test` (35 tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm test` (35 web tests + 10 extension VS Code tests)
+
+## 2026-07-01 - Azure Token Exchange Coverage
+
+- Added mocked web tests for Azure token exchange request construction, including `code_verifier`, redirect URI, scopes, and session-token parsing.
+- Added coverage for Azure JSON token failures mapping into `AzureDevOpsTokenExchangeError`.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web test` (37 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (37 web tests + 10 extension VS Code tests)

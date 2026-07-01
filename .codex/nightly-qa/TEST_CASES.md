@@ -99,7 +99,7 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | AUTH-090 | Auth | PENDING | Disabled mode `currentUser` returns local-dev admin | Automated | |
 | AUTH-091 | Auth | PENDING | Ingest auth missing/garbled Bearer returns null | Automated | |
 | AUTH-092 | Auth | PASS | PKCE challenge outputs URL-safe verifier/challenge pair | Automated | Added S256 PKCE coverage; web tests passed |
-| AUTH-093 | Auth | PENDING | Token exchange error response maps to `AzureDevOpsTokenExchangeError` | Automated | |
+| AUTH-093 | Auth | PASS | Token exchange error response maps to `AzureDevOpsTokenExchangeError` | Automated | Added mocked token exchange coverage; web tests passed |
 | AUTH-094 | Auth | PENDING | OAuth start missing config redirects `/?auth=misconfigured` | Automated | |
 | AUTH-095 | Auth | PASS | OAuth start sets PKCE cookies with 10-minute expiry | Automated | Added route-level OAuth start coverage; web tests passed |
 | AUTH-096 | Auth | PASS | Callback provider error redirects failed state and clears OAuth cookies | Automated | Added safe callback failure coverage; web tests passed |
@@ -175,3 +175,4 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | DOC-167 | Docs/Deployment | PASS | README full-build command includes production-safe placeholder env values and succeeds as written | Manual command | Ran documented `pnpm build` command successfully |
 | QA-168 | Quality | PASS | Root `pnpm test` runs both web regression tests and extension VS Code tests | Manual command | `pnpm test` passed with 22 web tests and 10 extension tests |
 | UI-169 | Web | PASS | Dashboard task pagination preserves focused `sessionId` query parameter | Automated | Added `dashboardTaskPageHref` regression coverage; web tests passed |
+| AUTH-170 | Auth | PASS | Token exchange request includes PKCE `code_verifier`, redirect URI, and required scopes | Automated | Added mocked token exchange request coverage; web tests passed |

@@ -113,3 +113,7 @@
 ## 2026-07-01 04:09 CEST CI Poll
 
 - PASS: GitHub Actions for `b1d5098 Add auth cookie and PKCE coverage` completed successfully on both CI and extension build workflows.
+
+## 2026-07-01 04:14 CEST CI Poll
+
+- PASS: GitHub Actions for `96d1148 Add Azure OAuth route coverage` completed successfully on both CI and extension build workflows.

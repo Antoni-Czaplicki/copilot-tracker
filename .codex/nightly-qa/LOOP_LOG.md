@@ -537,3 +537,28 @@
 - PASS: `pnpm test` (35 web tests + 10 extension VS Code tests)
 - PASS: GitHub Actions for `b1d5098 Add auth cookie and PKCE coverage` completed successfully.
 - Next: inspect diff, commit, push, and continue.
+
+## 2026-07-01 04:11:44 CEST - Loop 3 Progress
+
+- Committed and pushed OAuth route coverage as `96d1148 Add Azure OAuth route coverage`.
+- GitHub Actions for `96d1148` are in progress for CI and extension build.
+- Production `/api/health` remains OK with DB ready; build metadata still reports `sha="unknown"` and `builtAt="unknown"`.
+- Local tree is clean immediately after push.
+- Next: poll checks while selecting the next non-auth-blocked improvement.
+
+## 2026-07-01 04:12:19 CEST - Loop 3 Progress
+
+- Starting mocked Azure token exchange coverage while `96d1148` checks run.
+- Goal: verify `exchangeAzureDevOpsCode` sends the PKCE `code_verifier`, uses the configured redirect/scope, parses successful token payloads, and maps Azure JSON failures to `AzureDevOpsTokenExchangeError`.
+
+## 2026-07-01 04:14:28 CEST - Loop 3 Progress
+
+- Added mocked token exchange tests covering successful request body construction and Azure JSON error mapping.
+- First validation pass caught fetch mock typing/lint issues and one strict object assertion; fixed before final validation.
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web test` (37 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (37 web tests + 10 extension VS Code tests)
+- PASS: GitHub Actions for `96d1148 Add Azure OAuth route coverage` completed successfully.
+- Next: inspect diff, commit, push, and continue.
