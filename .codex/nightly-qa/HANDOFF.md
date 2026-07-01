@@ -179,3 +179,12 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - `801c672 Record auth diagnostics deploy verification` passed both GitHub Actions workflows.
 - Deployment docs now spell out that Dokploy Dockerfile builds need explicit Build Time Arguments plus runtime env for `COPILOT_TRACKER_BUILD_SHA` and `COPILOT_TRACKER_BUILD_TIME`; otherwise `/api/health` cannot prove the deployed commit.
 - Deployment docs now spell out that the current backend OAuth flow expects a web/confidential Entra app registration with a valid client secret. Public/native client registration is the likely reason for the current `AADSTS700025`/`invalid_client` failure.
+
+## 2026-07-01 09:36 CEST Azure Portal Diagnosis
+
+- `7137e29 Clarify Dokploy and Azure auth setup` passed both GitHub Actions workflows.
+- Production smoke for `7137e29` passed all hard gates and still warns only on unknown build metadata/SHA.
+- Confirmed in Microsoft Entra App registrations that Copilot Tracker Authentication is configured as `Single-page application`, not `Web`.
+- This is the exact remaining auth root cause for the current backend flow: Azure treats the callback as public-client, but the backend sends `AZURE_DEVOPS_CLIENT_SECRET`, producing `AADSTS700025` in Dokploy logs and `auth_code=invalid_client` in the browser.
+- The current signed-in Chrome account can inspect the registration but cannot edit it; redirect/platform edit controls are disabled and the account is not listed as an owner.
+- Next operator action: with an app-registration owner/admin account, move or add the production callback URI under the `Web` platform, keep/use the existing client secret, then rerun Chrome login and signed-in dashboard/Azure work-item E2E.

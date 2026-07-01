@@ -61,6 +61,7 @@
 ## Checks
 
 - PASS: `git diff --check`
+
 - PASS: documented `pnpm build` command with placeholder production env values
 
 ## 2026-07-01 - Extension Partial Token Cost Display
@@ -1043,6 +1044,7 @@
 ## Checks
 
 - PASS: `git diff --check`
+
 - PASS: GitHub Actions for `625a202 Cap extension server error messages` completed successfully on both CI and Build extension workflows.
 
 ## 2026-07-01 - Production Smoke Verifier
@@ -1168,3 +1170,14 @@
 ## Checks
 
 - PASS: `git diff --check`
+
+## 2026-07-01 - Azure Portal Auth Diagnosis
+
+- Used the existing signed-in Chrome profile to inspect Microsoft Entra App registrations.
+- Confirmed the Copilot Tracker redirect platform is `Single-page application`, which conflicts with the current backend confidential-client token exchange.
+- Confirmed the current signed-in account could inspect but not edit the registration, so the live fix requires an app-registration owner/admin account.
+
+## Checks
+
+- PASS: `7137e29` passed GitHub Actions CI and Build extension.
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 7137e29` passed all hard gates with expected build metadata warnings.

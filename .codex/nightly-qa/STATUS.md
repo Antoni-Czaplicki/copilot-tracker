@@ -1,10 +1,10 @@
 # Nightly QA Status
 
-- Current time: 2026-07-01 09:29:26 CEST
-- Current loop: 46
-- State: documenting operator fixes for Azure app registration and Dokploy build metadata
-- Focus: Make the remaining production fixes concrete: confidential Azure app/client config and explicit Dokploy build metadata
+- Current time: 2026-07-01 09:36:54 CEST
+- Current loop: 47
+- State: Azure portal diagnosis complete; live config edit blocked in current signed-in context
+- Focus: Convert `invalid_client` into an exact operator fix and unblock signed-in Azure E2E
 - Blocker: signed-in Azure E2E is still blocked by real Chrome login returning `auth_code=invalid_client`; exact deployed commit still cannot be proven because production `/api/health` reports `sha="unknown"` and `builtAt="unknown"`
-- Latest completed pushed evidence: `801c672 Record auth diagnostics deploy verification`; GitHub Actions CI and Build extension completed successfully
-- Next action: finish and validate deployment docs that spell out the Azure confidential-client requirement and Dokploy build-arg/runtime-env metadata fields; then push and continue with live config verification when available
+- Latest completed pushed evidence: `7137e29 Clarify Dokploy and Azure auth setup`; GitHub Actions CI and Build extension completed successfully; production smoke passed hard gates with only build-metadata warnings
+- Next action: use an Entra account/role that can edit the app registration, move/add the production callback redirect URI under the `Web` platform for the current confidential backend flow, then rerun Chrome login and dashboard/work-item E2E. Current Chrome account can inspect the app registration but edit controls are disabled and it is not listed as an owner.
 - Production target: https://copilot-tracker.antek.page

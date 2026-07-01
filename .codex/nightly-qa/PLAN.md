@@ -432,4 +432,14 @@
 - [x] Clarify Dokploy build metadata setup in deployment docs
 - [x] Clarify Azure web/confidential-client requirement for the current backend token exchange flow
 - [x] Run docs diff check
-- [ ] Commit, push, and poll CI
+- [x] Commit, push, and poll CI
+
+## Loop 47 - Azure Portal Config Diagnosis
+
+- [x] Connect to the already signed-in Chrome profile
+- [x] Open Microsoft Entra App registrations and locate the Copilot Tracker app registration
+- [x] Inspect Authentication configuration without exposing identifiers
+- [x] Confirm the callback redirect is configured under `Single-page application`, not `Web`
+- [x] Confirm edit controls are disabled in the current signed-in context
+- [ ] Record finding and handoff
+- [ ] Commit/push diagnostic notes when bundled with the next useful change

@@ -2036,3 +2036,12 @@
 - Confirmed source already supports explicit build metadata and common fallback env names; live production remains `unknown` because Dokploy is not passing the required values.
 - Started a docs-only clarification for Dokploy Build Time Arguments/runtime env setup and the current Azure web/confidential-client requirement.
 - PASS: `git diff --check`
+
+## 2026-07-01 09:36:54 CEST - Loop 47 Azure Portal Diagnosis
+
+- PASS: `7137e29 Clarify Dokploy and Azure auth setup` completed successfully on GitHub Actions CI and Build extension workflows.
+- PASS/WARN: production smoke for `7137e29` passed all hard gates and still warns only on unknown build metadata/SHA.
+- Opened Microsoft Entra App registrations in the existing signed-in Chrome profile and inspected the Copilot Tracker app registration without recording IDs or secrets.
+- CONFIRMED ROOT CAUSE: the Authentication redirect platform is `Single-page application`, not `Web`, so Azure treats the callback as public-client while this backend sends a client secret.
+- BLOCKED FOR LIVE FIX: redirect URI/platform edit controls are disabled in the current signed-in context; the account can inspect the registration but is not listed as an owner.
+- Next: operator with app-registration edit rights should move/add the production callback redirect URI under `Web`, then rerun Chrome login and signed-in dashboard/work-item E2E.

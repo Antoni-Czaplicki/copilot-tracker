@@ -726,3 +726,11 @@
 - DIAGNOSIS: the server-side log reports Azure `AADSTS700025`: the client is treated as public, so the backend should not present a client secret. Current app code is built for a confidential server-side token exchange, so fix the Azure app registration/client type or deliberately change the auth config/code to a public-client PKCE flow.
 - LIMITATION: no Dokploy MCP tool is exposed in this Codex session. Use Chrome for the Dokploy UI/logs, and if the VPS/Dokploy host itself needs fixing, use Termius/SSH without printing credentials.
 - LIMITATION: exact deployed commit proof still waits on build metadata; production `/api/health` reports `sha="unknown"` and `builtAt="unknown"`.
+
+## 2026-07-01 09:36 CEST Azure Portal Diagnosis
+
+- PASS: `7137e29 Clarify Dokploy and Azure auth setup` completed successfully on GitHub Actions CI and Build extension workflows.
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 7137e29` passed all hard production gates; warnings remain limited to unknown build metadata/SHA.
+- CONFIRMED: Microsoft Entra App registrations is reachable in the existing Chrome profile and the Copilot Tracker app registration can be inspected.
+- ROOT CAUSE: Authentication configuration shows the callback redirect under `Single-page application`, not `Web`. That matches Dokploy's `AADSTS700025` token-exchange failure because Azure treats the callback as public-client while the backend sends `AZURE_DEVOPS_CLIENT_SECRET`.
+- BLOCKED: live edit controls for redirect URI/platform are disabled in the current signed-in context, and the account is not listed as an owner of the registration. Use an account/role with app registration edit rights, move/add the production callback redirect URI under `Web`, then rerun the Chrome login.
