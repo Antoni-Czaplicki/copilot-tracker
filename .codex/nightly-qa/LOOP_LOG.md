@@ -161,3 +161,23 @@
 - Updated `Show Current Context` so it reports repository/storage presence without displaying raw local paths or remotes.
 - Added a logger regression test covering local path, remote URL, nested storage path, file path, token redaction, and retained non-sensitive context.
 - Next: run extension tests, update findings/changes, commit/push, then continue remaining non-auth-blocked gaps.
+
+## 2026-07-01 02:55:02 CEST - Loop 2 Progress
+
+- Committed and pushed extension log/context privacy hardening as `d260639 Redact extension local context logs`.
+- Validation for the slice passed: `pnpm --filter ./apps/extension test` reported 7 passing tests.
+- Next: poll CI/production and continue with remaining test/quality gaps that do not require a working production Azure client.
+
+## 2026-07-01 02:57:30 CEST - Loop 2 Progress
+
+- Added a lightweight web/domain test harness with Node `--test` and `tsx`.
+- Added 12 web tests for payload schema bounds, batch caps, task assignment trimming, GitHub login normalization, pricing math/formatting, and auth callback code sanitization.
+- Wired web tests into CI before the production web build.
+- Validation passed: web test, lint, typecheck, and placeholder production build.
+- Next: run broader repo checks, commit/push, then poll CI/production.
+
+## 2026-07-01 03:00:28 CEST - Loop 2 Progress
+
+- Broader verification passed after the web test harness: `pnpm -r typecheck`, `pnpm -r lint`, and `pnpm --filter ./apps/extension test`.
+- Previous slice validation also passed: `pnpm --filter @copilot-tracker/web test` and placeholder production web build.
+- Next: inspect diff, commit/push, then poll CI and production.

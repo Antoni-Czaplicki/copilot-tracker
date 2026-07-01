@@ -12,6 +12,7 @@ import {
   secureCookieOptions,
   sessionCookie,
 } from "@/lib/auth";
+import { sanitizeAuthCallbackValue } from "@/lib/authCallback";
 import { MissingAzureDevOpsOAuthConfigError, appBaseUrl } from "@/lib/config";
 
 export async function GET(request: NextRequest) {
@@ -93,17 +94,4 @@ function authFailureRedirect(code: string) {
 function clearOauthCookies(response: NextResponse) {
   response.cookies.set(oauthStateCookie(), "", expiredCookieOptions());
   response.cookies.set(oauthCodeVerifierCookie(), "", expiredCookieOptions());
-}
-
-function sanitizeAuthCallbackValue(value: string, maxLength: number) {
-  let sanitized = "";
-  for (const character of value) {
-    const code = character.codePointAt(0) ?? 0;
-    sanitized += code < 32 || code === 127 ? " " : character;
-  }
-
-  return sanitized
-    .replaceAll(/\s+/gu, " ")
-    .trim()
-    .slice(0, maxLength);
 }

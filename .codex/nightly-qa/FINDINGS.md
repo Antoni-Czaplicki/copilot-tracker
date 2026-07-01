@@ -18,7 +18,7 @@
 3. [FIXED in `fd45703`] Admin GitHub billing sync mutates state via navigated GET without in-page loading/error/success UX.
 4. [FIXED in `392f9ca`] Request sessions grid can overflow on mobile without a horizontal scroll wrapper.
 5. [FIXED in `f85f30e`] OAuth callback rethrows unexpected exchange errors instead of routing to the auth-failure UI.
-6. [P2] Web test suite is missing.
+6. [PARTIAL] Web test suite now covers lib/domain helpers; component, route, and browser fixture tests are still missing.
 
 ## API / Backend
 
@@ -27,7 +27,7 @@
 3. [FIXED in `93dd101`] Token payload schema allows values larger than PostgreSQL `integer` columns can persist.
 4. [FIXED in `4bab582`] Batch ingest `accepted` count reports received requests, not deduped or persisted rows.
 5. [FIXED in `32a4cfd`] Admin export `type` query should be enum-validated.
-6. [P2] Web API/domain tests are missing.
+6. [PARTIAL] Web API/domain tests now cover payload schemas and utility domains; route/DB integration tests are still missing.
 
 ## Deployment
 
@@ -45,5 +45,5 @@
 2. [FIXED in `f85f30e`] OAuth provider error details are reflected into public redirect URLs and homepage UI.
 3. [FIXED in `a85225d`] Azure token encryption falls back to `AZURE_DEVOPS_CLIENT_SECRET`; app now avoids the client-secret fallback and does not persist session tokens when the dedicated key is missing.
 4. [FIXED in `91d2a7a`] Leaderboard exposes all signed-in developers' leaderboard and login mapping data to any signed-in user.
-5. [FIXED locally, commit pending; test passed] Extension info logs and context UI include raw local paths, remote URLs, and storage paths.
-6. [P2] No web auth tests cover PKCE/state cookies, callback failures, session creation, profile/org checks, or work-item status mapping.
+5. [FIXED in `d260639`] Extension info logs and context UI include raw local paths, remote URLs, and storage paths.
+6. [PARTIAL] Web auth tests now cover callback code sanitization; PKCE/state cookies, callback route branches, session creation, profile/org checks, and work-item status mapping still need route/integration coverage.

@@ -13,6 +13,7 @@
     "format": "prettier . --write",
     "lint": "pnpm -r lint",
     "test": "pnpm --filter ./apps/extension test",
+    "test:web": "pnpm --filter @copilot-tracker/web test",
     "typecheck": "pnpm -r typecheck"
   },
   "prettier": "@solvro/config/prettier",
@@ -26,6 +27,7 @@
     "@types/node": "~26.0.1",
     "eslint": "^9.39.4",
     "prettier": "^3.8.5",
+    "tsx": "^4.22.4",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.61.1"
   },

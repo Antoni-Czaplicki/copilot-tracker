@@ -39,6 +39,16 @@ jobs:
       - name: Typecheck
         run: pnpm -r typecheck
 
+      - name: Test web app
+        run: pnpm --filter @copilot-tracker/web test
+        env:
+          DATABASE_URL: postgres://user:pass@localhost:5432/copilot_tracker
+          NEXT_PUBLIC_APP_URL: https://copilot-tracker.example.com
+          AZURE_DEVOPS_CLIENT_ID: placeholder-client-id
+          AZURE_DEVOPS_CLIENT_SECRET: placeholder-client-secret
+          AZURE_DEVOPS_ORG: placeholder-org
+          COPILOT_TRACKER_TOKEN_ENCRYPTION_KEY: placeholder-token-encryption-key
+
       - name: Build web app
         run: pnpm --filter @copilot-tracker/web build
         env:

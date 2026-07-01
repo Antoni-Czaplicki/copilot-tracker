@@ -144,3 +144,9 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | DEP-135 | Deployment | PENDING | Extension tests run headless under Xvfb without flake | CI validation | |
 | DEP-136 | Deployment | PENDING | Schema migration is idempotent across container restarts | Integration | |
 | DEP-137 | Deployment | PASS | `/api/health` returns readiness status, DB status, build SHA, and timestamp | Local and production smoke | Local returned 503 with DB unavailable; production returned 200 with DB ready |
+| API-139 | API/Backend | PASS | Payload schema accepts PostgreSQL integer token bounds and rejects oversized token fields | Automated | Added web `node:test` coverage; `pnpm --filter @copilot-tracker/web test` passed |
+| API-140 | API/Backend | PASS | Chat request batch schema caps payloads at 500 requests | Automated | Added web `node:test` coverage; web test/lint/typecheck/build passed |
+| API-141 | API/Backend | PASS | Task assignment schema trims selected task values and rejects empty task strings | Automated | Added web `node:test` coverage; web test/lint/typecheck/build passed |
+| AUTH-142 | Auth | PASS | Auth callback code sanitizer removes control characters, collapses whitespace, and truncates long codes | Automated | Extracted helper and added web `node:test` coverage |
+| UI-143 | Web | PASS | GitHub username normalization trims `@`, accepts valid handles, and rejects invalid handles | Automated | Added web `node:test` coverage |
+| UI-144 | Web | PASS | Estimated cost calculation prices known aliases, counts unpriced requests, and formats small USD values | Automated | Added web `node:test` coverage |

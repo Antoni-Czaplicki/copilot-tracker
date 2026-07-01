@@ -37,6 +37,20 @@
 
 - PASS: `pnpm --filter ./apps/extension test`
 
+## 2026-07-01 - Web Domain Test Harness
+
+- Added a lightweight web test harness using Node's built-in test runner with `tsx`.
+- Added CI coverage for the new web test command before the production web build.
+- Extracted auth callback value sanitization into a small helper so it can be tested without Next response plumbing.
+- Added 12 tests covering auth callback code sanitization, payload token integer bounds, batch size caps, task assignment schema trimming, GitHub username normalization, and cost estimation/formatting.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web test`
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env and build metadata
+
 ## 2026-07-01 - Admin Billing Sync UX
 
 - Replaced the admin GitHub billing sync raw endpoint link with an in-page client action.
