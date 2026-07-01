@@ -208,3 +208,6 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | EXT-200 | Extension | PASS | Current session token stats choose the latest tokenized session and aggregate incomplete rows as lower-bound data | Automated | Extracted `sessionTokenStats`; extension tests passed |
 | EXT-201 | Extension | PASS | Extension cost estimator prices newer `gpt-5.4-nano` aliases | Automated | Added pricing assertion; extension tests passed |
 | EXT-202 | Extension | PASS | Extension cost estimator prices `claude-haiku-4.5` aliases | Automated | Added pricing assertion; extension tests passed |
+| UI-203 | Web | PASS | WorkItemPicker allows multi-character text and digit-only id searches while suppressing one-character non-id queries | Automated | Extracted helper coverage; web tests passed |
+| UI-204 | Web | PASS | WorkItemPicker maps Azure DevOps forbidden, unauthorized, and rate-limit API errors to clear user messages | Automated | Extracted helper coverage; web tests passed |
+| UI-205 | Web | PASS | WorkItemPicker falls back to status-based errors for unknown or non-JSON failures | Automated | Extracted helper coverage; web tests passed |

@@ -809,3 +809,24 @@
 - PASS: `pnpm --filter ./apps/extension test` (16 tests)
 - PASS: `pnpm test` (66 web tests + 16 extension VS Code tests)
 - Next: inspect diff, commit, push, and continue.
+
+## 2026-07-01 05:02:28 CEST - Loop 3 Progress
+
+- Committed and pushed extension pricing parity as `b4907ae Sync extension pricing aliases`.
+- GitHub Actions for `b4907ae` are in progress.
+- PASS: production `/api/health` returns OK with database ready.
+- LIMITATION: production `/api/health` still reports `version.sha="unknown"` and `builtAt="unknown"`.
+- PASS: sanitized production Azure OAuth start still redirects to Microsoft with PKCE `S256`, state, client id, and required Azure DevOps scopes.
+- Next: poll CI and continue with the next high-value gap.
+
+## 2026-07-01 05:03:57 CEST - Loop 3 Validation
+
+- PASS: GitHub Actions for `b4907ae Sync extension pricing aliases` completed successfully on both CI and extension build workflows.
+- Extracted WorkItemPicker search threshold and Azure DevOps error-message mapping into `workItemPicker` helpers.
+- Added tests for multi-character text, digit-only IDs, blocked one-character non-ID searches, Azure DevOps auth/rate-limit errors, and fallback status messages.
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web test` (70 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (70 web tests + 16 extension VS Code tests)
+- Next: inspect diff, commit, push, and continue.

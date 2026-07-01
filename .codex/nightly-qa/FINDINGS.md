@@ -32,6 +32,7 @@
 10. [FIXED] README did not mention clearing task assignments and omitted newer task/search/mapping API routes.
 11. [FIXED] README full-build command omitted production placeholder env values required by Next/env validation.
 12. [FIXED] Dashboard task pagination dropped `sessionId`, losing the extension-opened focused session while paging task summaries.
+13. [PARTIAL] WorkItemPicker search threshold and error-message mapping now have direct coverage; rendered keyboard/listbox behavior still needs component/browser tests.
 
 ## API / Backend
 

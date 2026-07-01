@@ -557,6 +557,19 @@
 - PASS: `pnpm --filter ./apps/extension test` (16 tests)
 - PASS: `pnpm test` (66 web tests + 16 extension VS Code tests)
 
+## 2026-07-01 - WorkItemPicker Helper Coverage
+
+- Extracted task-search threshold logic and Azure DevOps work-item search error messages into tested helpers.
+- Added coverage for digit-only IDs, short non-ID search suppression, auth/forbidden/rate-limit messages, and non-JSON fallback messages.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web test` (70 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (70 web tests + 16 extension VS Code tests)
+
 ## 2026-07-01 - Extension Pricing Parity
 
 - Added newer web-known model aliases to the extension pricing table so status bar/session cost estimates cover the same current model families.

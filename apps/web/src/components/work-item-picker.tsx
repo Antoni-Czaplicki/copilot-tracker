@@ -3,6 +3,11 @@
 import { Search } from "lucide-react";
 import { useEffect, useId, useMemo, useState } from "react";
 
+import {
+  canSearchWorkItems,
+  workItemSearchErrorMessage,
+} from "@/lib/workItemPicker";
+
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 
@@ -36,7 +41,7 @@ export function WorkItemPicker({
   const [activeIndex, setActiveIndex] = useState(0);
   const [resultQuery, setResultQuery] = useState("");
   const normalizedValue = value.trim();
-  const canSearch = normalizedValue.length >= 2 || /^\d+$/u.test(normalizedValue);
+  const canSearch = canSearchWorkItems(normalizedValue);
   const resultMatchesQuery = canSearch && resultQuery === normalizedValue;
   const visibleWorkItems = resultMatchesQuery ? workItems : [];
   const visibleState = canSearch
@@ -214,23 +219,4 @@ export function WorkItemPicker({
       ) : null}
     </div>
   );
-}
-
-async function workItemSearchErrorMessage(response: Response) {
-  try {
-    const payload = (await response.json()) as { error?: unknown };
-    if (payload.error === "azure_devops_forbidden") {
-      return "Azure DevOps work-item access is missing.";
-    }
-    if (payload.error === "azure_devops_unauthorized") {
-      return "Sign in to Azure DevOps again.";
-    }
-    if (payload.error === "azure_devops_rate_limited") {
-      return "Azure DevOps rate limit reached.";
-    }
-  } catch {
-    // Fall through to status-based messages.
-  }
-
-  return `Search failed (${response.status})`;
 }
