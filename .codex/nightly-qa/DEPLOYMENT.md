@@ -191,3 +191,15 @@
 ## 2026-07-01 04:49 CEST CI Poll
 
 - PASS: GitHub Actions for `7871f09 Expand payload schema coverage` completed successfully on both CI and extension build workflows.
+
+## 2026-07-01 04:50 CEST Production Poll
+
+- PUSHED: `6a28203 Add analytics coverage`.
+- IN PROGRESS: GitHub Actions for `6a28203` started after push.
+- PASS: production `/api/health` returned HTTP 200 with `ok=true` and `database.ok=true`.
+- LIMITATION: production `/api/health` still reports `sha="unknown"` and `builtAt="unknown"`.
+- PASS: production Azure OAuth start redirect includes state, PKCE `S256`, client id, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
+
+## 2026-07-01 04:52 CEST CI Poll
+
+- PASS: GitHub Actions for `6a28203 Add analytics coverage` completed successfully on both CI and extension build workflows.

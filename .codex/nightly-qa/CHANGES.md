@@ -530,3 +530,16 @@
 - PASS: `pnpm --filter @copilot-tracker/web test` (63 tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm test` (63 web tests + 14 extension VS Code tests)
+
+## 2026-07-01 - GitHub Billing Date Parser Coverage
+
+- Extracted admin GitHub billing sync date parsing into `githubBillingDate`.
+- Added tests for valid dates, leap day, missing/default dates, malformed values, and impossible dates.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web test` (66 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (66 web tests + 14 extension VS Code tests)

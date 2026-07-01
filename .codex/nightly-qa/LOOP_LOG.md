@@ -738,3 +738,24 @@
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm test` (63 web tests + 14 extension VS Code tests)
 - Next: inspect diff, commit, push, and continue.
+
+## 2026-07-01 04:50:56 CEST - Loop 3 Progress
+
+- Committed and pushed analytics/dashboard grouping coverage as `6a28203 Add analytics coverage`.
+- GitHub Actions for `6a28203` are queued/in progress.
+- PASS: production `/api/health` returns OK with database ready.
+- LIMITATION: production `/api/health` still reports `version.sha="unknown"` and `builtAt="unknown"`.
+- PASS: sanitized production Azure OAuth start still redirects to Microsoft with PKCE `S256`, state, client id, and required Azure DevOps scopes.
+- Next: poll CI and continue with the next high-value gap.
+
+## 2026-07-01 04:52:27 CEST - Loop 3 Validation
+
+- PASS: GitHub Actions for `6a28203 Add analytics coverage` completed successfully on both CI and extension build workflows.
+- Extracted GitHub billing sync date parsing into a tested helper.
+- Added tests for valid dates, leap day, missing/default dates, malformed dates, and impossible calendar dates.
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web test` (66 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (66 web tests + 14 extension VS Code tests)
+- Next: inspect diff, commit, push, and continue.

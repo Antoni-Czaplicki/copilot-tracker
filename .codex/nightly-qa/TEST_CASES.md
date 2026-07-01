@@ -201,3 +201,6 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | UI-193 | Web | PASS | Public leaderboard ranks meaningful requests by total tokens and uses stored GitHub mappings | Automated | Added analytics coverage; web tests passed |
 | UI-194 | Web | PASS | Model summaries group known model ids and unknown model requests | Automated | Added analytics coverage; web tests passed |
 | UI-195 | Web | PASS | Repository and activity helpers handle Windows paths, workspace fallbacks, and invalid dates | Automated | Added analytics coverage; web tests passed |
+| API-196 | API/Backend | PASS | GitHub billing sync date parser accepts valid dates and leap days | Automated | Added `parseBillingDate` coverage; web tests passed |
+| API-197 | API/Backend | PASS | GitHub billing sync date parser treats missing date as default-date request | Automated | Added `parseBillingDate` coverage; web tests passed |
+| API-198 | API/Backend | PASS | GitHub billing sync date parser rejects malformed and impossible dates | Automated | Added `parseBillingDate` coverage; web tests passed |

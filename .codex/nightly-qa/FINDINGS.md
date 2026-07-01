@@ -40,6 +40,7 @@
 5. [FIXED in `32a4cfd`] Admin export `type` query should be enum-validated.
 6. [PARTIAL] Web API/domain tests now cover payload schemas including chat request defaults/bounds and tracker event validation, Azure DevOps WIQL/search helpers, work-item empty route behavior, and utility domains; DB integration tests are still missing.
 7. [PARTIAL] Dashboard analytics grouping now has pure coverage for summary, task, developer-task, leaderboard, model, repository, and timestamp behavior; rendered browser/component coverage is still missing.
+8. [FIXED] GitHub billing sync date parsing had no direct coverage for default, malformed, leap-day, or impossible-date behavior.
 7. [FIXED] Azure DevOps work-item WIQL generation accepted unsafe numeric strings and non-finite limits.
 8. [FIXED] Admin export validates unsupported export type before loading the full database.
 9. [FIXED] Admin export CSV/type helpers had no pure tests for type parsing, quoting, placeholder filtering, or billing export rows.
