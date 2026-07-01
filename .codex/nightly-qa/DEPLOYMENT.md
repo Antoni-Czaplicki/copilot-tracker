@@ -74,3 +74,7 @@
 ## 2026-07-01 03:38 CEST CI Poll
 
 - PASS: GitHub Actions for `be7beec Support clearing web task assignments` completed successfully on both CI and extension build workflows.
+
+## 2026-07-01 03:41 CEST CI Poll
+
+- PASS: GitHub Actions for `f15b18c Add safe Azure auth failure hints` completed successfully on both CI and extension build workflows.

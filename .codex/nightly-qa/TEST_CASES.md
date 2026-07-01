@@ -169,3 +169,4 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | AUTH-161 | Auth | PASS | Login failure UI maps `invalid_client` to a safe operator hint without provider descriptions | Automated + build | Added `authFailureHint` coverage; web test/lint/typecheck/build passed |
 | AUTH-162 | Auth | PASS | Login failure UI maps invalid OAuth state/PKCE failures to a safe retry/cookie hint | Automated + build | Added `authFailureHint` coverage; web test/lint/typecheck/build passed |
 | AUTH-163 | Auth | PASS | Unknown auth failure codes do not display invented guidance | Automated | Added unknown-code test; web tests passed |
+| EXT-164 | Extension | PASS | Extension cost estimator prices known model input/output token splits | Automated | Replaced placeholder sample test; extension tests passed |

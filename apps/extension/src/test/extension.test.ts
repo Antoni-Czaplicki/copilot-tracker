@@ -6,6 +6,7 @@ import * as vscode from "vscode";
 
 import { formatLogDetails } from "../logger";
 import { readCopilotOtelRequests } from "../otel";
+import { estimateRequestsCostUsd } from "../pricing";
 import {
   planRequestUpload,
   readRequestUploadState,
@@ -18,9 +19,16 @@ import { getTaskFromBranch } from "../workspaceContext";
 suite("Extension Test Suite", () => {
   vscode.window.showInformationMessage("Start all tests.");
 
-  test("Sample test", () => {
-    assert.strictEqual(-1, [1, 2, 3].indexOf(5));
-    assert.strictEqual(-1, [1, 2, 3].indexOf(0));
+  test("Estimates known model cost from input and output tokens", () => {
+    const cost = estimateRequestsCostUsd([
+      createChatRequest({
+        modelId: "openai/OpenAI/gpt-5-nano",
+        inputTokens: 1_000_000,
+        outputTokens: 1_000_000,
+      }),
+    ]);
+
+    assert.strictEqual(cost, 0.45);
   });
 
   test("Detects Azure DevOps numeric task ids from branches", () => {

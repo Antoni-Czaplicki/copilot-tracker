@@ -374,3 +374,18 @@
 - Added tests for common auth hints and unknown-code suppression.
 - Validation passed: web test suite now reports 22 tests, plus web lint, typecheck, and placeholder production build.
 - Next: inspect diff, commit/push auth failure hints, then poll CI/production.
+
+## 2026-07-01 03:40:22 CEST - Loop 3 Progress
+
+- Committed and pushed safe Azure auth failure hints as `f15b18c Add safe Azure auth failure hints`.
+- Local tree is clean after push.
+- GitHub Actions for `f15b18c` are in progress.
+- Production health still returns OK with database ready and `version.sha="unknown"`.
+- Next: continue the next non-auth-blocked improvement while CI runs.
+
+## 2026-07-01 03:41:27 CEST - Loop 3 Progress
+
+- GitHub Actions for `f15b18c` completed successfully on both CI and extension build workflows.
+- Replaced the extension's default placeholder sample test with a real cost-estimation regression for known model input/output token pricing.
+- Validation passed: `pnpm --filter ./apps/extension test` reported 10 passing tests.
+- Next: inspect diff, commit/push extension test cleanup, then poll CI/production.

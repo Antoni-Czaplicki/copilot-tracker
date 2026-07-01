@@ -50,6 +50,14 @@
 
 - PASS: `pnpm --filter ./apps/extension test`
 
+## 2026-07-01 - Extension Test Suite Cleanup
+
+- Replaced the placeholder VS Code sample test with a real cost-estimation regression for known model input/output token pricing.
+
+## Checks
+
+- PASS: `pnpm --filter ./apps/extension test`
+
 ## 2026-07-01 - Admin Export Validation Order
 
 - Moved admin export `type` validation before `readDatabase()` so unsupported export requests return 400 without loading full export data.
