@@ -780,3 +780,32 @@
 - PASS: `pnpm test` (66 web tests + 16 extension VS Code tests)
 - NOTE: final root test reran after replacing a floating-point artifact assertion with a rounded cost assertion.
 - Next: inspect diff, commit, push, and continue.
+
+## 2026-07-01 04:57:57 CEST - Loop 3 Progress
+
+- Committed and pushed extension current-session token stats coverage as `0ccdab6 Add extension session stats coverage`.
+- GitHub Actions for `0ccdab6` are in progress.
+- PASS: production `/api/health` returns OK with database ready.
+- LIMITATION: production `/api/health` still reports `version.sha="unknown"` and `builtAt="unknown"`.
+- PASS: sanitized production Azure OAuth start still redirects to Microsoft with PKCE `S256`, state, client id, and required Azure DevOps scopes.
+- Next: poll CI and continue with the next high-value gap.
+
+## 2026-07-01 04:59:26 CEST - Loop 3 Chrome Production Smoke
+
+- PASS: Chrome loaded `https://copilot-tracker.antek.page/` with title `Copilot Tracker`.
+- PASS: Chrome DOM check found `/api/auth/azure-devops` login links.
+- PASS: Chrome auth navigation returned to `/?auth=failed&auth_code=invalid_client`.
+- PASS: Chrome auth failure did not expose provider `error_description` details in the URL or body text.
+- STALE/LIMITATION: Chrome did not show the newer `invalid_client` safe operator hint text, so production frontend still appears behind that UI change or serving a stale build; exact deployed commit is not provable while health metadata is unknown.
+- Finalized Chrome tab cleanup.
+
+## 2026-07-01 05:01:25 CEST - Loop 3 Validation
+
+- PASS: GitHub Actions for `0ccdab6 Add extension session stats coverage` completed successfully on both CI and extension build workflows.
+- Synced extension pricing aliases with the broader web pricing table for newer gpt-5.4, Claude, Gemini, raptor, and MAI aliases.
+- Added extension pricing assertions for `gpt-5.4-nano` and `claude-haiku-4.5` so status bar cost estimates do not silently under-report those models.
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS: `pnpm --filter ./apps/extension lint`
+- PASS: `pnpm --filter ./apps/extension test` (16 tests)
+- PASS: `pnpm test` (66 web tests + 16 extension VS Code tests)
+- Next: inspect diff, commit, push, and continue.

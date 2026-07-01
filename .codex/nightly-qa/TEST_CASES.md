@@ -206,3 +206,5 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | API-198 | API/Backend | PASS | GitHub billing sync date parser rejects malformed and impossible dates | Automated | Added `parseBillingDate` coverage; web tests passed |
 | EXT-199 | Extension | PASS | Current session token stats return null when no completed total-token request exists | Automated | Extracted `sessionTokenStats`; extension tests passed |
 | EXT-200 | Extension | PASS | Current session token stats choose the latest tokenized session and aggregate incomplete rows as lower-bound data | Automated | Extracted `sessionTokenStats`; extension tests passed |
+| EXT-201 | Extension | PASS | Extension cost estimator prices newer `gpt-5.4-nano` aliases | Automated | Added pricing assertion; extension tests passed |
+| EXT-202 | Extension | PASS | Extension cost estimator prices `claude-haiku-4.5` aliases | Automated | Added pricing assertion; extension tests passed |

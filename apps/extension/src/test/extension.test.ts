@@ -26,15 +26,40 @@ suite("Extension Test Suite", () => {
   vscode.window.showInformationMessage("Start all tests.");
 
   test("Estimates known model cost from input and output tokens", () => {
-    const cost = estimateRequestsCostUsd([
-      createChatRequest({
-        modelId: "openai/OpenAI/gpt-5-nano",
-        inputTokens: 1_000_000,
-        outputTokens: 1_000_000,
-      }),
-    ]);
-
-    assert.strictEqual(cost, 0.45);
+    assert.strictEqual(
+      estimateRequestsCostUsd([
+        createChatRequest({
+          modelId: "openai/OpenAI/gpt-5-nano",
+          inputTokens: 1_000_000,
+          outputTokens: 1_000_000,
+        }),
+      ]),
+      0.45,
+    );
+    assert.strictEqual(
+      estimateRequestsCostUsd([
+        createChatRequest({
+          modelId: "gpt-5.4-nano",
+          modelName: null,
+          resolvedModel: null,
+          inputTokens: 1_000_000,
+          outputTokens: 1_000_000,
+        }),
+      ]),
+      1.45,
+    );
+    assert.strictEqual(
+      estimateRequestsCostUsd([
+        createChatRequest({
+          modelId: "claude-haiku-4.5",
+          modelName: null,
+          resolvedModel: null,
+          inputTokens: 1_000_000,
+          outputTokens: 1_000_000,
+        }),
+      ]),
+      6,
+    );
   });
 
   test("Detects Azure DevOps numeric task ids from branches", () => {

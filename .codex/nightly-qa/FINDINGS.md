@@ -16,6 +16,7 @@
 12. [FIXED] Extension test suite still contained the default placeholder sample test.
 13. [FIXED] Root `pnpm test` only ran extension tests and skipped the web regression suite.
 14. [PARTIAL] Extension current-session token stat aggregation is now covered; rendered status bar tooltip behavior still needs an integration/UI test.
+15. [FIXED] Extension pricing table lagged behind web pricing aliases, which could under-report status bar/session costs for newer model names.
 
 ## Web UX
 

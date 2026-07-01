@@ -215,3 +215,23 @@
 ## 2026-07-01 04:55 CEST CI Poll
 
 - PASS: GitHub Actions for `b78a488 Add billing date coverage` completed successfully on both CI and extension build workflows.
+
+## 2026-07-01 04:57 CEST Production Poll
+
+- PUSHED: `0ccdab6 Add extension session stats coverage`.
+- IN PROGRESS: GitHub Actions for `0ccdab6` started after push.
+- PASS: production `/api/health` returned HTTP 200 with `ok=true` and `database.ok=true`.
+- LIMITATION: production `/api/health` still reports `sha="unknown"` and `builtAt="unknown"`.
+- PASS: production Azure OAuth start redirect includes state, PKCE `S256`, client id, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
+
+## 2026-07-01 04:59 CEST Chrome Production Smoke
+
+- PASS: real Chrome loaded `https://copilot-tracker.antek.page/` with title `Copilot Tracker`.
+- PASS: Chrome DOM check found login links pointing to `/api/auth/azure-devops`.
+- PASS: navigating through production Azure auth returned to `/?auth=failed&auth_code=invalid_client`.
+- PASS: provider `error_description` was not visible in the production URL or body text.
+- STALE/LIMITATION: the newer `invalid_client` safe operator hint was still not visible in Chrome production, reinforcing that deployed frontend freshness cannot be proven until build metadata is configured.
+
+## 2026-07-01 05:01 CEST CI Poll
+
+- PASS: GitHub Actions for `0ccdab6 Add extension session stats coverage` completed successfully on both CI and extension build workflows.

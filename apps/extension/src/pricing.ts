@@ -23,6 +23,16 @@ const modelPrices: ModelPrice[] = [
     outputUsdPerMillion: 14,
   },
   {
+    aliases: ["gpt-5.4 mini", "gpt-5.4-mini"],
+    inputUsdPerMillion: 0.75,
+    outputUsdPerMillion: 4.5,
+  },
+  {
+    aliases: ["gpt-5.4 nano", "gpt-5.4-nano"],
+    inputUsdPerMillion: 0.2,
+    outputUsdPerMillion: 1.25,
+  },
+  {
     aliases: ["gpt-5.4", "gpt 5.4"],
     inputUsdPerMillion: 2.5,
     outputUsdPerMillion: 15,
@@ -33,12 +43,42 @@ const modelPrices: ModelPrice[] = [
     outputUsdPerMillion: 30,
   },
   {
-    aliases: ["claude sonnet", "claude-sonnet"],
+    aliases: ["claude haiku 4.5", "claude-haiku-4.5"],
+    inputUsdPerMillion: 1,
+    outputUsdPerMillion: 5,
+  },
+  {
+    aliases: ["claude sonnet 4", "claude-sonnet-4"],
     inputUsdPerMillion: 3,
     outputUsdPerMillion: 15,
   },
   {
-    aliases: ["claude opus", "claude-opus"],
+    aliases: ["claude sonnet 4.5", "claude-sonnet-4.5"],
+    inputUsdPerMillion: 3,
+    outputUsdPerMillion: 15,
+  },
+  {
+    aliases: ["claude sonnet 4.6", "claude-sonnet-4.6"],
+    inputUsdPerMillion: 3,
+    outputUsdPerMillion: 15,
+  },
+  {
+    aliases: ["claude opus 4.5", "claude-opus-4.5"],
+    inputUsdPerMillion: 5,
+    outputUsdPerMillion: 25,
+  },
+  {
+    aliases: ["claude opus 4.6", "claude-opus-4.6"],
+    inputUsdPerMillion: 5,
+    outputUsdPerMillion: 25,
+  },
+  {
+    aliases: ["claude opus 4.7", "claude-opus-4.7"],
+    inputUsdPerMillion: 5,
+    outputUsdPerMillion: 25,
+  },
+  {
+    aliases: ["claude opus 4.8", "claude-opus-4.8"],
     inputUsdPerMillion: 5,
     outputUsdPerMillion: 25,
   },
@@ -51,6 +91,31 @@ const modelPrices: ModelPrice[] = [
     aliases: ["gemini 2.5 pro", "gemini-2.5-pro"],
     inputUsdPerMillion: 1.25,
     outputUsdPerMillion: 10,
+  },
+  {
+    aliases: ["gemini 3 flash", "gemini-3-flash"],
+    inputUsdPerMillion: 0.5,
+    outputUsdPerMillion: 3,
+  },
+  {
+    aliases: ["gemini 3.1 pro", "gemini-3.1-pro"],
+    inputUsdPerMillion: 2,
+    outputUsdPerMillion: 12,
+  },
+  {
+    aliases: ["gemini 3.5 flash", "gemini-3.5-flash"],
+    inputUsdPerMillion: 1.5,
+    outputUsdPerMillion: 9,
+  },
+  {
+    aliases: ["raptor mini", "raptor-mini"],
+    inputUsdPerMillion: 0.25,
+    outputUsdPerMillion: 2,
+  },
+  {
+    aliases: ["mai-code-1-flash", "mai code 1 flash"],
+    inputUsdPerMillion: 0.75,
+    outputUsdPerMillion: 4.5,
   },
 ];
 

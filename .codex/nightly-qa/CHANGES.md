@@ -556,3 +556,15 @@
 - PASS: `pnpm --filter ./apps/extension lint`
 - PASS: `pnpm --filter ./apps/extension test` (16 tests)
 - PASS: `pnpm test` (66 web tests + 16 extension VS Code tests)
+
+## 2026-07-01 - Extension Pricing Parity
+
+- Added newer web-known model aliases to the extension pricing table so status bar/session cost estimates cover the same current model families.
+- Added extension pricing assertions for `gpt-5.4-nano` and `claude-haiku-4.5`.
+
+## Checks
+
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS: `pnpm --filter ./apps/extension lint`
+- PASS: `pnpm --filter ./apps/extension test` (16 tests)
+- PASS: `pnpm test` (66 web tests + 16 extension VS Code tests)
