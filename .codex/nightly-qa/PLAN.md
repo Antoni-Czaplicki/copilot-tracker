@@ -13,9 +13,9 @@
 
 ## Loop 2 - Production Freshness and Remaining Gaps
 
-- [ ] Wait for latest GitHub CI to finish
-- [ ] Poll production `/api/health` and OAuth/privacy behavior
-- [ ] Investigate Dokploy/deploy visibility or document blocker
+- [x] Wait for latest GitHub CI to finish
+- [x] Poll production `/api/health` and OAuth/privacy behavior
+- [x] Investigate Dokploy/deploy visibility or document blocker
 - [ ] Continue remaining high-value fixes
 - [ ] Run full repo checks after next code slice
 - [ ] Update handoff and deployment logs
@@ -218,6 +218,17 @@
 - [x] Verify production homepage title and login anchors in Chrome
 - [x] Verify `/api/auth/azure-devops` real-browser flow returns `auth_code=invalid_client`
 - [x] Verify failure copy includes safe generic guidance and does not expose provider details
+
+## Loop 59 - Azure OAuth Callback Success Coverage
+
+- [x] Re-sync repo, CI, and production smoke state
+- [x] Confirm Dokploy MCP is not exposed in this Codex session
+- [x] Add a small test seam for the Azure OAuth callback route
+- [x] Add route-level success coverage for dashboard session creation and OAuth cookie clearing
+- [x] Add route-level failure coverage for safe session-creation exceptions
+- [x] Run focused web tests, typecheck, and lint
+- [x] Run broad repo validation
+- [ ] Commit, push, and verify CI/production smoke
 - [x] Close Chrome test tab
 - [x] Continue next code/test improvement
 

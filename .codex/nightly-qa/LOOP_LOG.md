@@ -2331,3 +2331,24 @@
 - WARN/FIXED OPERATIONALLY: production still served previous SHA `6477f9c` after Dokploy marked the deployment done; Dokploy app `Reload` switched production to `d19e76c`.
 - PASS: strict `pnpm smoke:production -- --expect-sha d19e76c` passed after Reload.
 - NEXT: continue the next highest-value QA gap.
+
+## 2026-07-01 14:48:59 CEST - Loop 59 Auth Callback Coverage Start
+
+- PASS: worktree started with no code changes after the prior log commit.
+- PASS: GitHub Actions `CI` and `Build extension` are green for `fc748f7`.
+- PASS: strict production smoke still passes for deployed app commit `d19e76c`.
+- INFO: Dokploy MCP/tool discovery still does not expose a callable Dokploy connector in this Codex session; continue using Dokploy UI plus strict production smoke as the fallback.
+- IMPLEMENTED: the Azure OAuth callback route now exposes a dependency-injected handler factory for tests while the exported `GET` route keeps the production defaults.
+- ADDED: route coverage for successful callback session creation, secure session-cookie setting, and OAuth PKCE cookie clearing.
+- ADDED: route coverage for session creation exceptions redirecting safely with `auth_code=callback_failed`, `auth_ref`, redacted client URL, server-side diagnostics, and OAuth cookie clearing.
+- PASS: `pnpm --filter @copilot-tracker/web test` (146 tests), web typecheck, and web lint.
+- PASS: `pnpm -r typecheck`.
+- PASS: `pnpm -r lint`.
+- PASS: production-style `pnpm --filter @copilot-tracker/web build` with safe placeholder Azure/env values.
+- PASS: `pnpm --filter ./apps/extension compile`.
+- PASS: `pnpm --filter ./apps/extension test` (30 tests).
+- PASS: `pnpm test:smoke` (11 tests).
+- PASS: root `pnpm test` (smoke, 146 web tests, 30 extension tests).
+- PASS: `git diff --check`.
+- PASS: strict production smoke still passes for deployed app commit `d19e76c`.
+- NEXT: commit/push, then verify CI, Dokploy deployment, and production smoke for the new app commit.

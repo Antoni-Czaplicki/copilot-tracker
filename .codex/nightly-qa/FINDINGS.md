@@ -92,7 +92,7 @@
 3. [FIXED in `a85225d`] Azure token encryption falls back to `AZURE_DEVOPS_CLIENT_SECRET`; app now avoids the client-secret fallback and does not persist session tokens when the dedicated key is missing.
 4. [FIXED in `91d2a7a`] Leaderboard exposes all signed-in developers' leaderboard and login mapping data to any signed-in user.
 5. [FIXED in `d260639`] Extension info logs and context UI include raw local paths, remote URLs, and storage paths.
-6. [PARTIAL] Web auth tests now cover callback code sanitization, safe failure hints, cookie security/removal attributes, disabled-auth identity shape, bearer parsing, PKCE challenge generation, OAuth start redirect/cookies, token exchange request/error behavior, and safe callback failure branches; callback success/session creation, profile/org checks, and work-item status mapping still need route/integration coverage.
+6. [PARTIAL] Web auth tests now cover callback code sanitization, safe failure hints, cookie security/removal attributes, disabled-auth identity shape, bearer parsing, PKCE challenge generation, OAuth start redirect/cookies, token exchange request/error behavior, safe callback failure branches, callback success session-cookie behavior, and safe session-creation exceptions; DB-backed route integration still needs coverage.
 7. [FIXED] Extension tracker events sent local OS username even though the backend already stamps authenticated user identity.
 8. [FIXED] Login failure UI showed stable OAuth codes but did not give safe, actionable hints for common Azure failures such as `invalid_client`.
 9. [FIXED] Malformed or empty `Authorization: Bearer` headers could reach Azure user/profile lookup instead of failing locally.

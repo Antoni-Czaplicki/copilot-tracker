@@ -318,3 +318,11 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - `d19e76c Cover work-item picker keyboard movement` is pushed, CI-green, built by Dokploy, and live in production after Dokploy app Reload.
 - Strict production smoke passes for `d19e76c`.
 - Dokploy repeated the "done but stale until Reload" behavior, strengthening the case that Reload should remain part of the fallback playbook when strict smoke catches stale production.
+
+## 2026-07-01 14:49 CEST OAuth Callback Coverage In Progress
+
+- Added a small test seam for the Azure OAuth callback route without changing the default production route dependencies.
+- Added route-level coverage for successful session creation and safe session-creation failure handling.
+- Focused web checks pass: 146 web tests, web typecheck, and web lint.
+- Broad validation also passes: repo typecheck/lint, production-style web build, extension compile/test, smoke tests, root tests, diff check, and strict production smoke for deployed `d19e76c`.
+- Next: commit/push, verify CI and Dokploy deployment, then rerun strict production smoke for the new app commit.

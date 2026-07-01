@@ -19,100 +19,125 @@ import {
 } from "@/lib/authCallback";
 import { MissingAzureDevOpsOAuthConfigError, appBaseUrl } from "@/lib/config";
 
-export async function GET(request: NextRequest) {
-  try {
-    const providerError = request.nextUrl.searchParams.get("error");
-    if (providerError) {
-      const code = providerFailureCode(providerError);
-      return failureResponse(request, code, {
-        providerError,
-        providerErrorDescription:
-          request.nextUrl.searchParams.get("error_description"),
-        stage: "provider_error",
-      });
-    }
+interface AzureDevOpsCallbackDependencies {
+  createUserSession: typeof createUserSession;
+  exchangeAzureDevOpsCode: typeof exchangeAzureDevOpsCode;
+  fetchAzureDevOpsUserWithDiagnostics: typeof fetchAzureDevOpsUserWithDiagnostics;
+}
 
-    const code = request.nextUrl.searchParams.get("code");
-    const state = request.nextUrl.searchParams.get("state");
-    const expectedState = request.cookies.get(oauthStateCookie())?.value;
-    const codeVerifier = request.cookies.get(oauthCodeVerifierCookie())?.value;
-    if (
-      code === null ||
-      code === "" ||
-      state === null ||
-      state === "" ||
-      state !== expectedState ||
-      codeVerifier === undefined ||
-      codeVerifier === ""
-    ) {
-      return failureResponse(request, "invalid_oauth_state", {
-        hasCode: code !== null && code !== "",
-        hasCodeVerifier: codeVerifier !== undefined && codeVerifier !== "",
-        hasExpectedState: expectedState !== undefined && expectedState !== "",
-        hasState: state !== null && state !== "",
-        stage: "oauth_state",
-        stateMatches:
-          state !== null &&
-          state !== "" &&
-          expectedState !== undefined &&
-          expectedState !== "" &&
-          state === expectedState,
-      });
-    }
+const defaultDependencies: AzureDevOpsCallbackDependencies = {
+  createUserSession,
+  exchangeAzureDevOpsCode,
+  fetchAzureDevOpsUserWithDiagnostics,
+};
 
-    let tokens: Awaited<ReturnType<typeof exchangeAzureDevOpsCode>>;
+export const GET = createAzureDevOpsCallbackHandler();
+
+export function createAzureDevOpsCallbackHandler(
+  dependencies: Partial<AzureDevOpsCallbackDependencies> = {},
+) {
+  const auth = { ...defaultDependencies, ...dependencies };
+
+  return async function handleAzureDevOpsCallback(request: NextRequest) {
     try {
-      tokens = await exchangeAzureDevOpsCode(code, codeVerifier);
-    } catch (error) {
-      if (error instanceof AzureDevOpsTokenExchangeError) {
-        return failureResponse(request, error.code, {
-          errorMessage: error.description,
-          errorName: error.name,
+      const providerError = request.nextUrl.searchParams.get("error");
+      if (providerError) {
+        const code = providerFailureCode(providerError);
+        return failureResponse(request, code, {
+          providerError,
+          providerErrorDescription:
+            request.nextUrl.searchParams.get("error_description"),
+          stage: "provider_error",
+        });
+      }
+
+      const code = request.nextUrl.searchParams.get("code");
+      const state = request.nextUrl.searchParams.get("state");
+      const expectedState = request.cookies.get(oauthStateCookie())?.value;
+      const codeVerifier = request.cookies.get(oauthCodeVerifierCookie())?.value;
+      if (
+        code === null ||
+        code === "" ||
+        state === null ||
+        state === "" ||
+        state !== expectedState ||
+        codeVerifier === undefined ||
+        codeVerifier === ""
+      ) {
+        return failureResponse(request, "invalid_oauth_state", {
+          hasCode: code !== null && code !== "",
+          hasCodeVerifier: codeVerifier !== undefined && codeVerifier !== "",
+          hasExpectedState: expectedState !== undefined && expectedState !== "",
+          hasState: state !== null && state !== "",
+          stage: "oauth_state",
+          stateMatches:
+            state !== null &&
+            state !== "" &&
+            expectedState !== undefined &&
+            expectedState !== "" &&
+            state === expectedState,
+        });
+      }
+
+      let tokens: Awaited<ReturnType<typeof exchangeAzureDevOpsCode>>;
+      try {
+        tokens = await auth.exchangeAzureDevOpsCode(code, codeVerifier);
+      } catch (error) {
+        if (error instanceof AzureDevOpsTokenExchangeError) {
+          return failureResponse(request, error.code, {
+            errorMessage: error.description,
+            errorName: error.name,
+            stage: "token_exchange",
+          });
+        }
+
+        throw error;
+      }
+      if (tokens === null) {
+        return failureResponse(request, "token_exchange_failed", {
           stage: "token_exchange",
         });
       }
 
-      throw error;
-    }
-    if (tokens === null) {
-      return failureResponse(request, "token_exchange_failed", {
-        stage: "token_exchange",
-      });
-    }
-
-    const azureUserResult = await fetchAzureDevOpsUserWithDiagnostics(
-      tokens.accessToken,
-    );
-    if (azureUserResult.user === null) {
-      return failureResponse(request, "profile_or_org_check_failed", {
-        ...azureUserResult.diagnostics,
-        stage: "profile_or_org_check",
-      });
-    }
-
-    const sessionId = await createUserSession(azureUserResult.user, tokens);
-    const response = NextResponse.redirect(new URL("/dashboard", appBaseUrl()));
-    response.cookies.set(sessionCookie(), sessionId, {
-      ...secureCookieOptions(30 * 24 * 60 * 60),
-    });
-    clearOauthCookies(response);
-    return response;
-  } catch (error) {
-    if (error instanceof MissingAzureDevOpsOAuthConfigError) {
-      const response = NextResponse.redirect(
-        new URL("/?auth=misconfigured", appBaseUrl()),
+      const azureUserResult = await auth.fetchAzureDevOpsUserWithDiagnostics(
+        tokens.accessToken,
       );
+      if (azureUserResult.user === null) {
+        return failureResponse(request, "profile_or_org_check_failed", {
+          ...azureUserResult.diagnostics,
+          stage: "profile_or_org_check",
+        });
+      }
+
+      const sessionId = await auth.createUserSession(
+        azureUserResult.user,
+        tokens,
+      );
+      const response = NextResponse.redirect(
+        new URL("/dashboard", appBaseUrl()),
+      );
+      response.cookies.set(sessionCookie(), sessionId, {
+        ...secureCookieOptions(30 * 24 * 60 * 60),
+      });
       clearOauthCookies(response);
       return response;
-    }
+    } catch (error) {
+      if (error instanceof MissingAzureDevOpsOAuthConfigError) {
+        const response = NextResponse.redirect(
+          new URL("/?auth=misconfigured", appBaseUrl()),
+        );
+        clearOauthCookies(response);
+        return response;
+      }
 
-    return failureResponse(request, "callback_failed", {
-      errorMessage: error instanceof Error ? error.message : String(error),
-      errorName: error instanceof Error ? error.name : typeof error,
-      errorStack: error instanceof Error ? error.stack : null,
-      stage: "callback_exception",
-    });
-  }
+      return failureResponse(request, "callback_failed", {
+        errorMessage: error instanceof Error ? error.message : String(error),
+        errorName: error instanceof Error ? error.name : typeof error,
+        errorStack: error instanceof Error ? error.stack : null,
+        stage: "callback_exception",
+      });
+    }
+  };
 }
 
 function failureResponse(

@@ -205,6 +205,154 @@ void test("Azure OAuth callback missing code or verifier fails safely", async ()
   );
 });
 
+void test("Azure OAuth callback success creates a dashboard session and clears OAuth cookies", async () => {
+  const tokens = {
+    accessToken: "access-token",
+    expiresAt: "2026-07-01T13:00:00.000Z",
+    refreshToken: "refresh-token",
+  };
+  const azureUser = {
+    avatarUrl: null,
+    email: "user@example.test",
+    id: "azure-user-id",
+    login: "user@example.test",
+    name: "Test User",
+  };
+  const handler = callbackRoute.createAzureDevOpsCallbackHandler({
+    createUserSession: async (receivedUser, receivedTokens) => {
+      await Promise.resolve();
+      assert.deepEqual(receivedUser, azureUser);
+      assert.deepEqual(receivedTokens, tokens);
+      return "session-id";
+    },
+    exchangeAzureDevOpsCode: async (code, codeVerifier) => {
+      await Promise.resolve();
+      assert.equal(code, "code");
+      assert.equal(codeVerifier, "verifier");
+      return tokens;
+    },
+    fetchAzureDevOpsUserWithDiagnostics: async (accessToken) => {
+      await Promise.resolve();
+      assert.equal(accessToken, "access-token");
+      return {
+        diagnostics: {
+          hasProfileId: true,
+          orgMembershipAccountCount: 1,
+          orgMembershipResult: "matched",
+          orgMembershipStatus: 200,
+          profileResult: "ok",
+          profileStatus: 200,
+        },
+        user: azureUser,
+      };
+    },
+  });
+  const { response, warnings } = await captureWarnings(async () =>
+    await handler(
+      new NextRequest(
+        "https://copilot-tracker.example/api/auth/callback/azure-devops?code=code&state=expected",
+        {
+          headers: {
+            cookie:
+              "copilot_tracker_oauth_state=expected; copilot_tracker_oauth_code_verifier=verifier",
+          },
+        },
+      ),
+    ),
+  );
+  const redirectUrl = new URL(assertHeader(response, "location"));
+  const cookies = response.headers.getSetCookie();
+
+  assert.equal(response.status, 307);
+  assert.equal(redirectUrl.pathname, "/dashboard");
+  assert.deepEqual(warnings, []);
+  assertCookie(cookies, "copilot_tracker_session", "session-id");
+  assertCookie(cookies, "copilot_tracker_session", "Max-Age=2592000");
+  assertCookie(cookies, "copilot_tracker_session", "HttpOnly");
+  assertCookie(cookies, "copilot_tracker_session", "Secure");
+  assertCookie(cookies, "copilot_tracker_oauth_state", "Max-Age=0");
+  assertCookie(
+    cookies,
+    "copilot_tracker_oauth_code_verifier",
+    "Max-Age=0",
+  );
+});
+
+void test("Azure OAuth callback session creation failures redirect safely and clear OAuth cookies", async () => {
+  const handler = callbackRoute.createAzureDevOpsCallbackHandler({
+    createUserSession: async () => {
+      await Promise.resolve();
+      throw new Error("database unavailable");
+    },
+    exchangeAzureDevOpsCode: async () => {
+      await Promise.resolve();
+      return {
+        accessToken: "access-token",
+        expiresAt: "2026-07-01T13:00:00.000Z",
+        refreshToken: "refresh-token",
+      };
+    },
+    fetchAzureDevOpsUserWithDiagnostics: async () => {
+      await Promise.resolve();
+      return {
+        diagnostics: {
+          hasProfileId: true,
+          orgMembershipAccountCount: 1,
+          orgMembershipResult: "matched",
+          orgMembershipStatus: 200,
+          profileResult: "ok",
+          profileStatus: 200,
+        },
+        user: {
+          avatarUrl: null,
+          email: null,
+          id: "azure-user-id",
+          login: "azure-user-id",
+          name: null,
+        },
+      };
+    },
+  });
+  const { response, warnings } = await captureWarnings(async () =>
+    await handler(
+      new NextRequest(
+        "https://copilot-tracker.example/api/auth/callback/azure-devops?code=code&state=expected",
+        {
+          headers: {
+            cookie:
+              "copilot_tracker_oauth_state=expected; copilot_tracker_oauth_code_verifier=verifier",
+          },
+        },
+      ),
+    ),
+  );
+  const redirectUrl = new URL(assertHeader(response, "location"));
+  const cookies = response.headers.getSetCookie();
+  const log = parseAuthLog(warnings);
+
+  assert.equal(response.status, 307);
+  assert.equal(redirectUrl.pathname, "/");
+  assert.equal(redirectUrl.searchParams.get("auth"), "failed");
+  assert.equal(redirectUrl.searchParams.get("auth_code"), "callback_failed");
+  assert.match(redirectUrl.searchParams.get("auth_ref") ?? "", /^[0-9a-f]{16}$/);
+  assert.equal(redirectUrl.searchParams.has("error"), false);
+  assert.equal(redirectUrl.searchParams.has("error_description"), false);
+  assert.equal(
+    cookies.some((cookie) => cookie.startsWith("copilot_tracker_session=")),
+    false,
+  );
+  assertCookie(cookies, "copilot_tracker_oauth_state", "Max-Age=0");
+  assertCookie(
+    cookies,
+    "copilot_tracker_oauth_code_verifier",
+    "Max-Age=0",
+  );
+  assert.equal(log.code, "callback_failed");
+  assert.equal(log.errorMessage, "database unavailable");
+  assert.equal(log.errorName, "Error");
+  assert.equal(log.stage, "callback_exception");
+});
+
 void test("Azure OAuth callback logs profile and org diagnostics server-side", async (context) => {
   context.after(() => {
     globalThis.fetch = originalFetch;

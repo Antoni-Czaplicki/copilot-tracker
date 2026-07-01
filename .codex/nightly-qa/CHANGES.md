@@ -1378,3 +1378,24 @@
 - PASS: `pnpm --filter ./apps/extension test` (30 tests)
 - PASS: `pnpm -r test --if-present` (137 web tests + 30 extension tests)
 - PASS: `pnpm test:smoke` (7 smoke tests)
+
+## 2026-07-01 - Azure OAuth Callback Route Coverage
+
+- Added a small `createAzureDevOpsCallbackHandler` test seam to the Azure OAuth callback route; the exported route still uses the original production dependencies by default.
+- Added route-level success coverage that verifies token exchange output is passed into session creation, `/dashboard` is the success redirect, the tracker session cookie is set with secure attributes, and OAuth PKCE cookies are cleared.
+- Added route-level exception coverage for session creation failures, verifying the browser only receives a safe `callback_failed` code and `auth_ref` while server logs retain the redacted diagnostic event.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web test` (146 tests)
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS: `pnpm --filter ./apps/extension test` (30 tests)
+- PASS: `pnpm test:smoke` (11 tests)
+- PASS: `pnpm test`
+- PASS: `git diff --check`
+- PASS: strict `pnpm smoke:production -- --expect-sha d19e76c`
