@@ -42,6 +42,7 @@
 14. [PARTIAL] Request session grouping, focused-session ordering, task fallback, token labels, and anchors now have pure coverage; rendered browser/component interaction tests are still missing.
 15. [FIXED] GitHub username editor collapsed safe server validation errors into a generic `Failed` message.
 16. [FIXED] Frontend mutation/search helpers duplicated JSON `{ error }` parsing and could display blank server error strings instead of a useful fallback.
+17. [FIXED] Homepage auth failure notices had safe text but lacked alert semantics and stronger visual emphasis for blocked login states.
 
 ## API / Backend
 

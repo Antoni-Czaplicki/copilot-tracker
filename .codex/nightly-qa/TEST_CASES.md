@@ -254,3 +254,4 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | AUTH-246 | Auth/Chrome | PASS | Production auth failure page shows safe generic invalid-client guidance without provider description leakage | Real Chrome | Verified no `AADSTS`, `error_description`, or client-secret values in rendered text |
 | API-247 | API/Backend | PASS | Shared JSON payload reader returns parsed arrays and scalar JSON values for downstream schema validation | Automated | Added `readJsonPayload` coverage; web/root tests passed |
 | API-248 | API/Backend | PASS | Event and chat request mutation routes share the tested malformed JSON fallback helper | Code review + automated | Reused `readJsonPayload`; web/root tests passed |
+| UI-249 | Web | PASS | Auth failure and misconfigured notices render as assertive alert regions with stronger error-code emphasis | Code review + build | Added alert semantics/destructive styling; typecheck/lint/tests/build passed |

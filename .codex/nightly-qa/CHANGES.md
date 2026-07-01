@@ -891,3 +891,16 @@
 - PASS: `pnpm test` (109 web tests + 25 extension VS Code tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm --filter ./apps/extension compile`
+
+## 2026-07-01 - Auth Failure Alert UX
+
+- Made unauthenticated homepage auth failure/misconfigured notices `role="alert"` with assertive live regions.
+- Added destructive visual emphasis and monospace rendering for the stable auth error code.
+
+## Checks
+
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (109 web tests + 25 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`

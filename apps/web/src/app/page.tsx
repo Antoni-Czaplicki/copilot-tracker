@@ -51,9 +51,15 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   return (
     <main className="grid gap-4">
       {authError === "misconfigured" ? (
-        <Card>
+        <Card
+          aria-live="assertive"
+          className="bg-destructive/5 ring-destructive/35"
+          role="alert"
+        >
           <CardHeader>
-            <CardTitle>Azure DevOps login is not configured</CardTitle>
+            <CardTitle className="text-destructive">
+              Azure DevOps login is not configured
+            </CardTitle>
             <CardDescription>
               Set AZURE_DEVOPS_CLIENT_ID, AZURE_DEVOPS_CLIENT_SECRET, and
               AZURE_DEVOPS_ORG for this deployment, then try logging in again.
@@ -62,16 +68,26 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         </Card>
       ) : null}
       {authError === "failed" ? (
-        <Card>
+        <Card
+          aria-live="assertive"
+          className="bg-destructive/5 ring-destructive/35"
+          role="alert"
+        >
           <CardHeader>
-            <CardTitle>Azure DevOps login failed</CardTitle>
+            <CardTitle className="text-destructive">
+              Azure DevOps login failed
+            </CardTitle>
             <CardDescription className="grid gap-2">
               <div>
                 Try logging in again. If it keeps failing, check that the Azure
                 app registration has Azure DevOps delegated permissions and
                 that your account belongs to the configured organization.
               </div>
-              {authErrorCode ? <div>Error: {authErrorCode}</div> : null}
+              {authErrorCode ? (
+                <div>
+                  Error: <code className="font-mono">{authErrorCode}</code>
+                </div>
+              ) : null}
               {authErrorHint ? <div>{authErrorHint}</div> : null}
             </CardDescription>
           </CardHeader>

@@ -228,7 +228,7 @@
 - [x] Add regression coverage
 - [x] Run focused and broad validation
 - [x] Commit, push, and smoke production
-- [ ] Verify CI completion for `8256b76`
+- [x] Verify CI completion for `8256b76`
 
 ## Loop 27 - Shared Route JSON Parsing
 
@@ -238,4 +238,13 @@
 - [x] Add JSON helper regression coverage
 - [x] Fix lint warning found during validation
 - [x] Run focused and broad validation
+- [x] Commit, push, and smoke production
+- [x] Verify CI completion for `72438f5`
+
+## Loop 28 - Auth Failure Alert UX
+
+- [x] Inspect homepage/auth failure rendering
+- [x] Make auth failure/misconfigured cards `role="alert"` with assertive live region
+- [x] Add destructive visual emphasis and monospace error code display
+- [x] Run broad validation
 - [ ] Commit, push, and smoke production
