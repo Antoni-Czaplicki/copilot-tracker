@@ -63,6 +63,19 @@
 - PASS: `docker compose config`
 - PASS: `git diff --check`
 
+## 2026-07-01 - Work Item Picker Debounce UX
+
+- Changed `WorkItemPicker` to track which query produced the current results.
+- Hides stale work-item results when the user edits the query and shows `Searching` while the new debounced search is pending.
+- Keeps empty "No matches" feedback for completed searches only.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web test`
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env and build metadata
+
 ## 2026-07-01 - Web Domain Test Harness
 
 - Added a lightweight web test harness using Node's built-in test runner with `tsx`.

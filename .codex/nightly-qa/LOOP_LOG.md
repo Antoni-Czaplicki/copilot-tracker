@@ -234,3 +234,16 @@
 - Added `.codex` to `.dockerignore` so nightly QA logs are not included in Docker build contexts.
 - Validation passed: `docker compose config` and `git diff --check`.
 - Next: inspect diff, commit/push deployment docs, then poll CI/production.
+
+## 2026-07-01 03:28:03 CEST - Loop 3 Progress
+
+- Committed and pushed deployment contract documentation as `b62b80f Document deployment contract`.
+- Validation before commit: `docker compose config` and `git diff --check` passed.
+- Next: poll CI/production and continue remaining coverage/UX gaps.
+
+## 2026-07-01 03:34:05 CEST - Loop 3 Progress
+
+- Improved `WorkItemPicker` debounce UX so stale results are hidden and `Searching` appears while a new query is pending.
+- Preserved completed empty-result feedback as `No matches` after the query result returns.
+- Validation passed: web test, lint, typecheck, and placeholder production build.
+- Next: inspect diff, commit/push picker UX, then poll CI/production.

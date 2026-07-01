@@ -19,6 +19,7 @@
 4. [FIXED in `392f9ca`] Request sessions grid can overflow on mobile without a horizontal scroll wrapper.
 5. [FIXED in `f85f30e`] OAuth callback rethrows unexpected exchange errors instead of routing to the auth-failure UI.
 6. [PARTIAL] Web test suite now covers lib/domain helpers; component, route, and browser fixture tests are still missing.
+7. [FIXED] WorkItemPicker can show stale results or a premature "No matches" state during debounce after the query changes.
 
 ## API / Backend
 

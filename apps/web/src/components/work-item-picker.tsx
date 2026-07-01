@@ -34,10 +34,16 @@ export function WorkItemPicker({
   const [state, setState] = useState<"idle" | "loading" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [resultQuery, setResultQuery] = useState("");
   const normalizedValue = value.trim();
   const canSearch = normalizedValue.length >= 2 || /^\d+$/u.test(normalizedValue);
-  const visibleWorkItems = canSearch ? workItems : [];
-  const visibleState = canSearch ? state : "idle";
+  const resultMatchesQuery = canSearch && resultQuery === normalizedValue;
+  const visibleWorkItems = resultMatchesQuery ? workItems : [];
+  const visibleState = canSearch
+    ? resultMatchesQuery
+      ? state
+      : "loading"
+    : "idle";
   const expanded = visibleWorkItems.length > 0;
 
   useEffect(() => {
@@ -47,7 +53,6 @@ export function WorkItemPicker({
 
     const controller = new AbortController();
     const timeout = setTimeout(() => {
-      setState("loading");
       const params = new URLSearchParams({ query: normalizedValue });
       fetch(`/api/azure-devops/work-items?${params.toString()}`, {
         signal: controller.signal,
@@ -61,6 +66,7 @@ export function WorkItemPicker({
           };
         })
         .then((payload) => {
+          setResultQuery(normalizedValue);
           setWorkItems(payload.workItems ?? []);
           setActiveIndex(0);
           setErrorMessage(null);
@@ -70,6 +76,7 @@ export function WorkItemPicker({
           if (error instanceof DOMException && error.name === "AbortError") {
             return;
           }
+          setResultQuery(normalizedValue);
           setWorkItems([]);
           setErrorMessage(
             error instanceof Error ? error.message : "Search failed",
@@ -103,6 +110,7 @@ export function WorkItemPicker({
   function selectWorkItem(item: AzureDevOpsWorkItem) {
     onChange(String(item.id));
     setWorkItems([]);
+    setResultQuery("");
     setActiveIndex(0);
   }
 
