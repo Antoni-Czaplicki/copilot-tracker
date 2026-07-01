@@ -101,6 +101,10 @@ COPILOT_TRACKER_BUILD_SHA=$(git rev-parse --short HEAD)
 COPILOT_TRACKER_BUILD_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 ```
 
+See [docs/deployment.md](./docs/deployment.md) for the full deployment
+environment contract, Azure app registration checklist, and production smoke
+checks.
+
 ## Azure DevOps Login
 
 Create a Microsoft Entra app registration with Azure DevOps delegated access and set:

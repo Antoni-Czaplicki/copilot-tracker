@@ -32,7 +32,7 @@
 
 ## Deployment
 
-1. [P1] No tracked Dokploy deployment manifest/workflow or production deploy contract.
+1. [PARTIAL] No tracked Dokploy manifest/workflow, but a deployment contract now documents required env, build metadata, Azure app settings, and smoke checks.
 2. [FIXED in `44ed412`] Drizzle config falls back to localhost `DATABASE_URL`, which can mask production migration misconfiguration.
 3. [FIXED in `03c390b`] CI lacks `pnpm --filter @copilot-tracker/web build`.
 4. [FIXED in `f6346a9`] Local compose only starts Postgres; app service/health/restart behavior is not modeled.

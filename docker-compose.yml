@@ -9,8 +9,8 @@ services:
         AZURE_DEVOPS_CLIENT_SECRET: placeholder-client-secret
         AZURE_DEVOPS_ORG: placeholder-org
         COPILOT_TRACKER_AUTH_MODE: azure-devops
-        COPILOT_TRACKER_BUILD_SHA: local-compose
-        COPILOT_TRACKER_BUILD_TIME: local-compose
+        COPILOT_TRACKER_BUILD_SHA: ${COPILOT_TRACKER_BUILD_SHA:-local-compose}
+        COPILOT_TRACKER_BUILD_TIME: ${COPILOT_TRACKER_BUILD_TIME:-local-compose}
     container_name: copilot-tracker-app
     restart: unless-stopped
     depends_on:
@@ -31,8 +31,8 @@ services:
       GITHUB_COPILOT_BILLING_TOKEN: ${GITHUB_COPILOT_BILLING_TOKEN:-}
       GITHUB_COPILOT_BILLING_SCOPE_TYPE: ${GITHUB_COPILOT_BILLING_SCOPE_TYPE:-}
       GITHUB_COPILOT_BILLING_SCOPE: ${GITHUB_COPILOT_BILLING_SCOPE:-}
-      COPILOT_TRACKER_BUILD_SHA: local-compose
-      COPILOT_TRACKER_BUILD_TIME: local-compose
+      COPILOT_TRACKER_BUILD_SHA: ${COPILOT_TRACKER_BUILD_SHA:-local-compose}
+      COPILOT_TRACKER_BUILD_TIME: ${COPILOT_TRACKER_BUILD_TIME:-local-compose}
     ports:
       - "3737:3737"
 

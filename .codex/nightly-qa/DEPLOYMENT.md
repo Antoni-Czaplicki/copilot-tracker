@@ -41,3 +41,10 @@
 - BLOCKED: real Chrome Azure login flow returned to the app home with `auth=failed&auth_code=invalid_client`.
 - PASS: failure redirect did not include `auth_description` and did not reflect provider description details.
 - Impact: production signed-in dashboard, Azure DevOps work-item search with web session tokens, admin flows, and request editing cannot be verified through the real production account until the external Azure app/client configuration is fixed.
+
+## 2026-07-01 03:25 CEST Deployment Contract
+
+- PASS: added tracked deployment contract in `docs/deployment.md` covering required runtime env names, build metadata, Azure app registration checks, and production smoke commands without recording secret values.
+- PASS: `.dockerignore` excludes `.codex` so nightly QA logs are not copied into Docker build contexts.
+- PASS: `docker compose config` renders app/Postgres services and build/runtime metadata arguments with local fallbacks.
+- LIMITATION: production `/api/health` still reports `version.sha="unknown"` until the deploy platform passes `COPILOT_TRACKER_BUILD_SHA` and `COPILOT_TRACKER_BUILD_TIME`.

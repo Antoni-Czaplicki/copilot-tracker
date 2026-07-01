@@ -136,7 +136,7 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | DEP-127 | Deployment | PENDING | Docker migration loop retries before exit and starts app on `:3737` | Manual + smoke | |
 | DEP-128 | Deployment | PENDING | Compose DB healthcheck transitions green before app connects | Compose smoke | |
 | DEP-129 | Deployment | PENDING | Missing DB connectivity fails predictably during migration attempts | Manual/chaos | |
-| DEP-130 | Deployment | PENDING | Required env vars/args are read and propagated | Config contract | |
+| DEP-130 | Deployment | PASS | Required env vars/args are read and propagated | Config contract | Deployment contract documented; compose config renders build/runtime metadata args |
 | DEP-131 | Deployment | PASS | Default ports are consistent end-to-end | Automated | Local `next start` and compose config expose app port 3737 |
 | DEP-132 | Deployment | PENDING | Production OAuth start is reachable without localhost assumptions | Manual/browser | |
 | DEP-133 | Deployment | PASS | CI includes web production build guardrail | Pipeline review | CI workflow now includes web production build step; GitHub CI passed on subsequent commits |
@@ -152,3 +152,4 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | UI-144 | Web | PASS | Estimated cost calculation prices known aliases, counts unpriced requests, and formats small USD values | Automated | Added web `node:test` coverage |
 | EXT-145 | Extension | PASS | OTel upload cache skips unchanged records across syncs while reuploading stable metadata changes | Automated | Added request upload signature cache tests; `pnpm --filter ./apps/extension test` passed |
 | API-146 | API/Backend | PASS | Azure DevOps WIQL builder clamps limits, escapes text, and rejects unsafe numeric work-item ids | Automated | Added web `node:test` coverage; web test/lint/typecheck/build passed |
+| DEP-147 | Deployment | PASS | Docker build context excludes local Codex QA logs and docs define production smoke checks | Config/docs review | `.dockerignore` excludes `.codex`; `docker compose config` passed |

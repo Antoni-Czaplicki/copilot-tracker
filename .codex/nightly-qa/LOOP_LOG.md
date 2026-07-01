@@ -215,3 +215,22 @@
 - Added 3 web tests for numeric ID query generation, unsafe numeric rejection, text escaping, and default limit fallback.
 - Validation passed: web test, lint, typecheck, and placeholder production build.
 - Next: inspect diff, commit/push, then poll CI/production.
+
+## 2026-07-01 03:20:04 CEST - Loop 2 End
+
+- Committed and pushed Azure DevOps WIQL hardening as `0ad0d72 Harden Azure work item WIQL queries`.
+- Loop 2 delivered admin billing sync UX, production smoke verification, auth blocker documentation, branch task copy alignment, compose app service modeling, production/test status logs, extension privacy hardening, web domain tests, OTel unchanged-upload skipping, and WIQL hardening.
+- Carry-forward blockers: production Azure login `invalid_client`, Docker daemon unavailable, exact production commit still unknown because health SHA is `unknown`.
+
+## 2026-07-01 03:20:04 CEST - Loop 3 Start
+
+- Starting loop 3 from `0ad0d72` with only nightly status files dirty.
+- Next actions: poll latest CI/production, then continue improving route/integration coverage and deployment clarity.
+
+## 2026-07-01 03:25:12 CEST - Loop 3 Progress
+
+- Added tracked deployment contract documentation for Docker/Dokploy env names, build metadata, Azure app registration, and production smoke checks.
+- Updated compose build/runtime metadata args to read environment-provided SHA/build time with local fallbacks.
+- Added `.codex` to `.dockerignore` so nightly QA logs are not included in Docker build contexts.
+- Validation passed: `docker compose config` and `git diff --check`.
+- Next: inspect diff, commit/push deployment docs, then poll CI/production.

@@ -51,6 +51,18 @@
 - PASS: `pnpm --filter @copilot-tracker/web typecheck`
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env and build metadata
 
+## 2026-07-01 - Deployment Contract Documentation
+
+- Added `docs/deployment.md` with the production Docker/Dokploy environment contract, build metadata requirements, Azure app registration checklist, and smoke checks.
+- Linked the deployment guide from README.
+- Updated compose build/runtime metadata args to read `COPILOT_TRACKER_BUILD_SHA` and `COPILOT_TRACKER_BUILD_TIME` from the environment with local fallbacks.
+- Added `.codex` to `.dockerignore` so nightly QA logs are not copied into Docker build contexts.
+
+## Checks
+
+- PASS: `docker compose config`
+- PASS: `git diff --check`
+
 ## 2026-07-01 - Web Domain Test Harness
 
 - Added a lightweight web test harness using Node's built-in test runner with `tsx`.

@@ -1,4 +1,5 @@
 .git
+.codex
 **/.next
 **/.turbo
 **/.vscode-test
