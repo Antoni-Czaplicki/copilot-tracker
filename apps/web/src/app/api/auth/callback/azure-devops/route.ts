@@ -6,7 +6,7 @@ import {
   createUserSession,
   exchangeAzureDevOpsCode,
   expiredCookieOptions,
-  fetchAzureDevOpsUser,
+  fetchAzureDevOpsUserWithDiagnostics,
   oauthCodeVerifierCookie,
   oauthStateCookie,
   secureCookieOptions,
@@ -80,14 +80,17 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const azureUser = await fetchAzureDevOpsUser(tokens.accessToken);
-    if (azureUser === null) {
+    const azureUserResult = await fetchAzureDevOpsUserWithDiagnostics(
+      tokens.accessToken,
+    );
+    if (azureUserResult.user === null) {
       return failureResponse(request, "profile_or_org_check_failed", {
+        ...azureUserResult.diagnostics,
         stage: "profile_or_org_check",
       });
     }
 
-    const sessionId = await createUserSession(azureUser, tokens);
+    const sessionId = await createUserSession(azureUserResult.user, tokens);
     const response = NextResponse.redirect(new URL("/dashboard", appBaseUrl()));
     response.cookies.set(sessionCookie(), sessionId, {
       ...secureCookieOptions(30 * 24 * 60 * 60),

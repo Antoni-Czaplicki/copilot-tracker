@@ -2045,3 +2045,24 @@
 - CONFIRMED ROOT CAUSE: the Authentication redirect platform is `Single-page application`, not `Web`, so Azure treats the callback as public-client while this backend sends a client secret.
 - BLOCKED FOR LIVE FIX: redirect URI/platform edit controls are disabled in the current signed-in context; the account can inspect the registration but is not listed as an owner.
 - Next: operator with app-registration edit rights should move/add the production callback redirect URI under `Web`, then rerun Chrome login and signed-in dashboard/work-item E2E.
+
+## 2026-07-01 10:23:13 CEST - Loop 48 Start/Profile Diagnostics
+
+- User reports the Azure Web redirect fix is done and provided a screenshot showing the callback under `Web`.
+- PASS: repository is clean at `e614348`; latest GitHub Actions CI and Build extension workflows are green.
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha e614348` passed all hard gates, warning only on unknown build metadata/SHA.
+- PASS/PROGRESS: real Chrome production login no longer returns `invalid_client`; it now reaches `auth_code=profile_or_org_check_failed`, so token exchange is no longer the blocker.
+- ADDED LOCALLY: redacted server-side profile/org diagnostics for `profile_or_org_check_failed`, including profile/org status/result fields and account count.
+- PASS: `pnpm --filter @copilot-tracker/web test` (128 tests)
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+
+## 2026-07-01 10:26:26 CEST - Loop 48 Broad Validation
+
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (7 smoke tests + 128 web tests + 26 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha e614348`
+- PASS: `git diff --check`
+- Next: commit/push profile/org diagnostics, poll CI, wait for deploy, and retry Chrome login to collect the new redacted Dokploy diagnostic fields.

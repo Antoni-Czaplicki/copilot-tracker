@@ -83,7 +83,7 @@
 
 ## Auth / Security / Privacy
 
-0. [P1] Production Azure login returns `auth_code=invalid_client`, blocking full signed-in production E2E verification. The new `auth_ref` correlation is working: the browser shows only safe `auth_code`/`auth_ref`, while the matching Dokploy server log reports Azure `AADSTS700025`, meaning the Azure app/client is treated as public while the backend is presenting a client secret. Azure portal inspection confirmed the Copilot Tracker redirect platform is `Single-page application`, not `Web`; align the Azure app registration/client type with the backend confidential-client flow, or intentionally switch to a public-client PKCE flow without a secret. The current signed-in account can inspect the registration but edit controls are disabled and it is not listed as an owner.
+0. [P1] Production Azure login now passes the previous `invalid_client` token-exchange blocker after the callback was moved to `Web`, but full signed-in production E2E is still blocked by `auth_code=profile_or_org_check_failed`. Add and deploy redacted server-side profile/org diagnostics, then use the matching `auth_ref` in Dokploy logs to identify whether the failure is Azure profile lookup, API permissions/consent, or configured organization membership mismatch.
 1. [FIXED in `f85f30e`] OAuth callback can 500 after token exchange if profile lookup/session creation throws, leaving OAuth cookies until expiry.
 2. [FIXED in `f85f30e`] OAuth provider error details are reflected into public redirect URLs and homepage UI.
 3. [FIXED in `a85225d`] Azure token encryption falls back to `AZURE_DEVOPS_CLIENT_SECRET`; app now avoids the client-secret fallback and does not persist session tokens when the dedicated key is missing.

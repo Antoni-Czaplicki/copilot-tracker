@@ -14,6 +14,7 @@ const startRoute = await import("../app/api/auth/azure-devops/route");
 const callbackRoute = await import(
   "../app/api/auth/callback/azure-devops/route"
 );
+const originalFetch = globalThis.fetch;
 
 void test("Azure OAuth start redirects to Microsoft with PKCE and expected scopes", async () => {
   const response = await startRoute.GET();
@@ -190,6 +191,73 @@ void test("Azure OAuth callback missing code or verifier fails safely", async ()
   );
 });
 
+void test("Azure OAuth callback logs profile and org diagnostics server-side", async (context) => {
+  context.after(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  const requests: CapturedFetch[] = [];
+  globalThis.fetch = async (input, init) => {
+    requests.push({ input, init });
+    const url = new URL(String(input));
+    if (url.pathname.endsWith("/oauth2/v2.0/token")) {
+      await Promise.resolve();
+      return Response.json({
+        access_token: "access-token",
+        expires_in: 3600,
+        refresh_token: "refresh-token",
+      });
+    }
+
+    if (url.pathname === "/_apis/profile/profiles/me") {
+      await Promise.resolve();
+      return Response.json({
+        displayName: "Test User",
+        id: "user-id",
+      });
+    }
+
+    if (url.pathname === "/_apis/accounts") {
+      await Promise.resolve();
+      return Response.json({ value: [] });
+    }
+
+    assert.fail(`unexpected fetch to ${url.href}`);
+  };
+
+  const { response, warnings } = await captureWarnings(async () =>
+    await callbackRoute.GET(
+      new NextRequest(
+        "https://copilot-tracker.example/api/auth/callback/azure-devops?code=code&state=expected",
+        {
+          headers: {
+            cookie:
+              "copilot_tracker_oauth_state=expected; copilot_tracker_oauth_code_verifier=verifier",
+          },
+        },
+      ),
+    ),
+  );
+  const redirectUrl = new URL(assertHeader(response, "location"));
+  const log = parseAuthLog(warnings);
+
+  assert.equal(response.status, 307);
+  assert.equal(redirectUrl.searchParams.get("auth"), "failed");
+  assert.equal(
+    redirectUrl.searchParams.get("auth_code"),
+    "profile_or_org_check_failed",
+  );
+  assert.equal(log.code, "profile_or_org_check_failed");
+  assert.equal(log.hasProfileId, true);
+  assert.equal(log.orgMembershipAccountCount, 0);
+  assert.equal(log.orgMembershipResult, "not_matched");
+  assert.equal(log.orgMembershipStatus, 200);
+  assert.equal(log.profileResult, "ok");
+  assert.equal(log.profileStatus, 200);
+  assert.equal(log.stage, "profile_or_org_check");
+  assert.equal(requests.length, 3);
+});
+
 function assertHeader(response: Response, name: string) {
   const value = response.headers.get(name);
   if (value === null) {
@@ -226,4 +294,9 @@ function parseAuthLog(warnings: string[]) {
   assert.equal(warnings.length, 1);
   const parsed = JSON.parse(warnings[0] ?? "{}") as Record<string, unknown>;
   return parsed;
+}
+
+interface CapturedFetch {
+  input: RequestInfo | URL;
+  init?: RequestInit;
 }

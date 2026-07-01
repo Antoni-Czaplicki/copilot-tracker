@@ -10,7 +10,8 @@ process.env.AZURE_DEVOPS_CLIENT_SECRET = "test-client-secret";
 process.env.AZURE_DEVOPS_ORG = "test-org";
 process.env.AZURE_DEVOPS_TENANT_ID = "test-tenant";
 
-const { fetchAzureDevOpsUser } = await import("./auth");
+const { fetchAzureDevOpsUser, fetchAzureDevOpsUserWithDiagnostics } =
+  await import("./auth");
 const originalFetch = globalThis.fetch;
 
 void test("fetchAzureDevOpsUser maps Azure profile fields when org membership matches by account name", async (context) => {
@@ -89,6 +90,50 @@ void test("fetchAzureDevOpsUser returns null for malformed org membership JSON",
 
   assert.equal(await fetchAzureDevOpsUser("access-token"), null);
   assert.equal(requests.length, 2);
+});
+
+void test("fetchAzureDevOpsUserWithDiagnostics reports profile request failures", async (context) => {
+  const requests = mockFetch(context, [
+    Response.json(
+      { error: "unauthorized" },
+      {
+        status: 401,
+      },
+    ),
+  ]);
+
+  assert.deepEqual(await fetchAzureDevOpsUserWithDiagnostics("access-token"), {
+    diagnostics: {
+      profileResult: "request_failed",
+      profileStatus: 401,
+    },
+    user: null,
+  });
+  assert.equal(requests.length, 1);
+});
+
+void test("fetchAzureDevOpsUserWithDiagnostics reports org membership misses", async (context) => {
+  mockFetch(context, [
+    Response.json({
+      id: "user-id",
+      displayName: "Test User",
+    }),
+    Response.json({
+      value: [{ accountName: "another-org" }],
+    }),
+  ]);
+
+  assert.deepEqual(await fetchAzureDevOpsUserWithDiagnostics("access-token"), {
+    diagnostics: {
+      hasProfileId: true,
+      orgMembershipAccountCount: 1,
+      orgMembershipResult: "not_matched",
+      orgMembershipStatus: 200,
+      profileResult: "ok",
+      profileStatus: 200,
+    },
+    user: null,
+  });
 });
 
 function mockFetch(context: TestContext, responses: Response[]) {

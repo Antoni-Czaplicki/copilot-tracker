@@ -26,7 +26,13 @@ export interface AuthFailureLogInput {
   hasCode?: boolean;
   hasCodeVerifier?: boolean;
   hasExpectedState?: boolean;
+  hasProfileId?: boolean;
   hasState?: boolean;
+  orgMembershipAccountCount?: number;
+  orgMembershipResult?: string;
+  orgMembershipStatus?: number;
+  profileResult?: string;
+  profileStatus?: number;
   providerError?: string | null;
   providerErrorDescription?: string | null;
   requestPath?: string;
@@ -45,7 +51,13 @@ export function authFailureLogEvent(input: AuthFailureLogInput) {
     hasCode: input.hasCode,
     hasCodeVerifier: input.hasCodeVerifier,
     hasExpectedState: input.hasExpectedState,
+    hasProfileId: input.hasProfileId,
     hasState: input.hasState,
+    orgMembershipAccountCount: input.orgMembershipAccountCount,
+    orgMembershipResult: sanitizeAuthLogValue(input.orgMembershipResult, 80),
+    orgMembershipStatus: input.orgMembershipStatus,
+    profileResult: sanitizeAuthLogValue(input.profileResult, 80),
+    profileStatus: input.profileStatus,
     providerError: sanitizeAuthLogValue(input.providerError, 120),
     providerErrorDescription: sanitizeAuthLogValue(
       input.providerErrorDescription,

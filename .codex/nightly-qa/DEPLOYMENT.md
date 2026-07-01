@@ -734,3 +734,11 @@
 - CONFIRMED: Microsoft Entra App registrations is reachable in the existing Chrome profile and the Copilot Tracker app registration can be inspected.
 - ROOT CAUSE: Authentication configuration shows the callback redirect under `Single-page application`, not `Web`. That matches Dokploy's `AADSTS700025` token-exchange failure because Azure treats the callback as public-client while the backend sends `AZURE_DEVOPS_CLIENT_SECRET`.
 - BLOCKED: live edit controls for redirect URI/platform are disabled in the current signed-in context, and the account is not listed as an owner of the registration. Use an account/role with app registration edit rights, move/add the production callback redirect URI under `Web`, then rerun the Chrome login.
+
+## 2026-07-01 10:23 CEST Azure Web Redirect Retest
+
+- PASS: user-provided Azure Portal screenshot shows the production callback redirect URI now under `Web`.
+- PASS: `pnpm smoke:production -- --allow-known-stale --expect-sha e614348` still passes all hard gates; warnings remain limited to unknown build metadata/SHA.
+- PASS/PROGRESS: real Chrome production login no longer returns `auth_code=invalid_client`; the confidential Web app redirect/token exchange issue is cleared.
+- FAIL/NEXT: real Chrome production login now returns `auth_code=profile_or_org_check_failed` with a safe `auth_ref`.
+- LOCAL FIX IN PROGRESS: callback logging now includes redacted profile/org diagnostic fields for this stage, without logging tokens, profile payloads, org names, or secrets.

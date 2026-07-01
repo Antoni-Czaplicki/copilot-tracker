@@ -50,7 +50,13 @@ void test("authFailureLogEvent redacts sensitive details while preserving diagno
       hasCode: undefined,
       hasCodeVerifier: undefined,
       hasExpectedState: undefined,
+      hasProfileId: undefined,
       hasState: undefined,
+      orgMembershipAccountCount: undefined,
+      orgMembershipResult: undefined,
+      orgMembershipStatus: undefined,
+      profileResult: undefined,
+      profileStatus: undefined,
       providerError: "invalid_client",
       providerErrorDescription:
         "AADSTS7000215: Invalid client secret is provided. client_secret=[redacted]",

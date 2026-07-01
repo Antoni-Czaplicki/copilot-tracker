@@ -441,5 +441,16 @@
 - [x] Inspect Authentication configuration without exposing identifiers
 - [x] Confirm the callback redirect is configured under `Single-page application`, not `Web`
 - [x] Confirm edit controls are disabled in the current signed-in context
-- [ ] Record finding and handoff
-- [ ] Commit/push diagnostic notes when bundled with the next useful change
+- [x] Record finding and handoff
+- [x] Commit/push diagnostic notes when bundled with the next useful change
+
+## Loop 48 - Profile/Org Auth Diagnostics
+
+- [x] Re-sync `e614348` CI, production smoke, and user-provided Azure Web redirect evidence
+- [x] Retry real Chrome production login after Azure Web redirect fix
+- [x] Confirm `invalid_client` is cleared and the next failure is `profile_or_org_check_failed`
+- [x] Add redacted profile/org lookup diagnostics to server-side auth failure logs
+- [x] Add focused tests for profile request failures, org membership misses, and callback log fields
+- [x] Update deployment docs and QA logs
+- [x] Run broad validation
+- [ ] Commit, push, poll CI, and verify deployed diagnostic behavior

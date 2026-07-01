@@ -1181,3 +1181,22 @@
 
 - PASS: `7137e29` passed GitHub Actions CI and Build extension.
 - PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 7137e29` passed all hard gates with expected build metadata warnings.
+
+## 2026-07-01 - Profile/Org Auth Diagnostics
+
+- Added a detailed Azure DevOps profile/org lookup result path that preserves the existing `fetchAzureDevOpsUser` API while exposing redacted diagnostics to the callback route.
+- Added server-side OAuth failure log fields for `profileResult`, `profileStatus`, `orgMembershipResult`, `orgMembershipStatus`, `orgMembershipAccountCount`, and `hasProfileId`.
+- Kept the public browser failure unchanged: only safe `auth_code` plus `auth_ref` are shown.
+- Documented how to use `auth_ref` to diagnose `profile_or_org_check_failed` in Dokploy logs.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web test` (128 tests)
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (7 smoke tests + 128 web tests + 26 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha e614348`
+- PASS: `git diff --check`

@@ -37,6 +37,25 @@ export interface AzureDevOpsUser {
   avatarUrl: string | null;
 }
 
+export interface AzureDevOpsUserLookupDiagnostics {
+  hasProfileId?: boolean;
+  orgMembershipAccountCount?: number;
+  orgMembershipResult?: string;
+  orgMembershipStatus?: number;
+  profileResult: string;
+  profileStatus?: number;
+}
+
+export type AzureDevOpsUserLookupResult =
+  | {
+      diagnostics: AzureDevOpsUserLookupDiagnostics;
+      user: AzureDevOpsUser;
+    }
+  | {
+      diagnostics: AzureDevOpsUserLookupDiagnostics;
+      user: null;
+    };
+
 export class AzureDevOpsTokenExchangeError extends Error {
   public constructor(
     public readonly code: string,
@@ -212,6 +231,13 @@ async function refreshAzureDevOpsAccessToken(refreshToken: string) {
 export async function fetchAzureDevOpsUser(
   accessToken: string,
 ): Promise<AzureDevOpsUser | null> {
+  const result = await fetchAzureDevOpsUserWithDiagnostics(accessToken);
+  return result.user;
+}
+
+export async function fetchAzureDevOpsUserWithDiagnostics(
+  accessToken: string,
+): Promise<AzureDevOpsUserLookupResult> {
   const profileResponse = await fetchWithTimeout(
     new URL("/_apis/profile/profiles/me?api-version=7.1", azureDevOpsProfileUrl()),
     {
@@ -223,21 +249,53 @@ export async function fetchAzureDevOpsUser(
     },
   );
   if (!profileResponse.ok) {
-    return null;
+    return {
+      diagnostics: {
+        profileResult: "request_failed",
+        profileStatus: profileResponse.status,
+      },
+      user: null,
+    };
   }
 
   const profile = await readJsonObject(profileResponse);
   const profileId = readStringField(profile, "id");
-  if (!profile || !profileId) {
-    return null;
+  if (!profile) {
+    return {
+      diagnostics: {
+        profileResult: "bad_response",
+        profileStatus: profileResponse.status,
+      },
+      user: null,
+    };
   }
 
-  const isMember = await validateAzureDevOpsOrgMembership(
+  if (!profileId) {
+    return {
+      diagnostics: {
+        hasProfileId: false,
+        profileResult: "missing_profile_id",
+        profileStatus: profileResponse.status,
+      },
+      user: null,
+    };
+  }
+
+  const membership = await validateAzureDevOpsOrgMembership(
     accessToken,
     profileId,
   );
-  if (!isMember) {
-    return null;
+  const baseDiagnostics = {
+    hasProfileId: true,
+    profileResult: "ok",
+    profileStatus: profileResponse.status,
+    ...membership.diagnostics,
+  };
+  if (!membership.ok) {
+    return {
+      diagnostics: baseDiagnostics,
+      user: null,
+    };
   }
 
   const email =
@@ -250,11 +308,14 @@ export async function fetchAzureDevOpsUser(
     email ?? readStringField(profile, "publicAlias") ?? displayName ?? profileId;
 
   return {
-    id: profileId,
-    login,
-    name: displayName,
-    email,
-    avatarUrl: null,
+    diagnostics: baseDiagnostics,
+    user: {
+      id: profileId,
+      login,
+      name: displayName,
+      email,
+      avatarUrl: null,
+    },
   };
 }
 
@@ -276,16 +337,29 @@ async function validateAzureDevOpsOrgMembership(
     },
   );
   if (!response.ok) {
-    return false;
+    return {
+      diagnostics: {
+        orgMembershipResult: "request_failed",
+        orgMembershipStatus: response.status,
+      },
+      ok: false,
+    };
   }
 
   const payload = await readJsonObject(response);
   if (!payload || !Array.isArray(payload.value)) {
-    return false;
+    return {
+      diagnostics: {
+        orgMembershipResult: "bad_response",
+        orgMembershipStatus: response.status,
+      },
+      ok: false,
+    };
   }
 
   const expectedOrg = azureDevOpsOrg().toLowerCase();
-  return payload.value.some((account) => {
+  const accountCount = payload.value.length;
+  const matched = payload.value.some((account) => {
     if (!isRecord(account)) {
       return false;
     }
@@ -297,6 +371,14 @@ async function validateAzureDevOpsOrgMembership(
       accountUriContainsOrg(accountUri, expectedOrg)
     );
   });
+  return {
+    diagnostics: {
+      orgMembershipAccountCount: accountCount,
+      orgMembershipResult: matched ? "matched" : "not_matched",
+      orgMembershipStatus: response.status,
+    },
+    ok: matched,
+  };
 }
 
 async function upsertAzureDevOpsUser(

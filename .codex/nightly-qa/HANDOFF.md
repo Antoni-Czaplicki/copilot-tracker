@@ -188,3 +188,11 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - This is the exact remaining auth root cause for the current backend flow: Azure treats the callback as public-client, but the backend sends `AZURE_DEVOPS_CLIENT_SECRET`, producing `AADSTS700025` in Dokploy logs and `auth_code=invalid_client` in the browser.
 - The current signed-in Chrome account can inspect the registration but cannot edit it; redirect/platform edit controls are disabled and the account is not listed as an owner.
 - Next operator action: with an app-registration owner/admin account, move or add the production callback URI under the `Web` platform, keep/use the existing client secret, then rerun Chrome login and signed-in dashboard/Azure work-item E2E.
+
+## 2026-07-01 10:23 CEST Web Redirect Retest / Profile Diagnostics
+
+- User reports the Azure Web redirect fix is done; screenshot shows the production callback URI under `Web`.
+- Production login progress: Chrome no longer returns `invalid_client`; it now returns `auth_code=profile_or_org_check_failed`, so token exchange is fixed and the next blocker is Azure profile/org validation.
+- Added local redacted profile/org diagnostics for that failure stage; after deploy, use the browser `auth_ref` to find `profileResult`, `profileStatus`, `orgMembershipResult`, `orgMembershipStatus`, and `orgMembershipAccountCount` in Dokploy logs.
+- Public behavior remains safe: no provider descriptions, tokens, profile payloads, organization names, or secrets in URLs/page text.
+- Focused validation passed: web tests now 128 and web typecheck passes.
