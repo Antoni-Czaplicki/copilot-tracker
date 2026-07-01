@@ -23,7 +23,7 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | EXT-015 | Extension | PENDING | `setSelectedTask` persists per-workspace and later load reflects it | Automated | |
 | EXT-016 | Extension | PENDING | `refreshContext` fallback when remote URL unavailable and branch available | Automated | |
 | EXT-017 | Extension | PENDING | `maybePromptForBranchTask` prompt appears only when branch-based task changes from manual selection | Automated | Edge |
-| EXT-018 | Extension | PENDING | Status bar text reflects current session token totals and handles zero-metrics state | Automated/manual | |
+| EXT-018 | Extension | PASS | Status bar text reflects current session token totals and handles zero-metrics/partial-capture state | Automated/manual | Partial token lower-bound display implemented; extension tests passed |
 | EXT-019 | Extension | PENDING | Sign-in command handles missing trusted-server signature and prompts auth flow | Automated | |
 | EXT-020 | Extension | PENDING | `syncCopilotSessions` sends `session-sync-failed` event on parser/network failure | Automated + API mock | |
 | API-021 | API/Backend | PENDING | `POST /api/events` returns 401 with no auth token when auth disabled is false | Automated integration | |

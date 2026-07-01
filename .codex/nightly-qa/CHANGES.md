@@ -27,6 +27,15 @@
 
 - PASS: `pnpm --filter @copilot-tracker/web typecheck`
 - PASS: `pnpm --filter @copilot-tracker/web lint`
+
+## 2026-07-01 - Extension Partial Token Cost Display
+
+- Added incomplete-token request counting for the current session status tooltip.
+- Changed session tooltip copy from exact total/cost wording to captured total and lower-bound cost when token capture is partial or missing.
+
+## Checks
+
+- PASS: `pnpm --filter ./apps/extension test`
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 
 ## 2026-07-01 - Deployment Health and Secret Contract

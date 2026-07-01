@@ -81,3 +81,11 @@
 - Updated batch ingest response semantics so `accepted` reflects processed/upserted requests while `received` keeps the raw input count.
 - Validated with web typecheck and lint.
 - Next: commit/push response semantics and poll CI/production.
+
+## 2026-07-01 02:25:24 CEST - Loop 1 Progress
+
+- Committed and pushed batch response semantics as `4bab582 Report processed batch request counts`.
+- Production still lacked `/api/health`; GitHub CI/builds remained healthy or in progress.
+- Implemented extension current-session tooltip changes so partial/missing token data is reflected as incomplete data and lower-bound cost.
+- Validated with extension compile/lint/test via `pnpm --filter ./apps/extension test`.
+- Next: commit/push extension cost display and poll CI/production.

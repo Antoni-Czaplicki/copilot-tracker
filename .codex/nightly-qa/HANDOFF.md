@@ -2,7 +2,7 @@
 
 ## Current Summary
 
-Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent review, extension hardening, OAuth callback hardening, deployment health/secret-contract work, API boundary validation, request grid task editing UX, token-storage deployment recovery, leaderboard privacy gating, token integer bounds, Drizzle migration env contract, and batch ingest response semantics are complete locally. Local compile/test/lint/typecheck/web build checks have passed for these slices.
+Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent review, extension hardening, OAuth callback hardening, deployment health/secret-contract work, API boundary validation, request grid task editing UX, token-storage deployment recovery, leaderboard privacy gating, token integer bounds, Drizzle migration env contract, batch ingest response semantics, and extension partial-token cost display are complete locally. Local compile/test/lint/typecheck/web build checks have passed for these slices.
 
 ## Remaining Risks
 
@@ -14,7 +14,7 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 
 ## Next Steps
 
-1. Commit/push batch ingest response semantics.
+1. Commit/push extension partial-token cost display.
 2. Poll production `/api/health` until the health/deployment build is visible.
 3. Continue converting high-risk findings into tests and small fixes.
 4. Run deeper Chrome/VS Code E2E flows after production freshness is proven.

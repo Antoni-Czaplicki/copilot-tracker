@@ -67,6 +67,7 @@ interface SessionTokenStats {
   sessionId: string;
   sessionTitle: string | null;
   requestCount: number;
+  incompleteTokenRequestCount: number;
   inputTokens: number;
   outputTokens: number;
   totalTokens: number;
@@ -789,11 +790,16 @@ function updateSessionTokenStatusItem() {
       `Requests: ${formatNumber(stats.requestCount)}`,
       `Input: ${formatNumber(stats.inputTokens)}`,
       `Output: ${formatNumber(stats.outputTokens)}`,
-      `Total: ${formatNumber(stats.totalTokens)}`,
-      `Estimated cost: ${formatCurrency(stats.estimatedUsd)}`,
+      `Total captured: ${formatNumber(stats.totalTokens)}`,
+      stats.incompleteTokenRequestCount > 0
+        ? `Incomplete token data: ${formatNumber(stats.incompleteTokenRequestCount)} requests`
+        : null,
+      `Estimated cost: ${formatEstimatedSessionCost(stats)}`,
       "",
       "Click to open this session in the web tracker.",
-    ].join("\n\n"),
+    ]
+      .filter(Boolean)
+      .join("\n\n"),
   );
   tooltip.isTrusted = true;
 
@@ -955,6 +961,12 @@ function currentSessionTokenStats(
     sessionId: latestRequest.sessionId,
     sessionTitle: latestRequest.sessionTitle,
     requestCount: sessionRequests.length,
+    incompleteTokenRequestCount: sessionRequests.filter(
+      (request) =>
+        request.inputTokens === null ||
+        request.outputTokens === null ||
+        request.totalTokens === null,
+    ).length,
     inputTokens: sessionRequests.reduce(
       (total, request) => total + (request.inputTokens ?? 0),
       0,
@@ -994,6 +1006,13 @@ function formatCurrency(value: number) {
     currency: "USD",
     maximumFractionDigits: value < 1 ? 4 : 2,
   }).format(value);
+}
+
+function formatEstimatedSessionCost(stats: SessionTokenStats) {
+  const formatted = formatCurrency(stats.estimatedUsd);
+  return stats.incompleteTokenRequestCount > 0
+    ? `${formatted}+ lower bound`
+    : formatted;
 }
 
 function compactStatusText(value: string) {

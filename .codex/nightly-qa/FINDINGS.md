@@ -6,7 +6,7 @@
 2. [P1] Branch-task extraction is too permissive in `apps/extension/src/workspaceContext.ts`; branch names like `detached-abc123` can become task `123`.
 3. [P2] `openDashboard` can throw on malformed `serverUrl` instead of showing a friendly error.
 4. [P2] Multi-workspace context can stay stale until polling after active editor changes.
-5. [P2] Cost display looks exact even when token capture is partial or missing.
+5. [FIXED locally, commit pending] Cost display looks exact even when token capture is partial or missing.
 6. [P2] OTel sync reparses/resends full files on each cycle/restart.
 7. [P3] Legacy global selected-task fallback can leak stale manual overrides across workspaces.
 8. [P2] Missing extension tests for client network failures, auth flow, search picker race, multi-root context, partial token cost UI, and restart sync behavior.
