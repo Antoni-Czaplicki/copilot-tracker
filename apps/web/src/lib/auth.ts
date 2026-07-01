@@ -138,11 +138,7 @@ export async function exchangeAzureDevOpsCode(
     throw await toAzureDevOpsTokenExchangeError(response);
   }
 
-  const payload = (await response.json()) as {
-    access_token?: string;
-    refresh_token?: string;
-    expires_in?: number;
-  };
+  const payload = await readJsonObject(response);
   const tokens = toAzureDevOpsSessionTokens(payload);
   if (!tokens) {
     throw new AzureDevOpsTokenExchangeError(
@@ -203,11 +199,7 @@ async function refreshAzureDevOpsAccessToken(refreshToken: string) {
     return null;
   }
 
-  const payload = (await response.json()) as {
-    access_token?: string;
-    refresh_token?: string;
-    expires_in?: number;
-  };
+  const payload = await readJsonObject(response);
   return toAzureDevOpsSessionTokens(payload, refreshToken);
 }
 
@@ -318,23 +310,23 @@ async function upsertAzureDevOpsUser(
 }
 
 function toAzureDevOpsSessionTokens(
-  payload: {
-    access_token?: string;
-    refresh_token?: string;
-    expires_in?: number;
-  },
+  payload: Record<string, unknown> | null,
   fallbackRefreshToken: string | null = null,
 ): AzureDevOpsSessionTokens | null {
-  if (!payload.access_token) {
+  const accessToken = readStringField(payload, "access_token");
+  if (!accessToken) {
     return null;
   }
 
+  const expiresIn = payload?.expires_in;
   const expiresInSeconds =
-    typeof payload.expires_in === "number" ? payload.expires_in : 3600;
+    typeof expiresIn === "number" && Number.isFinite(expiresIn) && expiresIn > 0
+      ? expiresIn
+      : 3600;
 
   return {
-    accessToken: payload.access_token,
-    refreshToken: payload.refresh_token ?? fallbackRefreshToken,
+    accessToken,
+    refreshToken: readStringField(payload, "refresh_token") ?? fallbackRefreshToken,
     expiresAt: new Date(Date.now() + expiresInSeconds * 1000).toISOString(),
   };
 }

@@ -189,3 +189,5 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | AUTH-181 | Auth | PASS | Azure profile fetch maps id, display name, email/core attributes, and public alias safely | Automated | Added mocked `fetchAzureDevOpsUser` coverage; web tests passed |
 | AUTH-182 | Auth | PASS | Azure org membership accepts matching accountName and accountUri forms | Automated | Added mocked membership coverage for account name and URI; web tests passed |
 | AUTH-183 | Auth | PASS | Azure profile/org lookup returns null on malformed upstream JSON instead of throwing | Automated | Added malformed profile and malformed membership JSON tests; web tests passed |
+| AUTH-184 | Auth | PASS | Azure token exchange maps malformed successful token JSON to `invalid_token_response` | Automated | Added mocked token exchange coverage; web tests passed |
+| AUTH-185 | Auth | PASS | Azure token exchange rejects non-string access tokens in successful responses | Automated | Added mocked token exchange coverage; web tests passed |

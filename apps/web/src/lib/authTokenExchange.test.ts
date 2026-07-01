@@ -96,6 +96,45 @@ void test("exchangeAzureDevOpsCode maps Azure JSON failures to typed errors", as
   );
 });
 
+void test("exchangeAzureDevOpsCode maps malformed successful token responses to typed errors", async (context) => {
+  context.after(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  globalThis.fetch = async () => {
+    await Promise.resolve();
+    return new Response("{", {
+      headers: { "content-type": "application/json" },
+      status: 200,
+    });
+  };
+
+  await assert.rejects(
+    exchangeAzureDevOpsCode("auth-code", "pkce-verifier"),
+    (error: unknown) =>
+      error instanceof AzureDevOpsTokenExchangeError &&
+      error.code === "invalid_token_response",
+  );
+});
+
+void test("exchangeAzureDevOpsCode rejects non-string access tokens", async (context) => {
+  context.after(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  globalThis.fetch = async () => {
+    await Promise.resolve();
+    return Response.json({ access_token: 123, expires_in: 3600 });
+  };
+
+  await assert.rejects(
+    exchangeAzureDevOpsCode("auth-code", "pkce-verifier"),
+    (error: unknown) =>
+      error instanceof AzureDevOpsTokenExchangeError &&
+      error.code === "invalid_token_response",
+  );
+});
+
 interface CapturedFetch {
   input: RequestInfo | URL;
   init?: RequestInit;

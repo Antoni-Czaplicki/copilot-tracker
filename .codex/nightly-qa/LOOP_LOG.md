@@ -677,3 +677,24 @@
 - PASS: `pnpm test` (51 web tests + 14 extension VS Code tests)
 - NOTE: final pass reran after trimming Azure string fields and fixing the lint-preferred logical fallback.
 - Next: inspect diff, commit, push, and continue.
+
+## 2026-07-01 04:41:04 CEST - Loop 3 Progress
+
+- Committed and pushed Azure profile/org lookup robustness as `d8473d2 Harden Azure profile parsing`.
+- GitHub Actions for `d8473d2` are in progress.
+- PASS: production `/api/health` returns OK with database ready.
+- LIMITATION: production `/api/health` still reports `version.sha="unknown"` and `builtAt="unknown"`.
+- PASS: sanitized production Azure OAuth start still redirects to Microsoft with PKCE `S256`, state, client id, and required Azure DevOps scopes.
+- Next: poll CI and continue with additional route/API or extension gaps.
+
+## 2026-07-01 04:42:46 CEST - Loop 3 Validation
+
+- PASS: GitHub Actions for `d8473d2 Harden Azure profile parsing` completed successfully on both CI and extension build workflows.
+- Hardened Azure token response parsing so malformed 200 responses and non-string access tokens map to typed `invalid_token_response` failures.
+- Reused defensive token parsing for refresh-token responses so malformed refresh payloads fail closed.
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web test` (53 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (53 web tests + 14 extension VS Code tests)
+- Next: inspect diff, commit, push, and continue.

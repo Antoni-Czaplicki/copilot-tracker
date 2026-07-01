@@ -155,3 +155,15 @@
 ## 2026-07-01 04:38 CEST CI Poll
 
 - PASS: GitHub Actions for `80a3c2b Harden auth bearer parsing` completed successfully on both CI and extension build workflows.
+
+## 2026-07-01 04:41 CEST Production Poll
+
+- PUSHED: `d8473d2 Harden Azure profile parsing`.
+- IN PROGRESS: GitHub Actions for `d8473d2` started after push.
+- PASS: production `/api/health` returned HTTP 200 with `ok=true` and `database.ok=true`.
+- LIMITATION: production `/api/health` still reports `sha="unknown"` and `builtAt="unknown"`.
+- PASS: production Azure OAuth start redirect includes state, PKCE `S256`, client id, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
+
+## 2026-07-01 04:42 CEST CI Poll
+
+- PASS: GitHub Actions for `d8473d2 Harden Azure profile parsing` completed successfully on both CI and extension build workflows.

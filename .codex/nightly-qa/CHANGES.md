@@ -488,3 +488,17 @@
 - PASS: `pnpm --filter @copilot-tracker/web test` (51 tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm test` (51 web tests + 14 extension VS Code tests)
+
+## 2026-07-01 - Azure Token Response Robustness
+
+- Reused defensive JSON/object parsing for successful Azure token and refresh-token responses.
+- Made malformed successful token responses and non-string access tokens map to typed `invalid_token_response` failures instead of generic callback failures.
+- Made refresh-token responses with malformed payloads fail closed by returning null.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web test` (53 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (53 web tests + 14 extension VS Code tests)
