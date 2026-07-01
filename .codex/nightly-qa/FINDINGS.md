@@ -63,6 +63,7 @@
 11. [FIXED] GitHub billing sync trusted `usageItems` and `timePeriod` response shapes from GitHub, which could crash or store invalid dates on malformed successful responses.
 12. [FIXED] GitHub billing response date parsing accepted numerically bounded but impossible calendar dates such as February 31.
 13. [FIXED] Event/chat-request routes duplicated malformed JSON fallback logic instead of sharing the tested JSON payload reader.
+14. [FIXED] Azure DevOps work-item search trusted successful upstream JSON payloads and could leak malformed 200 responses as untyped failures; malformed upstream JSON now maps to typed 502 and invalid ids/items are filtered.
 
 ## Deployment
 

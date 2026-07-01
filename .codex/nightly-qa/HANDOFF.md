@@ -51,4 +51,11 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - `2b69124 Harden successful mutation counts` passed both GitHub Actions workflows.
 - Added WorkItemPicker successful search payload normalization and malformed-entry filtering.
 - Web tests are now 114; latest broad validation passed typecheck, lint, root tests, web build, and extension compile.
-- The WorkItemPicker payload normalization fix is pending commit/push at this update point.
+- The WorkItemPicker payload normalization fix was committed and pushed as `f2ab551 Normalize work item picker results`; GitHub Actions were queued/in progress at the latest poll.
+
+## 2026-07-01 07:06 CEST Update
+
+- `f2ab551 Normalize work item picker results` passed both GitHub Actions workflows.
+- Hardened Azure DevOps work-item upstream successful response parsing and malformed JSON handling.
+- Web tests are now 117; latest broad validation passed typecheck, lint, root tests, web build, and extension compile.
+- The Azure DevOps upstream response hardening fix is pending commit/push at this update point.

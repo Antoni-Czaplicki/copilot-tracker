@@ -1341,6 +1341,39 @@
 - PASS: `pnpm --filter ./apps/extension compile`
 - Next: commit, push, smoke production, and continue.
 
+## 2026-07-01 07:02:58 CEST - Loop 31 End
+
+- Committed and pushed WorkItemPicker payload normalization as `f2ab551 Normalize work item picker results`.
+- GitHub Actions for `f2ab551` are queued/in progress on CI and Build extension workflows.
+- PASS: production `/api/health` returns HTTP 200 with `ok=true` and `database.ok=true`.
+- STALE/LIMITATION: production `/api/health` still reports `version.sha="unknown"`, `builtAt="unknown"`, and no visible `Cache-Control` header.
+- PASS: sanitized production Azure OAuth start redirects to Microsoft with PKCE `S256`, state, client id, and required Azure DevOps scopes.
+- Current git state after push: clean.
+- Next: start loop 32, poll CI/deploy, and continue improvement work.
+
+## 2026-07-01 07:03:53 CEST - Loop 32 Start
+
+- Previous pushed commit: `f2ab551 Normalize work item picker results`; GitHub Actions were queued/in progress at the prior poll.
+- Current blocker remains external Azure OAuth `invalid_client`, unavailable Docker daemon, and unproven production commit metadata/cache-header freshness.
+- Next: poll CI, inspect remaining malformed-data edge cases, and implement the next focused improvement.
+
+## 2026-07-01 07:06:07 CEST - Loop 32 Validation
+
+- PASS: GitHub Actions for `f2ab551 Normalize work item picker results` completed successfully on both CI and extension build workflows.
+- FOUND: Azure DevOps work-item client trusted successful upstream JSON and could leak malformed 200 responses as untyped failures.
+- Added guarded successful JSON parsing that maps malformed upstream JSON to typed `azure_devops_bad_response` with status 502.
+- Added shape guards for WIQL result ids and batch work-item payloads; invalid ids/items are filtered and missing result arrays fall back to empty results.
+- Added tests for malformed WIQL JSON, malformed batch JSON, missing upstream result arrays, and invalid upstream ids.
+- PASS: `pnpm --filter @copilot-tracker/web test` (117 tests)
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (117 web tests + 25 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`
+- Next: commit, push, smoke production, and continue.
+
 ## 2026-07-01 06:57:57 CEST - Loop 30 End
 
 - Committed and pushed successful-response count parsing hardening as `2b69124 Harden successful mutation counts`.

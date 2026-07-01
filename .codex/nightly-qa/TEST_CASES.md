@@ -265,3 +265,7 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | UI-257 | Web | PASS | WorkItemPicker successful search payload normalizer maps valid Azure DevOps work items | Automated | Added `workItemsFromSearchPayload` mapping coverage; web/root tests passed |
 | UI-258 | Web | PASS | WorkItemPicker successful search payload normalizer filters malformed entries and falls back for null/non-array payloads | Automated | Added malformed payload coverage; web/root tests passed |
 | UI-259 | Web | PASS | WorkItemPicker renders only normalized work-item search results from successful responses | Code review + automated | Replaced raw JSON cast with `workItemsFromSearchPayload`; web/root tests passed |
+| API-260 | API/Backend | PASS | Azure DevOps WIQL successful response malformed JSON maps to typed bad-response 502 | Automated | Added `azure_devops_bad_response` regression coverage; web/root tests passed |
+| API-261 | API/Backend | PASS | Azure DevOps work-item batch successful response malformed JSON maps to typed bad-response 502 | Automated | Added malformed batch response coverage; web/root tests passed |
+| API-262 | API/Backend | PASS | Azure DevOps work-item search ignores invalid upstream work-item ids before batch fetching | Automated | Expanded matching-id test with string, negative, and too-large ids; web/root tests passed |
+| API-263 | API/Backend | PASS | Azure DevOps work-item search tolerates missing successful upstream result arrays as empty results | Automated | Added missing-array fallback coverage; web/root tests passed |

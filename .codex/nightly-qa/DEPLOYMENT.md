@@ -562,3 +562,11 @@
 - PASS: production `/api/health` returned HTTP 200 with `ok=true` and `database.ok=true`.
 - PASS: production Azure OAuth start redirect includes state, PKCE `S256`, client id, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
 - STALE/LIMITATION: production `/api/health` still reports `sha="unknown"`, `builtAt="unknown"`, and no visible `Cache-Control` header.
+
+## 2026-07-01 07:03 CEST Production Poll
+
+- PUSHED: `f2ab551 Normalize work item picker results`.
+- PASS: GitHub Actions for `f2ab551` completed successfully on both CI and Build extension workflows.
+- PASS: production `/api/health` returned HTTP 200 with `ok=true` and `database.ok=true`.
+- PASS: production Azure OAuth start redirect includes state, PKCE `S256`, client id, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
+- STALE/LIMITATION: production `/api/health` still reports `sha="unknown"`, `builtAt="unknown"`, and no visible `Cache-Control` header.

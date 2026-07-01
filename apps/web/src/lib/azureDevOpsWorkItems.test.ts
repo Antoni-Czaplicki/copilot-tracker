@@ -45,7 +45,13 @@ void test("buildWiqlQueries escapes text queries and falls back to default limit
 void test("searchAzureDevOpsWorkItems fetches matching ids and maps batch fields", async (context) => {
   const requests = mockFetch(context, [
     Response.json({
-      workItems: [{ id: 123 }, { id: "ignored" }, { id: 456 }],
+      workItems: [
+        { id: 123 },
+        { id: "ignored" },
+        { id: -1 },
+        { id: 2_147_483_648 },
+        { id: 456 },
+      ],
     }),
     Response.json({
       value: [
@@ -158,6 +164,61 @@ void test("searchAzureDevOpsWorkItems falls back to contains query after unsafe 
     containsQuery,
     /CONTAINS 'quoted title'/,
   );
+});
+
+void test("searchAzureDevOpsWorkItems maps malformed successful WIQL JSON to a typed error", async (context) => {
+  const requests = mockFetch(context, [
+    new Response("{", {
+      headers: { "content-type": "application/json" },
+    }),
+  ]);
+
+  await assert.rejects(
+    searchAzureDevOpsWorkItems({
+      accessToken: "access-token",
+      query: "login",
+    }),
+    (error: unknown) =>
+      error instanceof AzureDevOpsWorkItemsError &&
+      error.code === "azure_devops_bad_response" &&
+      error.status === 502,
+  );
+  assert.equal(requests.length, 1);
+});
+
+void test("searchAzureDevOpsWorkItems maps malformed successful batch JSON to a typed error", async (context) => {
+  const requests = mockFetch(context, [
+    Response.json({ workItems: [{ id: 123 }] }),
+    new Response("{", {
+      headers: { "content-type": "application/json" },
+    }),
+  ]);
+
+  await assert.rejects(
+    searchAzureDevOpsWorkItems({
+      accessToken: "access-token",
+      query: "login",
+    }),
+    (error: unknown) =>
+      error instanceof AzureDevOpsWorkItemsError &&
+      error.code === "azure_devops_bad_response" &&
+      error.status === 502,
+  );
+  assert.equal(requests.length, 2);
+});
+
+void test("searchAzureDevOpsWorkItems tolerates missing successful upstream result arrays", async (context) => {
+  const requests = mockFetch(context, [
+    Response.json({ workItems: null }),
+  ]);
+
+  const items = await searchAzureDevOpsWorkItems({
+    accessToken: "access-token",
+    query: "login",
+  });
+
+  assert.deepEqual(items, []);
+  assert.equal(requests.length, 1);
 });
 
 void test("searchAzureDevOpsWorkItems maps repeated rate limits to a typed error", async (context) => {

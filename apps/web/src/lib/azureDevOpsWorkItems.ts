@@ -88,13 +88,7 @@ async function queryWorkItemIds(
       throw toAzureDevOpsError(response);
     }
 
-    const payload = (await response.json()) as {
-      workItems?: { id?: number }[];
-    };
-    return (payload.workItems ?? [])
-      .map((item) => item.id)
-      .filter((id): id is number => typeof id === "number")
-      .slice(0, limit);
+    return workItemIdsFromWiqlPayload(await readAzureDevOpsJson(response), limit);
   }
 
   return [];
@@ -169,29 +163,36 @@ async function fetchWorkItems(accessToken: string, ids: number[]) {
     throw toAzureDevOpsError(response);
   }
 
-  const payload = (await response.json()) as {
-    value?: {
-      id?: number;
-      fields?: Record<string, unknown>;
-      url?: string;
-    }[];
-  };
+  return workItemsFromBatchPayload(await readAzureDevOpsJson(response));
+}
 
-  return (payload.value ?? [])
+function workItemIdsFromWiqlPayload(payload: unknown, limit: number) {
+  if (!isRecord(payload) || !Array.isArray(payload.workItems)) {
+    return [];
+  }
+
+  return payload.workItems
+    .map((item) => (isRecord(item) ? item.id : null))
+    .filter((id): id is number => isWorkItemId(id))
+    .slice(0, limit);
+}
+
+function workItemsFromBatchPayload(payload: unknown) {
+  if (!isRecord(payload) || !Array.isArray(payload.value)) {
+    return [];
+  }
+
+  return payload.value
     .map((item) => toAzureDevOpsWorkItem(item))
     .filter((item): item is AzureDevOpsWorkItem => item !== null);
 }
 
-function toAzureDevOpsWorkItem(value: {
-  id?: number;
-  fields?: Record<string, unknown>;
-  url?: string;
-}) {
-  if (typeof value.id !== "number") {
+function toAzureDevOpsWorkItem(value: unknown) {
+  if (!isRecord(value) || !isWorkItemId(value.id)) {
     return null;
   }
 
-  const fields = value.fields ?? {};
+  const fields = isRecord(value.fields) ? value.fields : {};
   const project = readString(fields["System.TeamProject"]);
   return {
     id: value.id,
@@ -201,8 +202,20 @@ function toAzureDevOpsWorkItem(value: {
     project,
     assignedTo: readIdentity(fields["System.AssignedTo"]),
     changedAt: readString(fields["System.ChangedDate"]),
-    url: project ? workItemWebUrl(project, value.id) : (value.url ?? null),
+    url: project ? workItemWebUrl(project, value.id) : readString(value.url),
   };
+}
+
+async function readAzureDevOpsJson(response: Response) {
+  try {
+    return (await response.json()) as unknown;
+  } catch {
+    throw new AzureDevOpsWorkItemsError(
+      "azure_devops_bad_response",
+      502,
+      "Azure DevOps returned malformed JSON.",
+    );
+  }
 }
 
 function azureDevOpsHeaders(accessToken: string) {
@@ -233,6 +246,19 @@ function readIdentity(value: unknown) {
 
 function readString(value: unknown) {
   return typeof value === "string" && value.length > 0 ? value : null;
+}
+
+function isWorkItemId(value: unknown): value is number {
+  return (
+    typeof value === "number" &&
+    Number.isSafeInteger(value) &&
+    value > 0 &&
+    value <= maxAzureDevOpsWorkItemId
+  );
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function workItemWebUrl(project: string, id: number) {

@@ -955,3 +955,20 @@
 - PASS: `pnpm test` (114 web tests + 25 extension VS Code tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm --filter ./apps/extension compile`
+
+## 2026-07-01 - Azure DevOps Work Item Response Hardening
+
+- Hardened successful Azure DevOps work-item JSON parsing so malformed 200 responses map to a typed `azure_devops_bad_response` 502 instead of escaping as untyped failures.
+- Added shape guards for WIQL id payloads and batch work-item payloads.
+- Filtered invalid upstream work-item ids before batch fetching and tolerated missing result arrays as empty results.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web test` (117 tests)
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (117 web tests + 25 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`

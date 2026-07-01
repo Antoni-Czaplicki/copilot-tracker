@@ -282,4 +282,15 @@
 - [x] Wire picker rendering through normalized work-item results
 - [x] Fix typecheck/lint issues found during validation
 - [x] Run focused and broad validation
+- [x] Commit, push, and smoke production
+- [x] Verify CI completion for `f2ab551`
+
+## Loop 32 - Azure DevOps Upstream Response Hardening
+
+- [x] Re-sync git and CI state for `f2ab551`
+- [x] Inspect work-item route/client successful response parsing
+- [x] Add typed bad-response handling for malformed successful upstream JSON
+- [x] Guard WIQL id and batch work-item payload shapes
+- [x] Add Azure DevOps work-item regression tests
+- [x] Run focused and broad validation
 - [ ] Commit, push, and smoke production
