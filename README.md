@@ -70,7 +70,13 @@ DATABASE_URL=postgres://copilot_tracker:copilot_tracker@localhost:54329/copilot_
 Build everything:
 
 ```sh
-DATABASE_URL=postgres://copilot_tracker:copilot_tracker@localhost:54329/copilot_tracker pnpm build
+DATABASE_URL=postgres://copilot_tracker:copilot_tracker@localhost:54329/copilot_tracker \
+NEXT_PUBLIC_APP_URL=https://copilot-tracker.example.com \
+AZURE_DEVOPS_CLIENT_ID=placeholder-client-id \
+AZURE_DEVOPS_CLIENT_SECRET=placeholder-client-secret \
+AZURE_DEVOPS_ORG=placeholder-org \
+COPILOT_TRACKER_TOKEN_ENCRYPTION_KEY=placeholder-token-encryption-key \
+pnpm build
 ```
 
 Start the web app:

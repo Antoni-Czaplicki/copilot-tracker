@@ -429,3 +429,18 @@
 - Expanded the README Web API list for bulk task updates, Azure DevOps work-item search, GitHub login mapping, and current admin export types.
 - Validation passed: `git diff --check`.
 - Next: inspect diff, commit/push README docs alignment, then continue.
+
+## 2026-07-01 03:50:41 CEST - Loop 3 Progress
+
+- Committed and pushed README task/API docs alignment as `6991f4a Align README task and API docs`.
+- Local tree is clean after push.
+- GitHub Actions for `6991f4a` are in progress.
+- Production health still returns OK with database ready and `version.sha="unknown"`.
+- Next: continue the next non-auth-blocked improvement while CI runs.
+
+## 2026-07-01 03:52:05 CEST - Loop 3 Progress
+
+- Found that README's full-build command omitted placeholder env values required by production build validation.
+- Updated the command with `NEXT_PUBLIC_APP_URL`, Azure placeholder values, and `COPILOT_TRACKER_TOKEN_ENCRYPTION_KEY`.
+- Validation passed: ran the documented `pnpm build` command successfully.
+- Next: inspect diff, commit/push README build command alignment, then continue.

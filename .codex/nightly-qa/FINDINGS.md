@@ -27,6 +27,7 @@
 8. [FIXED] Web task assignment UI/API could set tasks but could not clear manual assignments back to branch default/no task.
 9. [FIXED] Homepage task-detection copy rendered `feature/124-loginall map` without a space.
 10. [FIXED] README did not mention clearing task assignments and omitted newer task/search/mapping API routes.
+11. [FIXED] README full-build command omitted production placeholder env values required by Next/env validation.
 
 ## API / Backend
 

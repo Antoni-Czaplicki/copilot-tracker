@@ -92,3 +92,8 @@
 ## 2026-07-01 03:48 CEST CI Poll
 
 - PASS: GitHub Actions for `eb93d5e Fix homepage task example spacing` completed successfully on both CI and extension build workflows.
+
+## 2026-07-01 03:52 CEST Local Build Command Check
+
+- PASS: updated README full-build command with production-safe placeholder env values.
+- PASS: ran the documented `pnpm build` command successfully.

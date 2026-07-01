@@ -56,10 +56,12 @@
 
 - Documented that the web dashboard can clear manual task assignments back to the branch-derived default or no task.
 - Expanded the Web API list to include bulk task updates, Azure DevOps work-item search, GitHub login mapping, and all admin export types.
+- Updated the documented full-build command with the placeholder env values required by production build validation.
 
 ## Checks
 
 - PASS: `git diff --check`
+- PASS: documented `pnpm build` command with placeholder production env values
 
 ## 2026-07-01 - Extension Partial Token Cost Display
 

@@ -172,3 +172,4 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | EXT-164 | Extension | PASS | Extension cost estimator prices known model input/output token splits | Automated | Replaced placeholder sample test; extension tests passed |
 | UI-165 | Web | PASS | Homepage task-detection sentence renders spacing between the example branch and following text | Code review + build | Fixed explicit JSX space; web test/lint/typecheck/build passed |
 | DOC-166 | Docs | PASS | README documents task clearing and the current web API route surface | Docs review | Updated README; `git diff --check` passed |
+| DOC-167 | Docs/Deployment | PASS | README full-build command includes production-safe placeholder env values and succeeds as written | Manual command | Ran documented `pnpm build` command successfully |
