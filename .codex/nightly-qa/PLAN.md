@@ -355,4 +355,12 @@
 - [x] Add extension regression coverage
 - [x] Run focused extension tests
 - [x] Run broad validation
+- [x] Commit, push, smoke production, and poll CI
+
+## Loop 39 - Auth Callback Smoke Docs
+
+- [x] Re-sync CI/deploy state for `625a202`
+- [x] Inspect deployment/readme auth smoke documentation
+- [x] Clarify sanitized provider `auth_code` preservation vs provider-description hiding
+- [x] Run docs diff check
 - [ ] Commit, push, smoke production, and poll CI

@@ -91,8 +91,9 @@ Expected results:
 - `/api/auth/azure-devops` redirects to Microsoft with PKCE
   `code_challenge_method=S256` and scopes including `offline_access`,
   `vso.profile`, and `vso.work`.
-- Provider-error callbacks must not reflect provider descriptions into public
-  URLs or page text.
+- Provider-error callbacks should preserve a sanitized short `auth_code` such as
+  `access_denied` or `invalid_client`, but must not reflect provider
+  descriptions into public URLs or page text.
 
 ## Local Container Smoke
 

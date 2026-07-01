@@ -91,3 +91,9 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - `27e58c3 Guard web work item ids` passed both GitHub Actions workflows.
 - Added and validated extension JSON server-error message capping; extension tests are now 26.
 - Production health remains green, but provider-error callback behavior is still stale and build metadata remains unknown.
+
+## 2026-07-01 07:41 CEST Update
+
+- `625a202 Cap extension server error messages` passed both GitHub Actions workflows.
+- Clarified deployment smoke docs for sanitized provider `auth_code` preservation and hidden provider descriptions.
+- Production health remains green; provider-error callback behavior still appears stale and `/api/health` still cannot identify the deployed commit.

@@ -283,3 +283,4 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | AUTH-275 | Auth/API | PASS | Azure OAuth callback falls back to `provider_error` when the provider error code sanitizes to blank | Automated | Added blank unsafe provider-error route coverage; web/root tests passed |
 | UI-276 | Web | PASS | WorkItemPicker successful search payload normalizer rejects non-positive and too-large Azure DevOps IDs | Automated | Expanded malformed work-item payload regression; web/root tests passed |
 | EXT-277 | Extension | PASS | TrackerClient caps long JSON server error messages before surfacing them in VS Code | Automated | Added extension regression; extension/root tests passed with 26 extension tests |
+| DOC-278 | Docs/Deployment | PASS | Deployment smoke docs distinguish preserved sanitized auth codes from forbidden provider descriptions | Docs review | Updated `docs/deployment.md`; `git diff --check` passed |

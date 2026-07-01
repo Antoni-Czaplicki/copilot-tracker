@@ -626,3 +626,11 @@
 - PASS: production `/api/health` returned HTTP 200 with `ok=true` and `database.ok=true`.
 - STALE/LIMITATION: direct provider-error callback still redirects with `auth_code=provider_error`; deployed freshness remains unproven.
 - STALE/LIMITATION: production `/api/health` still reports `sha="unknown"`, `builtAt="unknown"`, and no visible `Cache-Control` header.
+
+## 2026-07-01 07:41 CEST Production Poll
+
+- PUSHED: `625a202 Cap extension server error messages`.
+- PASS: GitHub Actions for `625a202` completed successfully on both CI and Build extension workflows.
+- PASS: production `/api/health` returned HTTP 200 with `ok=true` and `database.ok=true`.
+- STALE/LIMITATION: direct provider-error callback still redirects with `auth_code=provider_error`; deployed freshness remains unproven.
+- STALE/LIMITATION: production `/api/health` still reports `sha="unknown"`, `builtAt="unknown"`, and no visible `Cache-Control` header.

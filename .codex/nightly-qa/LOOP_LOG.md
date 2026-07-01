@@ -1837,3 +1837,20 @@
 - PASS: production `/api/health` remains HTTP 200 with `ok=true` and `database.ok=true`.
 - STALE/LIMITATION: production provider-error callback still redirects with `auth_code=provider_error`.
 - Next: commit, push, smoke production, poll CI, and continue.
+
+## 2026-07-01 07:39:38 CEST - Loop 38 End / Loop 39 Start
+
+- Committed and pushed extension server-error message cap as `625a202 Cap extension server error messages`.
+- GitHub Actions for `625a202` are in progress on both CI and Build extension workflows.
+- PASS: production `/api/health` returns HTTP 200 with `ok=true` and `database.ok=true`.
+- STALE/LIMITATION: production provider-error callback still redirects with `auth_code=provider_error`.
+- Current git state after push was clean before recording this status update.
+- Next: one more high-value docs/API/UI scan while CI/deploy catches up.
+
+## 2026-07-01 07:40:41 CEST - Loop 39 Validation
+
+- PASS: GitHub Actions for `625a202 Cap extension server error messages` completed successfully on both CI and Build extension workflows.
+- STALE/LIMITATION: production provider-error callback still redirects with `auth_code=provider_error`.
+- Clarified `docs/deployment.md` so production smoke checks require sanitized provider `auth_code` preservation while continuing to forbid reflected provider descriptions.
+- PASS: `git diff --check`
+- Next: commit, push, smoke production, and poll CI/deploy.

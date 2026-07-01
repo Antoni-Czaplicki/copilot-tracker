@@ -1036,6 +1036,15 @@
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm --filter ./apps/extension compile`
 
+## 2026-07-01 - Auth Callback Smoke Docs
+
+- Clarified the deployment smoke contract for provider-error callbacks: preserve sanitized short `auth_code` values, but never reflect provider descriptions into public URLs or page text.
+
+## Checks
+
+- PASS: `git diff --check`
+- PASS: GitHub Actions for `625a202 Cap extension server error messages` completed successfully on both CI and Build extension workflows.
+
 ## 2026-07-01 - Work Item Picker Id Bounds
 
 - Aligned web WorkItemPicker result normalization with backend and extension Azure DevOps work-item ID bounds.
