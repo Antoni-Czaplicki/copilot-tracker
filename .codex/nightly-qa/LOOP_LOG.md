@@ -123,3 +123,10 @@
 - Production smoke passed: homepage, `/api/health`, database readiness, Azure PKCE redirect/scopes, provider-error privacy, work-items auth gate, admin export auth gate, and Chrome homepage/login-link check.
 - Remaining deployment limitation: `/api/health` reports `version.sha="unknown"`, so exact deployed commit is not provable until Dokploy passes build metadata.
 - Next: commit production verification logs and continue with remaining gaps.
+
+## 2026-07-01 02:34:55 CEST - Loop 2 Progress
+
+- Committed and pushed production smoke logs as `76454ea Record production smoke verification`.
+- Re-ran full current-head local checks: repo typecheck, repo lint, extension tests, and web production build all passed.
+- GitHub build-extension run for `76454ea` passed; CI was still in progress.
+- Next: commit verification logs and continue remaining gaps.
