@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { currentUser } from "@/lib/auth";
 import { normalizeGithubLogin } from "@/lib/githubLogin";
+import { readJsonObjectPayload } from "@/lib/jsonPayload";
 import { updateUserGithubLogin } from "@/lib/store";
 
 export async function PATCH(request: NextRequest) {
@@ -11,7 +12,7 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  const body = await readJsonObject(request);
+  const body = await readJsonObjectPayload(request);
   if (body === null) {
     return NextResponse.json({ error: "invalid JSON" }, { status: 400 });
   }
@@ -28,17 +29,4 @@ export async function PATCH(request: NextRequest) {
 
   await updateUserGithubLogin(user.userId, githubLogin);
   return NextResponse.json({ ok: true, githubLogin });
-}
-
-async function readJsonObject(request: NextRequest) {
-  try {
-    const body = (await request.json()) as unknown;
-    return isRecord(body) ? body : {};
-  } catch {
-    return null;
-  }
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }

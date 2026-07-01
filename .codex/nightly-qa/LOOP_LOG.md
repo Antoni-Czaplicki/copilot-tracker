@@ -1163,3 +1163,35 @@
 - PASS: `pnpm test` (91 web tests + 23 extension VS Code tests)
 - PASS: `git diff --check`
 - Next: commit, push, smoke production, and continue.
+
+## 2026-07-01 05:54:00 CEST - Loop 15 End
+
+- Committed and pushed session-token crypto hardening as `5b06f76 Harden session token crypto`.
+- GitHub Actions for `5b06f76` are in progress.
+- PASS: production `/api/health` returns HTTP 200 with `ok=true` and `database.ok=true`.
+- LIMITATION: production `/api/health` still reports `version.sha="unknown"` and `builtAt="unknown"`.
+- PASS: sanitized production Azure OAuth start redirects to Microsoft with PKCE `S256`, state, client id, and required Azure DevOps scopes.
+- Next: continue with the next high-value gap and poll CI.
+
+## 2026-07-01 05:54:26 CEST - Loop 16 Start
+
+- Started reviewing API route payload handling while GitHub Actions for `5b06f76` run.
+- Finding: GitHub-login PATCH routes parse non-object JSON bodies such as arrays or strings as `{}`, which can accidentally clear the stored GitHub login instead of rejecting invalid payload shape.
+- Current git state: post-push QA logs modified; no source changes pending yet.
+- Next: extract a shared object-payload reader, use it in both GitHub-login PATCH routes, and cover malformed/non-object inputs directly.
+
+## 2026-07-01 05:56:57 CEST - Loop 16 Validation
+
+- PASS: GitHub Actions for `5b06f76 Harden session token crypto` completed successfully on both CI and extension build workflows.
+- Extracted `readJsonObjectPayload` and reused it in both user and admin GitHub-login PATCH routes.
+- Changed non-object JSON bodies such as arrays, strings, and `null` from silent empty-object parsing to invalid payload handling.
+- Added tests for valid JSON objects, malformed JSON, arrays, strings, and `null`.
+- PASS: `pnpm --filter @copilot-tracker/web test` (94 tests)
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (94 web tests + 23 extension VS Code tests)
+- PASS: `git diff --check`
+- Next: commit, push, smoke production, and continue.

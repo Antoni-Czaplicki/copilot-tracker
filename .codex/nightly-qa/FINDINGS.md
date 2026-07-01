@@ -82,3 +82,4 @@
 11. [FIXED] Malformed successful Azure token responses could surface as generic callback failures instead of typed token-exchange failures.
 12. [FIXED] Azure session-token parsing and near-expiry refresh decisions were private auth branches without direct edge-case coverage.
 13. [FIXED] Session-token decryption accepted loosely shaped encrypted envelopes and had no direct malformed/tamper regression coverage.
+14. [FIXED] GitHub-login PATCH routes treated non-object JSON bodies as empty objects, which could accidentally clear a mapping instead of rejecting invalid payload shape.

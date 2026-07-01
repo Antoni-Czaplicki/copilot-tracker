@@ -124,4 +124,14 @@
 - [x] Reject malformed encrypted-token envelopes directly
 - [x] Add round-trip, missing-key, legacy-token, malformed-token, and tamper tests
 - [x] Run focused web tests and broad validation
+- [x] Commit, push, and smoke production
+- [x] Verify CI completion for `5b06f76`
+
+## Loop 16 - GitHub Login Payload Validation
+
+- [x] Extract a shared JSON-object payload reader
+- [x] Reject non-object JSON bodies instead of treating them as empty objects
+- [x] Use the helper in user/admin GitHub-login PATCH routes
+- [x] Add tests for valid object, malformed JSON, arrays, strings, and null
+- [x] Run focused web tests and broad validation
 - [ ] Commit, push, and smoke production

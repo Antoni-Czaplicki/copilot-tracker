@@ -730,3 +730,19 @@
 - PASS: `pnpm -r typecheck`
 - PASS: `pnpm -r lint`
 - PASS: `pnpm test` (91 web tests + 23 extension VS Code tests)
+
+## 2026-07-01 - GitHub Login Payload Validation
+
+- Added a shared `readJsonObjectPayload` helper for route payloads that must be JSON objects.
+- Updated both user and admin GitHub-login PATCH routes to reject malformed, array, string, and `null` JSON bodies instead of treating them as empty objects.
+- Added tests for valid object parsing and invalid payload shapes.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web test` (94 tests)
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (94 web tests + 23 extension VS Code tests)
