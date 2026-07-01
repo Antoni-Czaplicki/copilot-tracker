@@ -38,7 +38,7 @@
 3. [FIXED in `93dd101`] Token payload schema allows values larger than PostgreSQL `integer` columns can persist.
 4. [FIXED in `4bab582`] Batch ingest `accepted` count reports received requests, not deduped or persisted rows.
 5. [FIXED in `32a4cfd`] Admin export `type` query should be enum-validated.
-6. [PARTIAL] Web API/domain tests now cover payload schemas, Azure DevOps WIQL/search helpers, work-item empty route behavior, and utility domains; DB integration tests are still missing.
+6. [PARTIAL] Web API/domain tests now cover payload schemas including chat request defaults/bounds and tracker event validation, Azure DevOps WIQL/search helpers, work-item empty route behavior, and utility domains; DB integration tests are still missing.
 7. [FIXED] Azure DevOps work-item WIQL generation accepted unsafe numeric strings and non-finite limits.
 8. [FIXED] Admin export validates unsupported export type before loading the full database.
 9. [FIXED] Admin export CSV/type helpers had no pure tests for type parsing, quoting, placeholder filtering, or billing export rows.

@@ -698,3 +698,23 @@
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm test` (53 web tests + 14 extension VS Code tests)
 - Next: inspect diff, commit, push, and continue.
+
+## 2026-07-01 04:43:53 CEST - Loop 3 Progress
+
+- Committed and pushed Azure token response robustness as `97ce2f9 Harden Azure token responses`.
+- GitHub Actions for `97ce2f9` are in progress.
+- PASS: production `/api/health` returns OK with database ready.
+- LIMITATION: production `/api/health` still reports `version.sha="unknown"` and `builtAt="unknown"`.
+- PASS: sanitized production Azure OAuth start still redirects to Microsoft with PKCE `S256`, state, client id, and required Azure DevOps scopes.
+- Next: poll CI and continue with the next testable gap.
+
+## 2026-07-01 04:45:42 CEST - Loop 3 Validation
+
+- PASS: GitHub Actions for `97ce2f9 Harden Azure token responses` completed successfully on both CI and extension build workflows.
+- Added payload schema tests for optional chat request array defaults, prompt-token detail bounds, tool-call round bounds, tracker event payloads, required workspace id, and known event types.
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web test` (57 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (57 web tests + 14 extension VS Code tests)
+- Next: inspect diff, commit, push, and continue.

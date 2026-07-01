@@ -191,3 +191,7 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | AUTH-183 | Auth | PASS | Azure profile/org lookup returns null on malformed upstream JSON instead of throwing | Automated | Added malformed profile and malformed membership JSON tests; web tests passed |
 | AUTH-184 | Auth | PASS | Azure token exchange maps malformed successful token JSON to `invalid_token_response` | Automated | Added mocked token exchange coverage; web tests passed |
 | AUTH-185 | Auth | PASS | Azure token exchange rejects non-string access tokens in successful responses | Automated | Added mocked token exchange coverage; web tests passed |
+| API-186 | API/Backend | PASS | Chat request payload defaults optional prompt-token detail and stop-reason arrays | Automated | Added payload schema coverage; web tests passed |
+| API-187 | API/Backend | PASS | Chat request payload bounds prompt-token percentages and tool-call round counts | Automated | Added payload schema coverage; web tests passed |
+| API-188 | API/Backend | PASS | Tracker event payload accepts known event types and optional payload records | Automated | Added payload schema coverage; web tests passed |
+| API-189 | API/Backend | PASS | Tracker event payload rejects blank workspace ids and unknown event types | Automated | Added payload schema coverage; web tests passed |

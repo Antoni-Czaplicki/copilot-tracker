@@ -502,3 +502,17 @@
 - PASS: `pnpm --filter @copilot-tracker/web test` (53 tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm test` (53 web tests + 14 extension VS Code tests)
+
+## 2026-07-01 - Payload Schema Coverage
+
+- Added chat request schema coverage for defaulted optional arrays.
+- Added prompt-token detail and tool-call round boundary coverage.
+- Added tracker event schema coverage for valid payload records, required workspace ids, and known event types.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web test` (57 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (57 web tests + 14 extension VS Code tests)
