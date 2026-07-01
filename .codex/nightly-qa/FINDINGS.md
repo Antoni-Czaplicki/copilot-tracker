@@ -25,6 +25,7 @@
 6. [PARTIAL] Web test suite now covers lib/domain helpers; component, route, and browser fixture tests are still missing.
 7. [FIXED] WorkItemPicker can show stale results or a premature "No matches" state during debounce after the query changes.
 8. [FIXED] Web task assignment UI/API could set tasks but could not clear manual assignments back to branch default/no task.
+9. [FIXED] Homepage task-detection copy rendered `feature/124-loginall map` without a space.
 
 ## API / Backend
 

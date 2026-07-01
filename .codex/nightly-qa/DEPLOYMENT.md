@@ -78,3 +78,9 @@
 ## 2026-07-01 03:41 CEST CI Poll
 
 - PASS: GitHub Actions for `f15b18c Add safe Azure auth failure hints` completed successfully on both CI and extension build workflows.
+
+## 2026-07-01 03:44 CEST Production Auth Hint Poll
+
+- STALE: production `/?auth=failed&auth_code=invalid_client` still showed the stable error code but not the new safe `invalid_client` operator hint, so the auth-hint UI had not deployed yet.
+- PASS: production `/?auth=failed&auth_code=unexpected_provider_blob` did not show invented hint copy for an unknown code.
+- LIMITATION: production `/api/health` still reports `version.sha="unknown"`, so stale-build detection remains indirect.

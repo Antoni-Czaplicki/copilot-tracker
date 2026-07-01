@@ -389,3 +389,19 @@
 - Replaced the extension's default placeholder sample test with a real cost-estimation regression for known model input/output token pricing.
 - Validation passed: `pnpm --filter ./apps/extension test` reported 10 passing tests.
 - Next: inspect diff, commit/push extension test cleanup, then poll CI/production.
+
+## 2026-07-01 03:43:06 CEST - Loop 3 Progress
+
+- Committed and pushed extension sample test replacement as `0e63df4 Replace extension sample test`.
+- Local tree is clean after push.
+- GitHub Actions for `0e63df4` are in progress.
+- Production health still returns OK with database ready and `version.sha="unknown"`.
+- Next: continue the next non-auth-blocked improvement while CI runs.
+
+## 2026-07-01 03:44:32 CEST - Loop 3 Progress
+
+- Production auth-hint poll showed deploy lag: `invalid_client` renders as a stable code but the new safe hint is not live yet.
+- Production unknown-code auth poll did not show invented hint copy, which is the expected safe behavior.
+- Fixed homepage task-detection copy spacing so `feature/124-login` and `all map` do not run together.
+- Validation passed: web test, lint, typecheck, and placeholder production build.
+- Next: inspect diff, commit/push landing copy spacing fix, then poll CI/production.

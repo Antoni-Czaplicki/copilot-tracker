@@ -41,6 +41,17 @@
 - PASS: `pnpm --filter @copilot-tracker/web typecheck`
 - PASS: `pnpm --filter @copilot-tracker/web build` with current placeholder production env names
 
+## 2026-07-01 - Landing Copy Spacing
+
+- Fixed the homepage task-detection sentence so `feature/124-login` and `all map` render with a space between them.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web test` (22 tests)
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web build` with current placeholder production env names
+
 ## 2026-07-01 - Extension Partial Token Cost Display
 
 - Added incomplete-token request counting for the current session status tooltip.

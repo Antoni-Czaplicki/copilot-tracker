@@ -170,3 +170,4 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | AUTH-162 | Auth | PASS | Login failure UI maps invalid OAuth state/PKCE failures to a safe retry/cookie hint | Automated + build | Added `authFailureHint` coverage; web test/lint/typecheck/build passed |
 | AUTH-163 | Auth | PASS | Unknown auth failure codes do not display invented guidance | Automated | Added unknown-code test; web tests passed |
 | EXT-164 | Extension | PASS | Extension cost estimator prices known model input/output token splits | Automated | Replaced placeholder sample test; extension tests passed |
+| UI-165 | Web | PASS | Homepage task-detection sentence renders spacing between the example branch and following text | Code review + build | Fixed explicit JSX space; web test/lint/typecheck/build passed |

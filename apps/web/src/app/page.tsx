@@ -150,7 +150,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             clear Azure DevOps work item patterns for the default task. Branches
             like{" "}
             <strong>124</strong>, <strong>124v2</strong>, and{" "}
-            <strong>feature/124-login</strong>
+            <strong>feature/124-login</strong>{" "}
             all map to task <strong>124</strong>. Branches without a clear work
             item id stay unassigned until developers choose a task from VS Code
             or later in this dashboard; when the branch changes, the extension
