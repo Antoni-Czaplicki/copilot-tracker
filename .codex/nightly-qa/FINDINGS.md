@@ -104,3 +104,4 @@
 19. [FIXED] GitHub billing sync still allowed signed-in admin GET requests to mutate state; GET is now cron-bearer only and admin/manual sync uses POST.
 20. [FIXED] OAuth callback provider errors collapsed all provider codes to `provider_error`, losing useful safe details such as `access_denied`.
 21. [FIXED] Web WorkItemPicker payload normalization accepted impossible Azure DevOps work-item IDs even though backend and extension filters reject them.
+22. [FIXED] Extension `TrackerClient` capped plain-text HTTP error bodies but not JSON `{ error }` messages, allowing very long server messages into VS Code errors/logs.

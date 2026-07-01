@@ -345,4 +345,14 @@
 - [x] Expand malformed work-item payload regression coverage
 - [x] Run focused web tests
 - [x] Run broad validation
+- [x] Commit, push, smoke production, and poll CI
+
+## Loop 38 - Extension Server Error Message Cap
+
+- [x] Re-sync CI/deploy state for `27e58c3`
+- [x] Inspect extension server error parsing and existing tests
+- [x] Cap JSON `{ error }` messages with the same 240-character limit as plain text errors
+- [x] Add extension regression coverage
+- [x] Run focused extension tests
+- [x] Run broad validation
 - [ ] Commit, push, smoke production, and poll CI

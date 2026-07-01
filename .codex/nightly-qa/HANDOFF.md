@@ -85,3 +85,9 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - `4538973 Preserve Azure provider auth codes` passed both GitHub Actions workflows.
 - Production still returns `auth_code=provider_error` for a direct provider-error callback, so the provider-code preservation change has not visibly deployed yet.
 - Added and validated web WorkItemPicker ID-bound parity with backend/extension filtering; next action is commit/push.
+
+## 2026-07-01 07:38 CEST Update
+
+- `27e58c3 Guard web work item ids` passed both GitHub Actions workflows.
+- Added and validated extension JSON server-error message capping; extension tests are now 26.
+- Production health remains green, but provider-error callback behavior is still stale and build metadata remains unknown.

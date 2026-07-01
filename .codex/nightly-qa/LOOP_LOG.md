@@ -1814,3 +1814,26 @@
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm --filter ./apps/extension compile`
 - Next: commit, push, smoke production, poll CI, and continue.
+
+## 2026-07-01 07:35:57 CEST - Loop 37 End / Loop 38 Start
+
+- Committed and pushed web picker ID-bound parity as `27e58c3 Guard web work item ids`.
+- GitHub Actions for `27e58c3` are in progress on both CI and Build extension workflows.
+- PASS: production `/api/health` returns HTTP 200 with `ok=true` and `database.ok=true`.
+- STALE/LIMITATION: production provider-error callback still redirects with `auth_code=provider_error`, so the deployed app is still behind `4538973` or serving stale behavior.
+- Current git state after push was clean before recording this status update.
+- Next: scan the remaining extension/web/API surfaces for another small reliability or UX improvement while CI/deploy runs.
+
+## 2026-07-01 07:37:59 CEST - Loop 38 Validation
+
+- PASS: GitHub Actions for `27e58c3 Guard web work item ids` completed successfully on both CI and Build extension workflows.
+- Added extension `TrackerClient` regression coverage for long JSON server errors and reused the existing 240-character cap for JSON `{ error }` bodies.
+- PASS: `pnpm --filter ./apps/extension test` (26 tests)
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (122 web tests + 26 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS: production `/api/health` remains HTTP 200 with `ok=true` and `database.ok=true`.
+- STALE/LIMITATION: production provider-error callback still redirects with `auth_code=provider_error`.
+- Next: commit, push, smoke production, poll CI, and continue.

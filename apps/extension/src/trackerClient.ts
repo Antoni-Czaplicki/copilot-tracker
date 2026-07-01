@@ -356,7 +356,7 @@ function responseBodyToMessage(responseBody: unknown) {
   }
 
   if (typeof responseBody === "string") {
-    return responseBody.trim().slice(0, 240) || null;
+    return trimServerMessage(responseBody);
   }
 
   if (
@@ -366,10 +366,14 @@ function responseBodyToMessage(responseBody: unknown) {
     typeof responseBody.error === "string" &&
     responseBody.error.trim()
   ) {
-    return responseBody.error.trim();
+    return trimServerMessage(responseBody.error);
   }
 
   return null;
+}
+
+function trimServerMessage(value: string) {
+  return value.trim().slice(0, 240) || null;
 }
 
 function normalizeWorkItems(payload: unknown): AzureDevOpsWorkItem[] {

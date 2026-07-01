@@ -1022,6 +1022,20 @@
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm --filter ./apps/extension compile`
 
+## 2026-07-01 - Extension Server Error Message Cap
+
+- Reused the extension's existing 240-character server-message cap for JSON `{ error }` response bodies.
+- Added regression coverage so oversized backend/proxy JSON errors cannot flood VS Code surfaced errors or structured logs.
+
+## Checks
+
+- PASS: `pnpm --filter ./apps/extension test` (26 tests)
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (122 web tests + 26 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`
+
 ## 2026-07-01 - Work Item Picker Id Bounds
 
 - Aligned web WorkItemPicker result normalization with backend and extension Azure DevOps work-item ID bounds.

@@ -611,6 +611,31 @@ suite("Extension Test Suite", () => {
     });
   });
 
+  test("TrackerClient caps long server JSON error messages", async () => {
+    await withTrackerServerUrl("http://localhost:3737", async () => {
+      const fetchMock = installFetchMock([
+        Response.json({ error: "x".repeat(500) }, { status: 400 }),
+      ]);
+
+      try {
+        const client = new TrackerClient(
+          async () => null,
+          new MemoryMemento(),
+        );
+
+        await assert.rejects(
+          client.sendChatRequests([createChatRequest()]),
+          (error: unknown) =>
+            error instanceof TrackerClientError &&
+            error.code === "http_400" &&
+            error.message === "x".repeat(240),
+        );
+      } finally {
+        fetchMock.restore();
+      }
+    });
+  });
+
   test("TrackerClient falls back when server error messages are blank", async () => {
     await withTrackerServerUrl("http://localhost:3737", async () => {
       const fetchMock = installFetchMock([
