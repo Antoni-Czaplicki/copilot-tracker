@@ -99,6 +99,12 @@ export type OtelSessionResolver = (
   request: OtelSessionLookupRequest,
 ) => OtelSessionLookupResult | null | undefined;
 
+let lastCopilotOtelConfigurationWriteAt = 0;
+
+export function getLastCopilotOtelConfigurationWriteAt() {
+  return lastCopilotOtelConfigurationWriteAt;
+}
+
 export function getDefaultOtelFilePath(context: vscode.ExtensionContext) {
   return path.join(context.globalStorageUri.fsPath, "copilot-otel.jsonl");
 }
@@ -120,14 +126,34 @@ export async function ensureCopilotOtelConfiguration(
   const copilotConfig = vscode.workspace.getConfiguration(
     "github.copilot.chat.otel",
   );
-  await updateConfigurationValue(copilotConfig, "enabled", true);
-  await updateConfigurationValue(copilotConfig, "exporterType", "file");
-  await updateConfigurationValue(copilotConfig, "outfile", otelFilePath);
-  await updateConfigurationValue(copilotConfig, "captureContent", false);
-  logInfo("Copilot OTel file exporter configured", {
-    otelFilePath,
-    captureContent: false,
-  });
+  const updatedSettings = [];
+  if (await updateConfigurationValue(copilotConfig, "enabled", true)) {
+    updatedSettings.push("enabled");
+  }
+  if (await updateConfigurationValue(copilotConfig, "exporterType", "file")) {
+    updatedSettings.push("exporterType");
+  }
+  if (await updateConfigurationValue(copilotConfig, "outfile", otelFilePath)) {
+    updatedSettings.push("outfile");
+  }
+  if (
+    await updateConfigurationValue(copilotConfig, "captureContent", false)
+  ) {
+    updatedSettings.push("captureContent");
+  }
+
+  if (updatedSettings.length > 0) {
+    logInfo("Copilot OTel file exporter configured", {
+      otelFilePath,
+      captureContent: false,
+      updatedSettingCount: updatedSettings.length,
+      updatedSettings,
+    });
+  } else {
+    logDebug("Copilot OTel file exporter already configured", {
+      otelFilePath,
+    });
+  }
   return otelFilePath;
 }
 
@@ -1025,16 +1051,22 @@ function timestampOrNull(value: string | null) {
   return Number.isNaN(timestamp) ? null : timestamp;
 }
 
-function updateConfigurationValue<T>(
+async function updateConfigurationValue<T>(
   config: vscode.WorkspaceConfiguration,
   key: string,
   value: T,
-) {
-  if (config.get<T>(key) === value) {
-    return Promise.resolve();
+): Promise<boolean> {
+  const inspected = config.inspect<T>(key);
+  if (
+    Object.is(config.get<T>(key), value) ||
+    Object.is(inspected?.globalValue, value)
+  ) {
+    return false;
   }
 
-  return config.update(key, value, vscode.ConfigurationTarget.Global);
+  lastCopilotOtelConfigurationWriteAt = Date.now();
+  await config.update(key, value, vscode.ConfigurationTarget.Global);
+  return true;
 }
 
 function safeJsonParse(value: string): unknown | null {

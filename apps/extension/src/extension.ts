@@ -16,6 +16,7 @@ import {
   type RequestTaskResolver,
   createOtelFileWatcher,
   ensureCopilotOtelConfiguration,
+  getLastCopilotOtelConfigurationWriteAt,
   getOtelFileSignature,
   readCopilotOtelRequests,
   resolveOtelFilePath,
@@ -29,6 +30,7 @@ import {
   type SessionTokenStats,
   currentSessionTokenStats,
 } from "./sessionTokenStats";
+import { SingleFlightTaskQueue } from "./singleFlightTaskQueue";
 import {
   compactStatusText,
   formatCompactNumber,
@@ -71,6 +73,8 @@ let lastSyncError: string | null = null;
 let syncInProgress = false;
 let syncQueued = false;
 let otelLifecycleDisposables: vscode.Disposable[] = [];
+let activeOtelFilePath: string | undefined;
+const otelLifecycleRebuildQueue = new SingleFlightTaskQueue();
 
 export function activate(context: vscode.ExtensionContext) {
   const outputChannel = initializeLogger();
@@ -169,10 +173,19 @@ export function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration((event) => {
-      if (
-        event.affectsConfiguration(extensionId) ||
-        event.affectsConfiguration("github.copilot.chat.otel")
-      ) {
+      const affectsTrackerConfig = event.affectsConfiguration(extensionId);
+      const affectsCopilotOtelConfig = event.affectsConfiguration(
+        "github.copilot.chat.otel",
+      );
+      if (affectsTrackerConfig || affectsCopilotOtelConfig) {
+        if (
+          !affectsTrackerConfig &&
+          affectsCopilotOtelConfig &&
+          Date.now() - getLastCopilotOtelConfigurationWriteAt() < 5_000
+        ) {
+          logInfo("Ignored Copilot OTel configuration change from setup");
+          return;
+        }
         logInfo("Copilot Tracker or Copilot OTel configuration changed", {
           trackerConfig: getTrackerConfig(),
         });
@@ -204,10 +217,21 @@ async function rebuildOtelSyncLifecycle(
   context: vscode.ExtensionContext,
   client: TrackerClient,
 ) {
+  await otelLifecycleRebuildQueue.run(() =>
+    replaceOtelSyncLifecycle(context, client),
+  );
+}
+
+async function replaceOtelSyncLifecycle(
+  context: vscode.ExtensionContext,
+  client: TrackerClient,
+) {
   disposeOtelSyncLifecycle();
   try {
     const config = getTrackerConfig();
     const otelFilePath = await ensureCopilotOtelConfiguration(context, config);
+    activeOtelFilePath = otelFilePath;
+    lastOtelSignature = undefined;
     logInfo("Creating Copilot OTel sync lifecycle", {
       otelFilePath,
       syncIntervalSeconds: config.syncIntervalSeconds,
@@ -795,9 +819,10 @@ async function pollForOtelChanges(
   context: vscode.ExtensionContext,
   client: TrackerClient,
 ) {
-  const config = getTrackerConfig();
   try {
-    const otelFilePath = await ensureCopilotOtelConfiguration(context, config);
+    const config = getTrackerConfig();
+    const otelFilePath =
+      activeOtelFilePath ?? resolveOtelFilePath(context, config);
     const signature = await getOtelFileSignature(otelFilePath);
     if (lastOtelSignature === undefined) {
       lastOtelSignature = signature;
@@ -843,7 +868,8 @@ async function performCopilotSessionSync(
 ) {
   try {
     const config = getTrackerConfig();
-    const otelFilePath = await ensureCopilotOtelConfiguration(context, config);
+    const otelFilePath =
+      activeOtelFilePath ?? resolveOtelFilePath(context, config);
     await refreshContext(context, client);
     await sendEvent(context, client, "session-sync-started");
 

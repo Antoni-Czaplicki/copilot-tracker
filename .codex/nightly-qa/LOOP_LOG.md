@@ -2190,3 +2190,23 @@
 - PASS: `pnpm -r lint`
 - PASS: clean VSIX package excludes `azureDevOpsAuth.js`; rebuilt VSIX installed into real VS Code.
 - Next: commit/push, verify CI/deploy, then rerun real VS Code sign-in and sync against production.
+
+## 2026-07-01 12:54:11 CEST - Loop 54 Start: Real VS Code Production Usage
+
+- PASS: repository is clean on `main` at `311bd56`.
+- PASS: production extension-token route is deployed and rejects invalid callbacks; production smoke passes hard gates with known build-metadata warnings.
+- CONTEXT: requested production admin access was configured and verified without recording the admin list or runtime env values.
+- FOCUS: reload real VS Code, sign in through the tracker web callback, sync realistic OTel telemetry, check status bar/tooltip/click-through, and verify production dashboard ingestion.
+
+## 2026-07-01 13:17:10 CEST - Loop 54 Real VS Code Verification
+
+- PASS: real VS Code `Copilot Tracker: Sign In` completed through the production web callback. VS Code showed and accepted the expected external-site and extension URI prompts, then displayed signed-in success.
+- PASS: realistic OTel fixture synced to production with one request, 321 input tokens, 123 output tokens, 444 total tokens, `gpt-5-nano`, and estimated cost `$0.0001`.
+- PASS: VS Code status bar showed task `124`, session token total `444 tokens`, and hover metadata with input/output/total/cost split.
+- PASS: `Copilot Tracker: Set Current Task` searched production work items through the tracker session bearer; the route returned HTTP 200 and the manual fallback assignment `124` updated VS Code state immediately.
+- PASS: production dashboard opened from VS Code, and after reload showed the assigned task `124`, one request, the model, and the exact token split/total/cost.
+- FOUND: real VS Code logs exposed an OTel lifecycle feedback loop that repeatedly rewrote Copilot's `outfile` setting, rebuilt lifecycle timers, and sent redundant session events.
+- FIXED LOCALLY: added a single-flight lifecycle rebuild queue, tracked the active OTel file path so poll/sync do not reconfigure Copilot settings, and ignored configuration-change events caused by the extension's own exporter setup.
+- PASS: rebuilt/installed VSIX, reloaded real VS Code, and observed a quiet post-reload log over a longer sample: one startup sync, one initial file signature capture, no repeated exporter/lifecycle loop.
+- PASS: checks run after the fix: `pnpm -r typecheck`, `pnpm -r lint`, placeholder-env web build, extension compile/test, workspace tests, and smoke tests.
+- NEXT: commit/push the OTel lifecycle fix and QA log updates, then poll CI/deploy and rerun production smoke.

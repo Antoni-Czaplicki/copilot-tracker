@@ -253,3 +253,13 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - Removed the old extension Azure DevOps auth provider source and verified the rebuilt VSIX no longer packages stale `azureDevOpsAuth.js`.
 - Validation passed: web tests 137/137, extension tests 29/29, web lint/typecheck/build, repo typecheck/lint, clean VSIX package, and rebuilt VSIX installed in real VS Code.
 - Pending: commit/push/deploy this change, then rerun real VS Code sign-in and OTel sync against production. Production exact-SHA proof remains blocked by missing `/api/health` build metadata.
+
+## 2026-07-01 13:17 CEST Real VS Code Path Working
+
+- Real VS Code production sign-in now works through the tracker web callback and VS Code URI handler.
+- The extension synced a realistic OTel fixture to production: one request, `gpt-5-nano`, 321 input tokens, 123 output tokens, 444 total tokens, and `$0.0001` estimated cost.
+- Manual task assignment/search path works in VS Code. The picker called production work-item search with tracker session auth, then manual `124` assignment updated VS Code status and session title.
+- Production dashboard reload confirmed the same session/task/token data from the VS Code sync.
+- A real reliability bug was found and fixed locally: repeated Copilot OTel `outfile` writes caused lifecycle rebuild/event spam. The local VSIX now coalesces rebuilds, uses the active OTel path for polling/syncing, and ignores self-caused OTel config-change events.
+- Validation passed after the fix: typecheck, lint, placeholder-env web build, extension compile/test, workspace tests, smoke tests, VSIX install, and real VS Code post-reload log sampling.
+- Next: commit/push the OTel lifecycle fix and QA logs, wait for CI/Dokploy, rerun production smoke, and keep the dashboard tab as useful handoff context. Production exact-SHA proof still needs build metadata.

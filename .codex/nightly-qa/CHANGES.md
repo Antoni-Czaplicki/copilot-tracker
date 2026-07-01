@@ -1288,3 +1288,23 @@
 - PASS: `pnpm -r typecheck`
 - PASS: `pnpm -r lint`
 - PASS: `pnpm --filter ./apps/extension package`; rebuilt VSIX excludes the deleted auth module and was installed in real VS Code.
+
+## 2026-07-01 - VS Code OTel Lifecycle Stability
+
+- Added `SingleFlightTaskQueue` and routed OTel lifecycle rebuilds through it so overlapping configuration-change events coalesce instead of leaking duplicate timers/watchers.
+- Tracked the active OTel file path after lifecycle setup; normal polling and syncing now read that path without re-running Copilot settings updates.
+- Added a short own-write guard for Copilot OTel configuration-change events produced by the extension's exporter setup.
+- Made Copilot OTel configuration logging idempotent: actual setting writes are logged with key names, already-configured checks are debug-only.
+- Added a regression test for coalescing overlapping lifecycle rebuild requests.
+
+## Checks
+
+- PASS: real VS Code production sign-in, sync, task assignment, status bar, and dashboard verification.
+- PASS: rebuilt VSIX installed into real VS Code; post-reload logs stayed quiet over a longer sample.
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS: `pnpm --filter ./apps/extension test` (30 tests)
+- PASS: `pnpm -r test --if-present` (137 web tests + 30 extension tests)
+- PASS: `pnpm test:smoke` (7 smoke tests)

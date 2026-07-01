@@ -804,3 +804,12 @@
 - LOCAL: rebuilt VSIX excludes stale `azureDevOpsAuth.js` and installed into real VS Code.
 - NOT YET DEPLOYED: new route and extension-token API behavior are pending commit/push and Dokploy deployment.
 - NEXT VERIFY AFTER DEPLOY: production rejects unsafe extension callbacks with HTTP 400; authenticated extension sign-in redirects back to VS Code; extension sync uploads the OTel fixture and production dashboard shows the session.
+
+## 2026-07-01 13:17 CEST Real VS Code Production Usage
+
+- DEPLOYED: extension-token route from `311bd56` is live enough for real VS Code sign-in and production sync.
+- PASS: real VS Code sign-in through production tracker web callback completed and stored a tracker session token without exposing token material.
+- PASS: real VS Code OTel fixture synced to production and production dashboard reload showed task `124`, one request, `gpt-5-nano`, 321 input, 123 output, and 444 total tokens.
+- LOCAL FIX PENDING DEPLOY: OTel lifecycle stability fix is implemented and verified in a locally installed VSIX. It must still be committed, pushed, and deployed/packaged from the repo.
+- PASS: local validation passed after the fix: typecheck, lint, placeholder-env web build, extension compile/test, workspace tests, and smoke tests.
+- REMAINING: `/api/health` still reports unknown build metadata/SHA, so exact deployed commit proof remains blocked until Dokploy build metadata is configured.

@@ -20,6 +20,7 @@ import {
   formatEstimatedSessionCost,
   formatNumber,
 } from "../statusFormatting";
+import { SingleFlightTaskQueue } from "../singleFlightTaskQueue";
 import {
   createTaskResolverFromHistory,
   readTaskHistoryFromValue,
@@ -359,6 +360,35 @@ suite("Extension Test Suite", () => {
       ),
       { version: 1, entries: {} },
     );
+  });
+
+  test("Coalesces overlapping lifecycle rebuilds into one queued rerun", async () => {
+    const queue = new SingleFlightTaskQueue();
+    let runCount = 0;
+    let releaseFirstRun!: () => void;
+    const firstRunStarted = new Promise<void>((resolve) => {
+      const firstRunBlocker = new Promise<void>((release) => {
+        releaseFirstRun = release;
+      });
+      const task = async () => {
+        runCount += 1;
+        if (runCount === 1) {
+          resolve();
+          await firstRunBlocker;
+        }
+      };
+
+      void queue.run(task);
+    });
+
+    await firstRunStarted;
+    const second = queue.run(async () => undefined);
+    const third = queue.run(async () => undefined);
+    assert.strictEqual(second, third);
+
+    releaseFirstRun();
+    await Promise.all([second, third]);
+    assert.strictEqual(runCount, 2);
   });
 
   test("Validates tracker server URLs as safe origins", () => {
