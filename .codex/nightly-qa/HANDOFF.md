@@ -6,7 +6,7 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 
 ## Remaining Risks
 
-- Full browser/VS Code E2E testing not started yet.
+- Full signed-in browser/VS Code E2E testing remains blocked by production Azure `invalid_client`; unauthenticated Chrome smoke, production redirect checks, and VS Code extension test-host runs have been exercised repeatedly.
 - Web/API/auth automated tests are still thin but no longer absent; the new web test harness covers payload schemas including chat request defaults/bounds and tracker events, chat request merge/dedupe/token normalization, request session grid model behavior, analytics/dashboard grouping, GitHub billing date parsing and cron auth, WorkItemPicker helpers, GitHub username mapping feedback, GitHub-login JSON object parsing, cost estimation, GitHub login normalization, auth callback code sanitization and hints, auth cookie policy, disabled-auth identity, bearer parsing, Azure profile/org lookup parsing, Azure session-token parsing/expiry behavior, stored session-token crypto behavior, PKCE generation, OAuth start/callback failure routes, Azure token exchange request/error/malformed response behavior, Azure DevOps WIQL/search/status behavior, and admin CSV export helpers.
 - Extension OTel sync still parses the full file, but unchanged request records are no longer reposted unless stable metadata, workspace, or target server changes. Extension client tests now cover work-item auth options, remote no-token blocking, HTTP error messages, network retry failures, current-session token aggregation, newer pricing aliases, status bar token/cost formatting, dashboard deep-link URL construction, and task-history attribution including unsorted history input.
 - Production smoke passed at 2026-07-01 02:32 CEST: homepage, health, database readiness, Azure PKCE redirect/scopes, provider-error privacy, work-items auth gate, admin export auth gate, and Chrome homepage/login-link check all passed.
@@ -18,12 +18,14 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 
 - PASS: `pnpm -r typecheck`
 - PASS: `pnpm -r lint`
-- PASS: `pnpm --filter ./apps/extension test` (25 tests)
-- PASS: `pnpm --filter @copilot-tracker/web test` (109 tests)
+- PASS: `pnpm --filter ./apps/extension test` (26 tests)
+- PASS: `pnpm --filter @copilot-tracker/web test` (122 tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
-- PASS: `pnpm test` (109 web tests + 25 extension tests)
+- PASS: `pnpm test` (122 web tests + 26 extension tests)
 - PASS: `pnpm --filter ./apps/extension compile`
 - PASS: `pnpm --filter ./apps/extension package` (VSIX produced with `LICENSE.txt` and removed)
+- PASS: `pnpm audit --prod --audit-level moderate`
+- PASS: `pnpm why postcss --prod` reports one patched `postcss@8.5.15`
 
 ## Next Steps
 
@@ -97,3 +99,10 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - `625a202 Cap extension server error messages` passed both GitHub Actions workflows.
 - Clarified deployment smoke docs for sanitized provider `auth_code` preservation and hidden provider descriptions.
 - Production health remains green; provider-error callback behavior still appears stale and `/api/health` still cannot identify the deployed commit.
+
+## 2026-07-01 07:44 CEST Final Update
+
+- `29cf02d Clarify auth callback smoke docs` passed both GitHub Actions workflows.
+- Final production smoke: `/api/health` is HTTP 200 with `ok=true` and `database.ok=true`; `/api/auth/azure-devops` redirects to Microsoft with PKCE `S256`, state, and required scopes.
+- Remaining production freshness risk: `/api/health` still reports `sha="unknown"`/`builtAt="unknown"` with no visible `Cache-Control` header, and direct provider-error callback still returns `auth_code=provider_error`.
+- Documented test cases now reach `DOC-278`.

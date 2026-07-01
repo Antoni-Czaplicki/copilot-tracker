@@ -1854,3 +1854,31 @@
 - Clarified `docs/deployment.md` so production smoke checks require sanitized provider `auth_code` preservation while continuing to forbid reflected provider descriptions.
 - PASS: `git diff --check`
 - Next: commit, push, smoke production, and poll CI/deploy.
+
+## 2026-07-01 07:42:13 CEST - Loop 39 End / Loop 40 Start
+
+- Committed and pushed auth callback smoke doc clarification as `29cf02d Clarify auth callback smoke docs`.
+- GitHub Actions for `29cf02d` are in progress on both CI and Build extension workflows.
+- PASS: production `/api/health` returns HTTP 200 with `ok=true` and `database.ok=true`.
+- STALE/LIMITATION: production provider-error callback still redirects with `auth_code=provider_error`.
+- Current git state after push was clean before recording this status update.
+- Next: final low-risk documentation/test coverage scan before morning handoff.
+
+## 2026-07-01 07:43:08 CEST - Loop 40 Poll
+
+- PASS: `pnpm audit --prod --audit-level moderate` reports no known vulnerabilities.
+- PASS: `pnpm why postcss --prod` reports one patched `postcss@8.5.15` version through Next and shadcn.
+- PASS: GitHub Actions Build extension workflow for `29cf02d Clarify auth callback smoke docs` completed successfully.
+- IN PROGRESS: GitHub Actions CI workflow for `29cf02d` is still running.
+- PASS: production `/api/health` remains HTTP 200 with `ok=true` and `database.ok=true`.
+- STALE/LIMITATION: production provider-error callback still redirects with `auth_code=provider_error`; `error_description` remains hidden.
+
+## 2026-07-01 07:44:59 CEST - Loop 40 Final Handoff
+
+- PASS: GitHub Actions CI workflow for `29cf02d Clarify auth callback smoke docs` completed successfully.
+- PASS: final production smoke health returned HTTP 200 with `ok=true` and `database.ok=true`.
+- PASS: final production Azure OAuth start redirect goes to Microsoft with PKCE `S256`, state, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
+- PASS/PARTIAL: direct provider-error callback hides `error_description`, but still returns stale `auth_code=provider_error` instead of the newer preserved `access_denied` code.
+- STALE/LIMITATION: production `/api/health` still reports `sha="unknown"`, `builtAt="unknown"`, and no visible `Cache-Control` header.
+- Documented test cases now reach `DOC-278`.
+- Next: commit final QA log updates and wait for that log-only commit's CI.
