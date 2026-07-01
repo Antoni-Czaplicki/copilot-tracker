@@ -576,6 +576,7 @@
 - [x] Extract WorkItemPicker active-index movement into a pure helper
 - [x] Add tests for ArrowUp/ArrowDown bounds and stale-index clamping
 - [x] Run web tests, typecheck, lint, production-style web build, repo typecheck/lint, smoke tests, root tests, and diff check
-- [ ] Commit and push picker keyboard coverage
-- [ ] Poll CI
-- [ ] Update logs and continue next gap
+- [x] Commit and push picker keyboard coverage
+- [x] Poll CI
+- [x] Verify Dokploy deployment and strict production smoke after Reload
+- [x] Update logs and continue next gap

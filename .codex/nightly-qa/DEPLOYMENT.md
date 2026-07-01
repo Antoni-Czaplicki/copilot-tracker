@@ -304,6 +304,14 @@
 - PASS: strict `pnpm smoke:production -- --expect-sha 6477f9c` passed after Reload.
 - PASS: live dashboard picker verification passed for deployed numeric and text empty states.
 
+## 2026-07-01 14:42 CEST Picker Keyboard Coverage Deploy Verified
+
+- PUSHED: `d19e76c Cover work-item picker keyboard movement`.
+- PASS: GitHub Actions `CI` and `Build extension` completed successfully for `d19e76c`.
+- PASS: Dokploy deployment completed and built the expected image.
+- WARN/FIXED OPERATIONALLY: after the deployment was marked done, production still reported `6477f9c`; using Dokploy app `Reload` switched production to `d19e76c`.
+- PASS: strict `pnpm smoke:production -- --expect-sha d19e76c` passed after Reload.
+
 ## 2026-07-01 04:43 CEST Production Poll
 
 - PUSHED: `97ce2f9 Harden Azure token responses`.

@@ -387,3 +387,4 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | DOC-379 | Docs/Deployment | PASS | Deployment docs explain Dokploy Reload recovery for stale SHA after done deployment | Manual doc review | Added generated-image-vs-running-service distinction and General -> Reload recovery steps |
 | WEB-380 | Web/UX | PASS | WorkItemPicker keyboard active result movement stays within list bounds | Automated | Added tests for ArrowUp/ArrowDown movement and stale-index clamping |
 | CHECK-381 | Quality | PASS | Broad local validation passes after picker keyboard coverage | CLI | Web tests/typecheck/lint, production-style web build, smoke tests, repo typecheck/lint, root tests, and diff check passed |
+| DEP-382 | Deployment/Smoke | PASS | Production serves picker keyboard coverage commit after Dokploy build and Reload | Live prod smoke | Strict smoke passed for `d19e76c` after app Reload switched production from previous `6477f9c` |

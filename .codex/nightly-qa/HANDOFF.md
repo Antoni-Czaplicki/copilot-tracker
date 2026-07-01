@@ -312,3 +312,9 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - Added pure regression coverage for WorkItemPicker active-result movement: ArrowUp/ArrowDown bounds and stale-index clamping.
 - This improves the previous picker coverage gap without adding a new DOM test dependency; true rendered/browser component coverage remains a future improvement.
 - Local checks passed: web tests/typecheck/lint, production-style web build, smoke tests, repo typecheck/lint, root tests, and diff check.
+
+## 2026-07-01 14:42 CEST Picker Coverage Live
+
+- `d19e76c Cover work-item picker keyboard movement` is pushed, CI-green, built by Dokploy, and live in production after Dokploy app Reload.
+- Strict production smoke passes for `d19e76c`.
+- Dokploy repeated the "done but stale until Reload" behavior, strengthening the case that Reload should remain part of the fallback playbook when strict smoke catches stale production.

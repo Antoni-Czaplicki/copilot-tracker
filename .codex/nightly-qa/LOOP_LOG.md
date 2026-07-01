@@ -2321,3 +2321,13 @@
 - ADDED: tests cover listbox active-index movement at upper/lower bounds and stale/invalid active-index clamping.
 - PASS: `pnpm --filter @copilot-tracker/web test` (144 tests), web typecheck, web lint, production-style web build, `pnpm test:smoke`, repo typecheck/lint, root `pnpm test`, and `git diff --check`.
 - NEXT: commit/push picker keyboard coverage and poll CI.
+
+## 2026-07-01 14:42:00 CEST - Loop 58 Deployment Closeout
+
+- PUSHED: `d19e76c Cover work-item picker keyboard movement`.
+- PASS: GitHub Actions `CI` completed successfully for `d19e76c`.
+- PASS: GitHub Actions `Build extension` completed successfully for `d19e76c`.
+- PASS: Dokploy deployment for `d19e76c` completed and built the expected image.
+- WARN/FIXED OPERATIONALLY: production still served previous SHA `6477f9c` after Dokploy marked the deployment done; Dokploy app `Reload` switched production to `d19e76c`.
+- PASS: strict `pnpm smoke:production -- --expect-sha d19e76c` passed after Reload.
+- NEXT: continue the next highest-value QA gap.
