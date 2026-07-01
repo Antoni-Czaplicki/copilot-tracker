@@ -847,3 +847,18 @@
 - PASS: `pnpm test` (105 web tests + 25 extension VS Code tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm --filter ./apps/extension compile`
+
+## 2026-07-01 - GitHub Billing Response Normalization
+
+- Extracted pure GitHub billing response row normalization into `githubBillingRows.ts`.
+- Hardened GitHub billing sync parsing so malformed `usageItems` are ignored and invalid `timePeriod` values fall back to the requested sync date.
+- Added regression coverage for valid row mapping and malformed response tolerance.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web test` (107 tests)
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (107 web tests + 25 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`

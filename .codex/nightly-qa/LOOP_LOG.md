@@ -1400,3 +1400,35 @@
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm --filter ./apps/extension compile`
 - Next: commit, push, smoke production, and continue.
+
+## 2026-07-01 06:26:05 CEST - Loop 23 End
+
+- Committed and pushed extension TrackerClient response hardening as `bab82eb Harden extension tracker responses`.
+- GitHub Actions for `bab82eb` are in progress.
+- PASS: production `/api/health` returns HTTP 200 with `ok=true` and `database.ok=true`.
+- STALE/LIMITATION: production `/api/health` still reports `version.sha="unknown"`, `builtAt="unknown"`, and no visible `Cache-Control` header.
+- PASS: sanitized production Azure OAuth start redirects to Microsoft with PKCE `S256`, state, client id, and required Azure DevOps scopes.
+- Current git state after push: clean.
+- Next: start the next loop and continue while CI/deploy catches up.
+
+## 2026-07-01 06:26:29 CEST - Loop 24 Start
+
+- Previous pushed commit: `bab82eb Harden extension tracker responses`; GitHub Actions were still in progress at the prior poll.
+- Current blocker remains external Azure OAuth `invalid_client`, unavailable Docker daemon, and unproven production commit metadata/cache-header freshness.
+- Next: inspect web/backend route and utility edges for another small, testable hardening improvement.
+
+## 2026-07-01 06:29:44 CEST - Loop 24 Validation
+
+- PASS: GitHub Actions for `bab82eb Harden extension tracker responses` completed successfully on both CI and extension build workflows.
+- Extracted pure GitHub billing response row normalization into `githubBillingRows.ts` to avoid env/database coupling in tests.
+- Hardened billing normalization so malformed `usageItems` are ignored and invalid/missing `timePeriod` values fall back to the requested sync date.
+- Added tests for valid usage-row mapping and malformed response tolerance.
+- FIXED DURING VALIDATION: the first web test run failed because the test imported the env-backed billing module; the helper was moved to a pure module and tests passed.
+- FIXED DURING VALIDATION: the first typecheck run flagged an `unknown` integer guard; made the `typeof value === "number"` narrowing explicit.
+- PASS: `pnpm --filter @copilot-tracker/web test` (107 tests)
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (107 web tests + 25 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`
+- Next: commit, push, smoke production, and continue.

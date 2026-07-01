@@ -163,6 +163,18 @@
 
 - PASS: GitHub Actions for `fc5ccd1 Share frontend response error handling` completed successfully on both CI and extension build workflows.
 
+## 2026-07-01 06:26 CEST Production Poll
+
+- PUSHED: `bab82eb Harden extension tracker responses`.
+- IN PROGRESS: GitHub Actions for `bab82eb` started after push.
+- PASS: production `/api/health` returned HTTP 200 with `ok=true` and `database.ok=true`.
+- LIMITATION: production `/api/health` still reports `sha="unknown"`, `builtAt="unknown"`, and no visible `Cache-Control` header.
+- PASS: production Azure OAuth start redirect includes state, PKCE `S256`, client id, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
+
+## 2026-07-01 06:29 CEST CI Poll
+
+- PASS: GitHub Actions for `bab82eb Harden extension tracker responses` completed successfully on both CI and extension build workflows.
+
 ## 2026-07-01 04:33 CEST Production Poll
 
 - PUSHED: `16d5c67 Normalize health build metadata`.

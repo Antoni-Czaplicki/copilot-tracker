@@ -1,15 +1,6 @@
 import { githubApiUrl, githubCopilotBillingConfig } from "./config";
-import type { StoredGithubCopilotBillingUsage } from "./store";
+import { githubCopilotBillingRowsFromResponse } from "./githubBillingRows";
 import { upsertGithubCopilotBillingUsage } from "./store";
-
-interface GitHubAiCreditUsageResponse {
-  timePeriod?: {
-    year?: number;
-    month?: number;
-    day?: number;
-  };
-  usageItems?: Record<string, unknown>[];
-}
 
 export async function syncGithubCopilotBillingUsage(date = yesterdayUtcDate()) {
   const config = githubCopilotBillingConfig();
@@ -42,39 +33,14 @@ export async function syncGithubCopilotBillingUsage(date = yesterdayUtcDate()) {
     );
   }
 
-  const body = (await response.json()) as GitHubAiCreditUsageResponse;
-  const usageDateValue = usageDate(body.timePeriod, date);
   const fetchedAt = new Date().toISOString();
-  const rows = (body.usageItems ?? []).map(
-    (item, index): StoredGithubCopilotBillingUsage => {
-      const model = stringValue(item.model);
-      const sku = stringValue(item.sku);
-      const unitType = stringValue(item.unitType);
-      return {
-        id: [
-          config.scopeType,
-          config.scope,
-          usageDateValue,
-          model ?? "unknown-model",
-          sku ?? "unknown-sku",
-          unitType ?? "unknown-unit",
-          index,
-        ].join(":"),
-        scopeType: config.scopeType,
-        scope: config.scope,
-        date: usageDateValue,
-        product: stringValue(item.product),
-        sku,
-        quantity: stringValue(item.netQuantity ?? item.grossQuantity),
-        unitType,
-        grossAmount: stringValue(item.grossAmount),
-        discountAmount: stringValue(item.discountAmount),
-        netAmount: stringValue(item.netAmount),
-        raw: item,
-        fetchedAt,
-      };
-    },
-  );
+  const { rows, usageDateValue } = githubCopilotBillingRowsFromResponse({
+    body: await response.json(),
+    fallbackDate: date,
+    fetchedAt,
+    scopeType: config.scopeType,
+    scope: config.scope,
+  });
 
   await upsertGithubCopilotBillingUsage(rows);
   return {
@@ -104,26 +70,4 @@ function endpointForScope(
   }
 
   return `/users/${encodeURIComponent(scope)}/settings/billing/ai_credit/usage`;
-}
-
-function usageDate(
-  timePeriod: GitHubAiCreditUsageResponse["timePeriod"],
-  fallback: string,
-) {
-  if (!timePeriod) {
-    return fallback;
-  }
-
-  const year = timePeriod?.year ?? new Date().getUTCFullYear();
-  const month = String(timePeriod?.month ?? 1).padStart(2, "0");
-  const day = String(timePeriod?.day ?? 1).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function stringValue(value: unknown): string | null {
-  if (value === null || value === undefined) {
-    return null;
-  }
-
-  return String(value);
 }

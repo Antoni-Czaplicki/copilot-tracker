@@ -246,3 +246,5 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | UI-238 | Web | PASS | Task editing, session mutations, billing sync, GitHub mapping, and WorkItemPicker reuse the shared safe error parser | Code review + automated | Rewired helpers; web/root tests passed |
 | EXT-239 | Extension | PASS | TrackerClient work-item search ignores malformed successful payload entries and returns only well-shaped work items | Automated | Added VS Code extension regression test; extension/root tests passed |
 | EXT-240 | Extension | PASS | TrackerClient blank JSON error messages fall back to the HTTP status message | Automated | Added VS Code extension regression test; extension/root tests passed |
+| API-241 | API/Backend | PASS | GitHub billing response normalizer maps valid usage items into stable database rows | Automated | Added `githubBillingRows` coverage; web/root tests passed |
+| API-242 | API/Backend | PASS | GitHub billing response normalizer ignores malformed usage rows and falls back for invalid response dates | Automated | Added malformed response coverage; web/root tests passed |

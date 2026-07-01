@@ -198,4 +198,15 @@
 - [x] Fall back for blank server error strings
 - [x] Add extension regression tests
 - [x] Run focused extension tests and broad validation
+- [x] Commit, push, and smoke production
+- [x] Verify CI completion for `bab82eb`
+
+## Loop 24 - GitHub Billing Response Normalization
+
+- [x] Re-sync prior commit CI status
+- [x] Extract pure GitHub billing row normalizer
+- [x] Tolerate malformed `usageItems` and invalid `timePeriod` values
+- [x] Add web regression tests
+- [x] Fix env-coupled test import and TypeScript guard found during validation
+- [x] Run focused web tests and broad validation
 - [ ] Commit, push, and smoke production
