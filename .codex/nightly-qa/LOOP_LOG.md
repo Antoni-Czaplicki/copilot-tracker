@@ -1942,3 +1942,11 @@
 - PASS: `git diff --check`
 - STILL KNOWN-STALE: production health metadata/cache header and provider-error callback behavior remain stale until deployment proves freshness.
 - Next: commit, push, poll GitHub Actions, and re-run production smoke.
+
+## 2026-07-01 08:27:08 CEST - Loop 43 Poll
+
+- PUSHED: `ea2685e Harden health freshness headers`.
+- PASS: GitHub Actions CI for `ea2685e` completed successfully.
+- PASS: GitHub Actions Build extension for `ea2685e` completed successfully.
+- PASS/WARN: post-CI `pnpm smoke:production -- --allow-known-stale` still passes with the known freshness warnings.
+- STALE/LIMITATION: production still reports `sha="unknown"`, `builtAt="unknown"`, missing visible `Cache-Control`, and provider-error callback `auth_code=provider_error`.

@@ -671,3 +671,10 @@
 - PASS: local placeholder-env web production build accepts the `/api/health` header configuration.
 - PASS/WARN: `pnpm smoke:production -- --allow-known-stale` still reaches production successfully.
 - STALE/LIMITATION: production currently still reports `sha="unknown"`, `builtAt="unknown"`, missing visible `Cache-Control`, and stale provider-error callback code until the deployment proves freshness.
+
+## 2026-07-01 08:27 CEST Production Poll
+
+- PUSHED: `ea2685e Harden health freshness headers`.
+- PASS: GitHub Actions CI and Build extension workflows completed successfully for `ea2685e`.
+- PASS/WARN: post-CI `pnpm smoke:production -- --allow-known-stale` passed against https://copilot-tracker.antek.page.
+- STALE/LIMITATION: production still reports unknown build metadata, missing visible health `Cache-Control`, and stale provider-error callback `auth_code=provider_error`.

@@ -399,4 +399,4 @@
 - [x] Configure Next to emit the same freshness headers for `/api/health`
 - [x] Add regression coverage for the expanded health header contract
 - [x] Run typecheck, lint, root tests, production web build, extension compile, live known-stale smoke, and diff check
-- [ ] Commit, push, smoke production, and poll CI
+- [x] Commit, push, smoke production, and poll CI

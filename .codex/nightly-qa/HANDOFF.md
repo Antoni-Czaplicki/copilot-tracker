@@ -131,3 +131,9 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - Latest broad validation passed typecheck, lint, root tests, placeholder-env web build, extension compile, live known-stale production smoke, and diff check.
 - Root tests now cover 3 smoke verifier tests, 123 web tests, and 26 extension tests.
 - Remaining risks are unchanged until deploy freshness is proven: production health metadata/cache headers still look stale, provider-error callback still returns `provider_error`, and signed-in Azure E2E is blocked by `invalid_client`.
+
+## 2026-07-01 08:27 CEST Final Poll Update
+
+- `ea2685e Harden health freshness headers` passed both GitHub Actions workflows.
+- Post-CI production smoke still passes in known-stale mode and still warns on unknown build metadata, missing visible health cache header, and stale provider-error callback behavior.
+- Best next step: inspect Dokploy/build env and deployment routing/cache behavior, then rerun strict `pnpm smoke:production` once metadata/cache/provider-code freshness are expected to be live.
