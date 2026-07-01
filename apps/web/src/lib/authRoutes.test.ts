@@ -222,6 +222,11 @@ void test("Azure OAuth callback logs profile and org diagnostics server-side", a
       return Response.json({ value: [] });
     }
 
+    if (url.pathname === "/test-org/_apis/wit/wiql") {
+      await Promise.resolve();
+      return Response.json({ message: "forbidden" }, { status: 403 });
+    }
+
     assert.fail(`unexpected fetch to ${url.href}`);
   };
 
@@ -249,13 +254,15 @@ void test("Azure OAuth callback logs profile and org diagnostics server-side", a
   );
   assert.equal(log.code, "profile_or_org_check_failed");
   assert.equal(log.hasProfileId, true);
+  assert.equal(log.orgAccessProbeResult, "request_failed");
+  assert.equal(log.orgAccessProbeStatus, 403);
   assert.equal(log.orgMembershipAccountCount, 0);
   assert.equal(log.orgMembershipResult, "not_matched");
   assert.equal(log.orgMembershipStatus, 200);
   assert.equal(log.profileResult, "ok");
   assert.equal(log.profileStatus, 200);
   assert.equal(log.stage, "profile_or_org_check");
-  assert.equal(requests.length, 3);
+  assert.equal(requests.length, 4);
 });
 
 function assertHeader(response: Response, name: string) {

@@ -2101,3 +2101,29 @@
 - PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 20094a0` passed hard gates; warnings remain limited to unknown build metadata/SHA.
 - PASS: `git diff --check`
 - Next: commit/push normalization, poll CI/deploy, then retry production Chrome auth.
+
+## 2026-07-01 10:45:21 CEST - Loop 49 Deploy Verification
+
+- PUSHED: `9a3acb1 Normalize Azure DevOps org URLs`.
+- PASS: GitHub Actions CI and Build extension completed successfully for `9a3acb1`.
+- PASS: Dokploy deployments list shows `9a3acb1` done.
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 9a3acb1` passed all hard gates; warnings remain limited to unknown build metadata/SHA.
+- FAIL/EXPECTED: real Chrome production login still returns `auth_code=profile_or_org_check_failed` with safe `auth_ref`.
+- PASS: matching Dokploy log, also pasted by the user, still shows profile OK/status 200/profile id present, account count 1, and org membership not matched. The old URL-form normalization was not sufficient.
+
+## 2026-07-01 10:53:27 CEST - Loop 50 Direct Org Probe
+
+- ADDED: after account-name membership matching fails, auth now probes the configured Azure DevOps org WIQL endpoint directly with the signed-in token.
+- SAFETY: the probe only accepts a successful WIQL JSON payload with a `workItems` array; failures or malformed responses remain fail-closed.
+- ADDED: redacted `orgAccessProbeResult` and `orgAccessProbeStatus` fields to server-side auth failure logs.
+- ADDED: tests for failed probe diagnostics and probe-based user acceptance when account names do not match.
+- PASS: `pnpm --filter @copilot-tracker/web test` (132 tests)
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS: `pnpm --filter ./apps/extension test` (26 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: clean rerun of `pnpm test` (7 smoke tests + 132 web tests + 26 extension VS Code tests)
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 9a3acb1` passed hard gates; warnings remain limited to unknown build metadata/SHA.
+- PASS: `git diff --check`
+- Next: commit/push direct configured-org probe, poll CI/deploy, then retry production Chrome auth.

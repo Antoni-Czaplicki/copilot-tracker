@@ -211,3 +211,11 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - Added a local source fix for a likely env-format trap: `AZURE_DEVOPS_ORG` now normalizes old-style `https://<org>.visualstudio.com` URLs as well as org slugs and `https://dev.azure.com/<org>`.
 - Validation passed: web tests 131/131, typecheck, lint, extension compile/test, production-style web build, root `pnpm test`, live known-stale production smoke, and diff check.
 - Next: commit/push this normalization change, wait for CI/Dokploy deploy, then retry Chrome login. If it still fails, the remaining action is to update the configured org value or the signed-in user's Azure DevOps organization membership/visibility.
+
+## 2026-07-01 10:53 CEST Direct Org Probe Ready
+
+- `9a3acb1` deployed successfully, but real Chrome login still failed at `profile_or_org_check_failed`; the user-provided log confirms profile OK and org account-list mismatch.
+- Added a stronger local fallback: when the account-list API does not match the configured org slug, the auth flow probes the configured Azure DevOps org WIQL endpoint directly using the signed-in token.
+- The probe is fail-closed and accepts only valid successful WIQL JSON; failures are logged as redacted `orgAccessProbeResult`/`orgAccessProbeStatus`.
+- Validation passed: focused web tests 132/132, typecheck, lint, extension compile/test, production-style web build, clean root `pnpm test`, live known-stale production smoke, and diff check.
+- Next: commit/push the probe change, wait for CI/Dokploy, then retry Chrome login and, if successful, verify dashboard and Azure work-item search.

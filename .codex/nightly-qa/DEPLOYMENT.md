@@ -759,3 +759,12 @@
 - LOCAL CHANGE: source now normalizes old-style `https://<org>.visualstudio.com` `AZURE_DEVOPS_ORG` values before membership matching and work-item URL generation.
 - PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 20094a0` passed all hard gates; warnings remain limited to unknown build metadata/SHA.
 - NEXT: deploy this change and retry real Chrome login. If still blocked, inspect/update the production `AZURE_DEVOPS_ORG` value or user organization membership/visibility.
+
+## 2026-07-01 10:53 CEST Org Probe Prep
+
+- PASS: `9a3acb1 Normalize Azure DevOps org URLs` completed GitHub Actions CI and Build extension.
+- PASS: Dokploy deployments list shows `9a3acb1` done.
+- PASS/WARN: post-deploy `pnpm smoke:production -- --allow-known-stale --expect-sha 9a3acb1` passed all hard gates; warnings remain limited to unknown build metadata/SHA.
+- FAIL/NEXT: real Chrome production login still returns `auth_code=profile_or_org_check_failed`; the user-provided matching log still shows profile OK/status 200, account count 1, and org membership not matched.
+- LOCAL CHANGE: source now adds a direct configured Azure DevOps org WIQL probe after account-list matching fails, with redacted probe result/status diagnostics.
+- NEXT: deploy the probe and retry Chrome login. If login still fails, use the new `orgAccessProbeResult`/`orgAccessProbeStatus` log fields to distinguish configured-org access failure from account-list naming mismatch.

@@ -28,6 +28,8 @@ export interface AuthFailureLogInput {
   hasExpectedState?: boolean;
   hasProfileId?: boolean;
   hasState?: boolean;
+  orgAccessProbeResult?: string;
+  orgAccessProbeStatus?: number;
   orgMembershipAccountCount?: number;
   orgMembershipResult?: string;
   orgMembershipStatus?: number;
@@ -53,6 +55,8 @@ export function authFailureLogEvent(input: AuthFailureLogInput) {
     hasExpectedState: input.hasExpectedState,
     hasProfileId: input.hasProfileId,
     hasState: input.hasState,
+    orgAccessProbeResult: sanitizeAuthLogValue(input.orgAccessProbeResult, 80),
+    orgAccessProbeStatus: input.orgAccessProbeStatus,
     orgMembershipAccountCount: input.orgMembershipAccountCount,
     orgMembershipResult: sanitizeAuthLogValue(input.orgMembershipResult, 80),
     orgMembershipStatus: input.orgMembershipStatus,

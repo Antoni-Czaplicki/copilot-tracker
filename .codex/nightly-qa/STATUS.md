@@ -1,11 +1,11 @@
 # Nightly QA Status
 
-- Current time: 2026-07-01 10:38:36 CEST
-- Current loop: 49
-- State: Azure DevOps organization URL normalization implemented locally and validation passed
-- Focus: Remove likely `AZURE_DEVOPS_ORG` format mismatch after profile lookup succeeds and org membership does not match
-- Blocker: signed-in Azure E2E is still blocked on the currently deployed build by real Chrome login returning `auth_code=profile_or_org_check_failed`; exact deployed commit still cannot be proven because production `/api/health` reports `sha="unknown"` and `builtAt="unknown"`
-- Latest completed pushed evidence: `20094a0 Record deployed profile org diagnosis`; GitHub Actions/deploy verification for the previous code commit was green; a fresh Chrome login plus Dokploy log still shows profile OK and org membership not matched
-- Local change ready to commit: `AZURE_DEVOPS_ORG` normalization now accepts the older `https://<org>.visualstudio.com` URL form in addition to org slugs and `https://dev.azure.com/<org>` URLs, with focused tests and docs
-- Next action: commit/push the org URL normalization change, poll CI/deploy, then retry Chrome login and dashboard/work-item E2E
+- Current time: 2026-07-01 10:53:27 CEST
+- Current loop: 50
+- State: direct configured-org access probe implemented locally and focused validation passed
+- Focus: Allow Azure login when the account-list API does not expose the same organization slug but the signed-in token can query the configured Azure DevOps org directly
+- Blocker: signed-in Azure E2E is still blocked on the currently deployed `9a3acb1` build by real Chrome login returning `auth_code=profile_or_org_check_failed`; exact deployed commit still cannot be proven because production `/api/health` reports `sha="unknown"` and `builtAt="unknown"`
+- Latest completed pushed evidence: `9a3acb1 Normalize Azure DevOps org URLs`; GitHub Actions CI and Build extension passed, Dokploy shows deployment done, but real Chrome login still failed and the matching log shows profile OK, account count 1, org membership not matched
+- Local change ready to commit: after account-name membership mismatch, the server now probes the configured Azure DevOps org WIQL endpoint with the same token and accepts only a valid successful WIQL JSON response; redacted `orgAccessProbeResult`/`orgAccessProbeStatus` diagnostics are logged
+- Next action: commit/push the direct org-access probe, poll CI/deploy, then retry Chrome login and dashboard/work-item E2E
 - Production target: https://copilot-tracker.antek.page

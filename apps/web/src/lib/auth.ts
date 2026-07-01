@@ -8,6 +8,7 @@ import {
   azureDevOpsOrg,
   azureDevOpsProfileUrl,
   azureDevOpsScope,
+  azureDevOpsWorkItemsUrl,
   requireAzureDevOpsOAuthConfig,
 } from "./config";
 import { localDevUserIdentity, parseBearerToken } from "./authIdentity";
@@ -39,6 +40,8 @@ export interface AzureDevOpsUser {
 
 export interface AzureDevOpsUserLookupDiagnostics {
   hasProfileId?: boolean;
+  orgAccessProbeResult?: string;
+  orgAccessProbeStatus?: number;
   orgMembershipAccountCount?: number;
   orgMembershipResult?: string;
   orgMembershipStatus?: number;
@@ -359,7 +362,7 @@ async function validateAzureDevOpsOrgMembership(
 
   const expectedOrg = azureDevOpsOrg().toLowerCase();
   const accountCount = payload.value.length;
-  const matched = payload.value.some((account) => {
+  const matchedByAccount = payload.value.some((account) => {
     if (!isRecord(account)) {
       return false;
     }
@@ -371,13 +374,76 @@ async function validateAzureDevOpsOrgMembership(
       accountUriContainsOrg(accountUri, expectedOrg)
     );
   });
+  if (matchedByAccount) {
+    return {
+      diagnostics: {
+        orgMembershipAccountCount: accountCount,
+        orgMembershipResult: "matched",
+        orgMembershipStatus: response.status,
+      },
+      ok: true,
+    };
+  }
+
+  const accessProbe = await probeAzureDevOpsConfiguredOrgAccess(accessToken);
   return {
     diagnostics: {
+      ...accessProbe.diagnostics,
       orgMembershipAccountCount: accountCount,
-      orgMembershipResult: matched ? "matched" : "not_matched",
+      orgMembershipResult: accessProbe.ok
+        ? "matched_by_configured_org_probe"
+        : "not_matched",
       orgMembershipStatus: response.status,
     },
-    ok: matched,
+    ok: accessProbe.ok,
+  };
+}
+
+async function probeAzureDevOpsConfiguredOrgAccess(accessToken: string) {
+  let response: Response;
+  try {
+    response = await fetchWithTimeout(
+      new URL("_apis/wit/wiql?api-version=7.1", `${azureDevOpsWorkItemsUrl()}/`),
+      {
+        method: "POST",
+        headers: {
+          accept: "application/json",
+          authorization: `Bearer ${accessToken}`,
+          "content-type": "application/json",
+          "user-agent": "copilot-tracker",
+        },
+        body: JSON.stringify({
+          query: "SELECT [System.Id] FROM WorkItems WHERE [System.Id] = 0",
+        }),
+      },
+    );
+  } catch {
+    return {
+      diagnostics: {
+        orgAccessProbeResult: "request_failed",
+      },
+      ok: false,
+    };
+  }
+
+  if (!response.ok) {
+    return {
+      diagnostics: {
+        orgAccessProbeResult: "request_failed",
+        orgAccessProbeStatus: response.status,
+      },
+      ok: false,
+    };
+  }
+
+  const payload = await readJsonObject(response);
+  const ok = payload !== null && Array.isArray(payload.workItems);
+  return {
+    diagnostics: {
+      orgAccessProbeResult: ok ? "ok" : "bad_response",
+      orgAccessProbeStatus: response.status,
+    },
+    ok,
   };
 }
 

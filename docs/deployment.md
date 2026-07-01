@@ -96,9 +96,11 @@ callback stage details; browser URLs and page text must never include provider
 If login returns `auth_code=profile_or_org_check_failed`, the token exchange
 has already succeeded. Use the matching `auth_ref` log event to inspect the
 redacted `profileResult`, `profileStatus`, `orgMembershipResult`,
-`orgMembershipStatus`, and `orgMembershipAccountCount` fields. These distinguish
-profile lookup failures from configured-organization membership mismatches
-without logging profile payloads, organization names, tokens, or secrets.
+`orgMembershipStatus`, `orgMembershipAccountCount`, `orgAccessProbeResult`, and
+`orgAccessProbeStatus` fields. These distinguish profile lookup failures from
+configured-organization membership mismatches and direct configured-org access
+probe failures without logging profile payloads, organization names, tokens, or
+secrets.
 
 ## Production Smoke Checks
 

@@ -464,4 +464,16 @@
 - [x] Add support for old-style `https://<org>.visualstudio.com` `AZURE_DEVOPS_ORG` values
 - [x] Add focused normalization tests and docs for accepted org formats
 - [x] Run focused web tests, typecheck, lint, root tests, extension tests, web build, production smoke, and diff check
+- [x] Commit, push, poll CI/deploy, and retry signed-in Chrome dashboard/work-item E2E
+
+## Loop 50 - Direct Configured Org Probe
+
+- [x] Confirm `9a3acb1` deployed successfully in Dokploy
+- [x] Retry production Chrome login after the org URL normalization deploy
+- [x] Confirm the failure remains `profile_or_org_check_failed`
+- [x] Confirm matching Dokploy log still shows profile OK, account count 1, and org membership not matched
+- [x] Add a direct configured-org WIQL access probe after account-name matching fails
+- [x] Add redacted `orgAccessProbeResult` and `orgAccessProbeStatus` diagnostics
+- [x] Add tests for probe failure and probe-based success
+- [x] Run focused web tests, typecheck, lint, extension compile/test, web build, root tests, live production smoke, and diff check
 - [ ] Commit, push, poll CI/deploy, and retry signed-in Chrome dashboard/work-item E2E

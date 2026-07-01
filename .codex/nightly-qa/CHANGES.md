@@ -1222,3 +1222,23 @@
 - PASS: `pnpm test` (7 smoke tests + 131 web tests + 26 extension VS Code tests)
 - PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 20094a0`
 - PASS: `git diff --check`
+
+## 2026-07-01 - Direct Azure DevOps Org Access Probe
+
+- Added a fallback org validation path after account-name matching fails: the auth flow now probes the configured Azure DevOps org WIQL endpoint with the signed-in access token.
+- Kept the fallback fail-closed: only a successful WIQL JSON response with a `workItems` array can satisfy the check.
+- Added redacted `orgAccessProbeResult` and `orgAccessProbeStatus` diagnostics to server-side auth logs.
+- Added coverage for probe failure diagnostics and probe-based user acceptance when Azure account names do not match the configured org slug.
+- Documented the new diagnostic fields in the deployment troubleshooting guide.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web test` (132 tests)
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS: `pnpm --filter ./apps/extension test` (26 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (7 smoke tests + 132 web tests + 26 extension VS Code tests)
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 9a3acb1`
+- PASS: `git diff --check`

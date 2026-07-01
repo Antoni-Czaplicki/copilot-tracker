@@ -52,6 +52,8 @@ void test("authFailureLogEvent redacts sensitive details while preserving diagno
       hasExpectedState: undefined,
       hasProfileId: undefined,
       hasState: undefined,
+      orgAccessProbeResult: undefined,
+      orgAccessProbeStatus: undefined,
       orgMembershipAccountCount: undefined,
       orgMembershipResult: undefined,
       orgMembershipStatus: undefined,

@@ -121,11 +121,19 @@ void test("fetchAzureDevOpsUserWithDiagnostics reports org membership misses", a
     Response.json({
       value: [{ accountName: "another-org" }],
     }),
+    Response.json(
+      { message: "forbidden" },
+      {
+        status: 403,
+      },
+    ),
   ]);
 
   assert.deepEqual(await fetchAzureDevOpsUserWithDiagnostics("access-token"), {
     diagnostics: {
       hasProfileId: true,
+      orgAccessProbeResult: "request_failed",
+      orgAccessProbeStatus: 403,
       orgMembershipAccountCount: 1,
       orgMembershipResult: "not_matched",
       orgMembershipStatus: 200,
@@ -133,6 +141,43 @@ void test("fetchAzureDevOpsUserWithDiagnostics reports org membership misses", a
       profileStatus: 200,
     },
     user: null,
+  });
+});
+
+void test("fetchAzureDevOpsUserWithDiagnostics accepts configured org access when account names do not match", async (context) => {
+  mockFetch(context, [
+    Response.json({
+      id: "user-id",
+      displayName: "Test User",
+      publicAlias: "public-alias",
+    }),
+    Response.json({
+      value: [{ accountName: "another-org" }],
+    }),
+    Response.json({
+      queryType: "flat",
+      workItems: [],
+    }),
+  ]);
+
+  assert.deepEqual(await fetchAzureDevOpsUserWithDiagnostics("access-token"), {
+    diagnostics: {
+      hasProfileId: true,
+      orgAccessProbeResult: "ok",
+      orgAccessProbeStatus: 200,
+      orgMembershipAccountCount: 1,
+      orgMembershipResult: "matched_by_configured_org_probe",
+      orgMembershipStatus: 200,
+      profileResult: "ok",
+      profileStatus: 200,
+    },
+    user: {
+      avatarUrl: null,
+      email: null,
+      id: "user-id",
+      login: "public-alias",
+      name: "Test User",
+    },
   });
 });
 
