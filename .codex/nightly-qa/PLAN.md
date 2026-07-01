@@ -166,4 +166,14 @@
 - [x] Add tested health response init helper
 - [x] Send `Cache-Control: no-store` from `/api/health`
 - [x] Run focused web tests and broad validation
+- [x] Commit, push, and smoke production
+- [x] Verify CI completion for `2456c3e`
+- [ ] Verify production health includes `Cache-Control: no-store`
+
+## Loop 21 - Docs and Env Drift
+
+- [x] Re-sync git, CI, and production health
+- [x] Inspect `.env.example`, README, extension README, and deployment docs for drift
+- [x] Implement the highest-value documentation or code hardening slice found
+- [x] Run focused and broad validation
 - [ ] Commit, push, and smoke production

@@ -65,6 +65,7 @@
 6. [FIXED in `03c390b` and documented in `2ea2641`] No health/readiness endpoint or build SHA exposure for deployed stale-build detection.
 7. [PARTIAL] `/api/health` now normalizes blank/`unknown` build metadata and supports common source env fallbacks, but exact deployed commit is still unprovable until production passes build metadata.
 8. [FIXED] Extension VSIX packaging passed but `vsce` warned that the extension package had no LICENSE file in its package context.
+9. [FIXED] `apps/web/.env.example` omitted the build metadata variables and deployment smoke docs did not mention the health no-store header.
 
 ## Auth / Security / Privacy
 

@@ -1313,3 +1313,30 @@
 - PASS: `pnpm test` (102 web tests + 23 extension VS Code tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - Next: commit, push, smoke production, and continue.
+
+## 2026-07-01 06:12:03 CEST - Loop 20 End
+
+- Committed and pushed health response cache-control as `2456c3e Prevent health response caching`.
+- GitHub Actions for `2456c3e` are in progress.
+- PASS: production `/api/health` returns HTTP 200 with `ok=true` and `database.ok=true`.
+- STALE/LIMITATION: production `/api/health` still reports `version.sha="unknown"`, `builtAt="unknown"`, and no `Cache-Control` header, so the new no-store change has not been observed live yet.
+- PASS: sanitized production Azure OAuth start redirects to Microsoft with PKCE `S256`, state, client id, and required Azure DevOps scopes.
+- Next: continue with the next high-value gap and poll CI/deploy freshness.
+
+## 2026-07-01 06:13:48 CEST - Loop 21 Start
+
+- PASS: GitHub Actions for `2456c3e Prevent health response caching` completed successfully on both CI and extension build workflows.
+- Current git state: only nightly QA logs are modified locally.
+- Production `/api/health` is still reachable with `ok=true` and `database.ok=true`, but still reports `sha="unknown"`, `builtAt="unknown"`, and no visible `Cache-Control` header.
+- Next: scan env examples and docs for drift around production readiness/build metadata/auth behavior, then implement the next focused improvement.
+
+## 2026-07-01 06:16:05 CEST - Loop 21 Validation
+
+- Added non-secret build metadata placeholders to `apps/web/.env.example`.
+- Updated `docs/deployment.md` so build metadata is part of the production runtime contract and `/api/health` smoke checks include `Cache-Control: no-store`.
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (102 web tests + 23 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`
+- Next: commit, push, smoke production, and continue.

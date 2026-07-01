@@ -16,6 +16,8 @@ Set these variables in the deployment platform without committing their values:
 - `AZURE_DEVOPS_TENANT_ID`
 - `ADMIN_AZURE_DEVOPS_LOGINS`
 - `COPILOT_TRACKER_TOKEN_ENCRYPTION_KEY`
+- `COPILOT_TRACKER_BUILD_SHA`
+- `COPILOT_TRACKER_BUILD_TIME`
 
 Optional production features:
 
@@ -83,6 +85,8 @@ Expected results:
 
 - `/api/health` returns HTTP 200 with `ok=true`, `database.ok=true`, and a
   non-`unknown` `version.sha`.
+- `/api/health` sends `Cache-Control: no-store` so deploy/readiness checks do
+  not pass because of a cached health response.
 - `/` returns HTTP 200.
 - `/api/auth/azure-devops` redirects to Microsoft with PKCE
   `code_challenge_method=S256` and scopes including `offline_access`,

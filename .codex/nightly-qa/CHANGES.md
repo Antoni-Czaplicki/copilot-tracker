@@ -804,3 +804,16 @@
 - PASS: `pnpm -r lint`
 - PASS: `pnpm test` (102 web tests + 23 extension VS Code tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+
+## 2026-07-01 - Deployment Metadata Docs Alignment
+
+- Added non-secret `COPILOT_TRACKER_BUILD_SHA` and `COPILOT_TRACKER_BUILD_TIME` placeholders to `apps/web/.env.example`.
+- Updated the deployment contract so build metadata is listed with required production runtime variables and health smoke checks require `Cache-Control: no-store`.
+
+## Checks
+
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (102 web tests + 23 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`

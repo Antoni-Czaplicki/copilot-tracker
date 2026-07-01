@@ -132,6 +132,13 @@
 - LOCAL: `/api/health` build metadata lookup now treats blank/`unknown` values as absent and can use common source commit/time variables when available.
 - LIMITATION: production still needs explicit build metadata env/build args to prove exact deployed commit from `/api/health`.
 
+## 2026-07-01 06:16 CEST Deployment Contract Follow-Up
+
+- PASS: GitHub Actions for `2456c3e Prevent health response caching` completed successfully on both CI and extension build workflows.
+- LOCAL: `.env.example` now lists non-secret build metadata placeholders.
+- LOCAL: deployment smoke docs now expect `/api/health` to send `Cache-Control: no-store`.
+- LIMITATION: production `/api/health` still reports `sha="unknown"`, `builtAt="unknown"`, and no visible `Cache-Control` header as of the loop start poll; recheck after the docs/env commit deploys.
+
 ## 2026-07-01 04:33 CEST Production Poll
 
 - PUSHED: `16d5c67 Normalize health build metadata`.
@@ -444,3 +451,11 @@
 ## 2026-07-01 06:10 CEST CI Poll
 
 - PASS: GitHub Actions for `93df1e2 Expand auth failure hint coverage` completed successfully on both CI and extension build workflows.
+
+## 2026-07-01 06:12 CEST Production Poll
+
+- PUSHED: `2456c3e Prevent health response caching`.
+- IN PROGRESS: GitHub Actions for `2456c3e` started after push.
+- PASS: production `/api/health` returned HTTP 200 with `ok=true` and `database.ok=true`.
+- STALE/LIMITATION: production `/api/health` still reports `sha="unknown"` and `builtAt="unknown"` and did not yet include `Cache-Control: no-store`.
+- PASS: production Azure OAuth start redirect includes state, PKCE `S256`, client id, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
