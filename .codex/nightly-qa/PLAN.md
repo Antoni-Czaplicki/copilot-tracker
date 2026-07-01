@@ -151,4 +151,11 @@
 - [x] Use shared bearer parsing for cron authorization
 - [x] Add tests for missing secret, missing header, exact token, whitespace/casing, and wrong token
 - [x] Run focused web tests and broad validation
+- [x] Commit, push, and smoke production
+- [x] Verify CI completion for `5a921fe`
+
+## Loop 19 - Auth Failure Hint Coverage
+
+- [x] Add coverage for remaining stable auth failure hints
+- [x] Run focused web tests and broad validation
 - [ ] Commit, push, and smoke production

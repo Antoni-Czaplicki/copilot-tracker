@@ -774,3 +774,18 @@
 - PASS: `pnpm -r lint`
 - PASS: `pnpm test` (99 web tests + 23 extension VS Code tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+
+## 2026-07-01 - Auth Failure Hint Coverage
+
+- Expanded `authFailureHint` tests to cover invalid grant, token exchange failure, provider error, and callback failure hints.
+- Reached 100 web tests and 123 tests through the root `pnpm test` command.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web test` (100 tests)
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (100 web tests + 23 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env

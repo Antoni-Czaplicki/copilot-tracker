@@ -20,6 +20,13 @@ void test("authFailureHint explains common Azure OAuth failures safely", () => {
   assert.match(authFailureHint("profile_or_org_check_failed") ?? "", /organization/);
 });
 
+void test("authFailureHint covers token exchange, provider, and callback failures", () => {
+  assert.match(authFailureHint("invalid_grant") ?? "", /authorization code/);
+  assert.match(authFailureHint("token_exchange_failed") ?? "", /access token/);
+  assert.match(authFailureHint("provider_error") ?? "", /provider error/);
+  assert.match(authFailureHint("callback_failed") ?? "", /server logs/);
+});
+
 void test("authFailureHint omits details for unknown codes", () => {
   assert.equal(authFailureHint("unexpected_provider_blob"), null);
 });

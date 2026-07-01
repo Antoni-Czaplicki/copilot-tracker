@@ -1253,3 +1253,33 @@
 - PASS: `pnpm test` (99 web tests + 23 extension VS Code tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - Next: commit, push, smoke production, and continue.
+
+## 2026-07-01 06:05:28 CEST - Loop 18 End
+
+- Committed and pushed cron auth coverage as `5a921fe Add cron auth coverage`.
+- GitHub Actions for `5a921fe` are in progress.
+- PASS: production `/api/health` returns HTTP 200 with `ok=true` and `database.ok=true`.
+- LIMITATION: production `/api/health` still reports `version.sha="unknown"` and `builtAt="unknown"`.
+- PASS: sanitized production Azure OAuth start redirects to Microsoft with PKCE `S256`, state, client id, and required Azure DevOps scopes.
+- Next: continue with the next high-value gap and poll CI.
+
+## 2026-07-01 06:06:20 CEST - Loop 19 Start
+
+- GitHub Actions for `5a921fe Add cron auth coverage`: extension build succeeded; CI still in progress.
+- Current git state: post-push QA logs modified; no source changes pending yet.
+- Finding: `authFailureHint` has stable operator hints for token-exchange/provider/callback branches that are not directly asserted.
+- Next: add direct hint coverage and rerun validation.
+
+## 2026-07-01 06:07:12 CEST - Loop 19 Validation
+
+- PASS: GitHub Actions for `5a921fe Add cron auth coverage` completed successfully on both CI and extension build workflows.
+- Added direct coverage for `invalid_grant`, `token_exchange_failed`, `provider_error`, and `callback_failed` auth hints.
+- PASS: `pnpm --filter @copilot-tracker/web test` (100 tests)
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (100 web tests + 23 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- Milestone: automated suites now run 123 tests total in the standard root command.
+- Next: commit, push, smoke production, and continue.
