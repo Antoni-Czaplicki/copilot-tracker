@@ -31,7 +31,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  const database = await readDatabase();
   const type = parseExportType(
     request.nextUrl.searchParams.get("type") ?? "requests",
   );
@@ -42,6 +41,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  const database = await readDatabase();
   const csv = exportCsv(type, database);
   return new NextResponse(csv, {
     headers: {

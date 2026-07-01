@@ -37,6 +37,16 @@
 
 - PASS: `pnpm --filter ./apps/extension test`
 
+## 2026-07-01 - Admin Export Validation Order
+
+- Moved admin export `type` validation before `readDatabase()` so unsupported export requests return 400 without loading full export data.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env and build metadata
+
 ## 2026-07-01 - Extension Server URL Validation
 
 - Tightened `parseTrackerServerUrl` so the extension only accepts safe server origins.

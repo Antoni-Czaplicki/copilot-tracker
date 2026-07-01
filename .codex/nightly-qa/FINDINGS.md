@@ -32,6 +32,7 @@
 5. [FIXED in `32a4cfd`] Admin export `type` query should be enum-validated.
 6. [PARTIAL] Web API/domain tests now cover payload schemas and utility domains; route/DB integration tests are still missing.
 7. [FIXED] Azure DevOps work-item WIQL generation accepted unsafe numeric strings and non-finite limits.
+8. [FIXED] Admin export validates unsupported export type before loading the full database.
 
 ## Deployment
 

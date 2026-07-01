@@ -293,3 +293,16 @@
 - URLs with path, credentials, query, fragment, malformed values, or non-local HTTP now fail explicitly instead of being silently normalized/ignored.
 - Validation passed: `pnpm --filter ./apps/extension test` reported 10 passing tests.
 - Next: inspect diff, commit/push server URL validation, then poll CI/production.
+
+## 2026-07-01 04:02:18 CEST - Loop 3 Progress
+
+- Committed and pushed extension server URL validation as `d70c981 Validate extension server origins`.
+- Validation before commit: `pnpm --filter ./apps/extension test` passed with 10 tests.
+- Next: poll CI/production and continue remaining gaps.
+
+## 2026-07-01 04:07:44 CEST - Loop 3 Progress
+
+- Moved admin export type validation before full database export loading.
+- Unsupported export types now return 400 without reading all export data.
+- Validation passed: web lint, typecheck, and placeholder production build.
+- Next: inspect diff, commit/push admin export validation order, then poll CI/production.
