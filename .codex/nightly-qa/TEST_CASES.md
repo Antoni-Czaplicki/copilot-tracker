@@ -211,3 +211,6 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | UI-203 | Web | PASS | WorkItemPicker allows multi-character text and digit-only id searches while suppressing one-character non-id queries | Automated | Extracted helper coverage; web tests passed |
 | UI-204 | Web | PASS | WorkItemPicker maps Azure DevOps forbidden, unauthorized, and rate-limit API errors to clear user messages | Automated | Extracted helper coverage; web tests passed |
 | UI-205 | Web | PASS | WorkItemPicker falls back to status-based errors for unknown or non-JSON failures | Automated | Extracted helper coverage; web tests passed |
+| API-206 | API/Backend | PASS | Chat request ingest normalization derives complete, partial, and missing token source states | Automated | Extracted `chatRequestMerge`; web tests passed |
+| API-207 | API/Backend | PASS | Duplicate chat request records keep the richer telemetry row while filling fallback metadata | Automated | Added dedupe merge coverage; web tests passed |
+| API-208 | API/Backend | PASS | Batch upsert preparation normalizes token totals before deduping duplicate request records | Automated | Added `prepareChatRequestsForUpsert` coverage; web tests passed |

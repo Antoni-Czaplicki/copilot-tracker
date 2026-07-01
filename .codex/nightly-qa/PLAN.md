@@ -27,3 +27,11 @@
 - [ ] API/backend auth, Azure DevOps routes, request ingest, update flows, validation, privacy
 - [ ] Deployment/Dokploy production behavior and stale-build detection
 - [ ] Documentation, env examples, handoff, operational clarity
+
+## Loop 4 - Chat Request Merge Coverage
+
+- [x] Extract batch ingest merge/token normalization into a pure helper
+- [x] Add token-source normalization coverage
+- [x] Add duplicate request-record merge coverage
+- [x] Run broad local validation
+- [ ] Commit, push, and verify CI/deployment

@@ -581,3 +581,19 @@
 - PASS: `pnpm --filter ./apps/extension lint`
 - PASS: `pnpm --filter ./apps/extension test` (16 tests)
 - PASS: `pnpm test` (66 web tests + 16 extension VS Code tests)
+
+## 2026-07-01 - Chat Request Merge Coverage
+
+- Extracted chat request batch token normalization and duplicate request-record merge logic from `store.ts` into `chatRequestMerge`.
+- Added direct tests for complete/partial/missing token-source normalization.
+- Added direct tests that duplicate request records keep the richer telemetry row while filling fallback ids, session titles, prompt-token details, and stop reasons.
+
+## Checks
+
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS: `pnpm --filter ./apps/extension test` (16 tests)
+- PASS: `pnpm --filter @copilot-tracker/web test` (73 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (73 web tests + 16 extension VS Code tests)

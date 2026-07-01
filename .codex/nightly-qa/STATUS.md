@@ -1,10 +1,10 @@
 # Nightly QA Status
 
-- Current time: 2026-07-01 05:03:57 CEST
-- Current loop: 3
-- State: validation passed; ready to commit
-- Focus: WorkItemPicker task search helper coverage
+- Current time: 2026-07-01 05:10:10 CEST
+- Current loop: 4
+- State: local validation passed; preparing commit
+- Focus: Chat request batch merge/dedupe/token normalization coverage
 - Blocker: production Azure login returns `invalid_client`; Docker daemon unavailable; exact deployed commit cannot be proven until build SHA is configured
-- Next action: inspect diff, commit, and push WorkItemPicker task search helper coverage
-- Last known git state: extension pricing parity pushed at `b4907ae Sync extension pricing aliases`
+- Next action: commit/push `chatRequestMerge`, smoke production, then continue with the next gap
+- Last known git state: WorkItemPicker helper coverage pushed at `91fb8d3 Add work item picker coverage`; local chat request merge tests added but not committed
 - Production target: https://copilot-tracker.antek.page

@@ -830,3 +830,34 @@
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm test` (70 web tests + 16 extension VS Code tests)
 - Next: inspect diff, commit, push, and continue.
+
+## 2026-07-01 05:05:06 CEST - Loop 3 Progress
+
+- Committed and pushed WorkItemPicker helper coverage as `91fb8d3 Add work item picker coverage`.
+- GitHub Actions for `91fb8d3` are in progress.
+- PASS: production `/api/health` returns OK with database ready.
+- LIMITATION: production `/api/health` still reports `version.sha="unknown"` and `builtAt="unknown"`.
+- PASS: sanitized production Azure OAuth start still redirects to Microsoft with PKCE `S256`, state, client id, and required Azure DevOps scopes.
+- Next: poll CI and continue with the next high-value gap.
+
+## 2026-07-01 05:08:08 CEST - Loop 4 Start
+
+- Synced context after compaction/resume.
+- Git state: QA logs modified, `store.ts` modified, new `chatRequestMerge` helper and tests untracked.
+- Extracted chat request batch dedupe/token normalization from the database store into a focused helper so ingest conflict behavior is directly testable.
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web test` (73 tests)
+- Next: run broader validation, then commit and push if clean.
+
+## 2026-07-01 05:10:10 CEST - Loop 4 Validation
+
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS: `pnpm --filter ./apps/extension test` (16 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (73 web tests + 16 extension VS Code tests)
+- PASS: GitHub Actions for `91fb8d3 Add work item picker coverage` completed successfully on both CI and extension build workflows.
+- PASS: `git diff --check`
+- Next: commit and push chat request merge coverage, then smoke production again.

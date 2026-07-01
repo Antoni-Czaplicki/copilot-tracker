@@ -247,3 +247,15 @@
 ## 2026-07-01 05:03 CEST CI Poll
 
 - PASS: GitHub Actions for `b4907ae Sync extension pricing aliases` completed successfully on both CI and extension build workflows.
+
+## 2026-07-01 05:05 CEST Production Poll
+
+- PUSHED: `91fb8d3 Add work item picker coverage`.
+- IN PROGRESS: GitHub Actions for `91fb8d3` started after push.
+- PASS: production `/api/health` returned HTTP 200 with `ok=true` and `database.ok=true`.
+- LIMITATION: production `/api/health` still reports `sha="unknown"` and `builtAt="unknown"`.
+- PASS: production Azure OAuth start redirect includes state, PKCE `S256`, client id, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
+
+## 2026-07-01 05:10 CEST CI Poll
+
+- PASS: GitHub Actions for `91fb8d3 Add work item picker coverage` completed successfully on both CI and extension build workflows.

@@ -47,6 +47,7 @@
 7. [FIXED] Azure DevOps work-item WIQL generation accepted unsafe numeric strings and non-finite limits.
 8. [FIXED] Admin export validates unsupported export type before loading the full database.
 9. [FIXED] Admin export CSV/type helpers had no pure tests for type parsing, quoting, placeholder filtering, or billing export rows.
+10. [FIXED] Chat request batch token normalization and duplicate merge behavior were embedded in the database store without direct coverage.
 
 ## Deployment
 
