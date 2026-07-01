@@ -2,48 +2,48 @@
 
 ## Extension
 
-1. [P1] Quick Pick search can race after picker closes in `apps/extension/src/extension.ts`; async search may mutate disposed picker.
-2. [P1] Branch-task extraction is too permissive in `apps/extension/src/workspaceContext.ts`; branch names like `detached-abc123` can become task `123`.
-3. [P2] `openDashboard` can throw on malformed `serverUrl` instead of showing a friendly error.
-4. [P2] Multi-workspace context can stay stale until polling after active editor changes.
-5. [FIXED locally, commit pending] Cost display looks exact even when token capture is partial or missing.
+1. [FIXED in `39568ea`] Quick Pick search can race after picker closes in `apps/extension/src/extension.ts`; async search may mutate disposed picker.
+2. [FIXED in `39568ea`] Branch-task extraction is too permissive in `apps/extension/src/workspaceContext.ts`; branch names like `detached-abc123` can become task `123`.
+3. [FIXED in `39568ea`] `openDashboard` can throw on malformed `serverUrl` instead of showing a friendly error.
+4. [FIXED in `39568ea`] Multi-workspace context can stay stale until polling after active editor changes.
+5. [FIXED in `053541f`] Cost display looks exact even when token capture is partial or missing.
 6. [P2] OTel sync reparses/resends full files on each cycle/restart.
-7. [FIXED locally, commit pending] Legacy global selected-task fallback can leak stale manual overrides across workspaces.
+7. [FIXED in `815ae6f`] Legacy global selected-task fallback can leak stale manual overrides across workspaces.
 8. [P2] Missing extension tests for client network failures, auth flow, search picker race, multi-root context, partial token cost UI, and restart sync behavior.
 
 ## Web UX
 
-1. [FIXED locally, commit pending] Single-row task edit is implemented but unreachable in dashboard/admin UI.
-2. [FIXED locally, commit pending] Bulk/session assignment applies success UI after any 2xx and ignores backend `updated` count.
-3. [FIXED locally, commit pending] Admin GitHub billing sync mutates state via navigated GET without in-page loading/error/success UX.
-4. [FIXED locally, commit pending] Request sessions grid can overflow on mobile without a horizontal scroll wrapper.
-5. [P3] OAuth callback rethrows unexpected exchange errors instead of routing to the auth-failure UI.
+1. [FIXED in `392f9ca`] Single-row task edit is implemented but unreachable in dashboard/admin UI.
+2. [FIXED in `392f9ca`] Bulk/session assignment applies success UI after any 2xx and ignores backend `updated` count.
+3. [FIXED in `fd45703`] Admin GitHub billing sync mutates state via navigated GET without in-page loading/error/success UX.
+4. [FIXED in `392f9ca`] Request sessions grid can overflow on mobile without a horizontal scroll wrapper.
+5. [FIXED in `f85f30e`] OAuth callback rethrows unexpected exchange errors instead of routing to the auth-failure UI.
 6. [P2] Web test suite is missing.
 
 ## API / Backend
 
-1. [FIXED locally, commit pending] Malformed JSON can crash authenticated GitHub login PATCH routes instead of returning structured 400.
-2. [FIXED locally, commit pending] Billing sync accepts malformed date query values and can surface opaque upstream errors.
-3. [FIXED locally, commit pending] Token payload schema allows values larger than PostgreSQL `integer` columns can persist.
-4. [FIXED locally, commit pending] Batch ingest `accepted` count reports received requests, not deduped or persisted rows.
-5. [FIXED locally, commit pending] Admin export `type` query should be enum-validated.
+1. [FIXED in `32a4cfd`] Malformed JSON can crash authenticated GitHub login PATCH routes instead of returning structured 400.
+2. [FIXED in `32a4cfd`] Billing sync accepts malformed date query values and can surface opaque upstream errors.
+3. [FIXED in `93dd101`] Token payload schema allows values larger than PostgreSQL `integer` columns can persist.
+4. [FIXED in `4bab582`] Batch ingest `accepted` count reports received requests, not deduped or persisted rows.
+5. [FIXED in `32a4cfd`] Admin export `type` query should be enum-validated.
 6. [P2] Web API/domain tests are missing.
 
 ## Deployment
 
 1. [P1] No tracked Dokploy deployment manifest/workflow or production deploy contract.
-2. [FIXED locally, commit pending] Drizzle config falls back to localhost `DATABASE_URL`, which can mask production migration misconfiguration.
-3. [FIXED locally, commit pending] CI lacks `pnpm --filter @copilot-tracker/web build`.
-4. [FIXED locally, commit pending] Local compose only starts Postgres; app service/health/restart behavior is not modeled.
-5. [FIXED locally, commit pending] README references missing `apps/web/.env.example`.
-6. [FIXED locally, commit pending] No health/readiness endpoint or build SHA exposure for deployed stale-build detection.
+2. [FIXED in `44ed412`] Drizzle config falls back to localhost `DATABASE_URL`, which can mask production migration misconfiguration.
+3. [FIXED in `03c390b`] CI lacks `pnpm --filter @copilot-tracker/web build`.
+4. [FIXED in `f6346a9`] Local compose only starts Postgres; app service/health/restart behavior is not modeled.
+5. [FIXED in `03c390b`] README references missing `apps/web/.env.example`.
+6. [FIXED in `03c390b` and documented in `2ea2641`] No health/readiness endpoint or build SHA exposure for deployed stale-build detection.
 
 ## Auth / Security / Privacy
 
 0. [P1] Production Azure login returns `auth_code=invalid_client`, blocking full signed-in production E2E verification.
 1. [FIXED in `f85f30e`] OAuth callback can 500 after token exchange if profile lookup/session creation throws, leaving OAuth cookies until expiry.
 2. [FIXED in `f85f30e`] OAuth provider error details are reflected into public redirect URLs and homepage UI.
-3. [FIXED locally, recovery pending] Azure token encryption falls back to `AZURE_DEVOPS_CLIENT_SECRET`; app now avoids the client-secret fallback and does not persist session tokens when the dedicated key is missing.
-4. [FIXED locally, commit pending] Leaderboard exposes all signed-in developers' leaderboard and login mapping data to any signed-in user.
+3. [FIXED in `a85225d`] Azure token encryption falls back to `AZURE_DEVOPS_CLIENT_SECRET`; app now avoids the client-secret fallback and does not persist session tokens when the dedicated key is missing.
+4. [FIXED in `91d2a7a`] Leaderboard exposes all signed-in developers' leaderboard and login mapping data to any signed-in user.
 5. [P3] Extension info logs and context UI include raw local paths, remote URLs, and storage paths.
 6. [P2] No web auth tests cover PKCE/state cookies, callback failures, session creation, profile/org checks, or work-item status mapping.
