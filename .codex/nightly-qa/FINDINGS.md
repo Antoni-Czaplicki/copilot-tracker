@@ -83,7 +83,7 @@
 
 ## Auth / Security / Privacy
 
-0. [P1] Production Azure login now passes the previous `invalid_client` token-exchange blocker after the callback was moved to `Web`, but full signed-in production E2E is still blocked by `auth_code=profile_or_org_check_failed`. Deployed diagnostics prove Azure profile lookup succeeds (`profileResult=ok`, HTTP 200), Azure DevOps accounts succeeds with one returned account, account-list matching fails, and the configured-org WIQL probe returns HTTP 401 (`orgAccessProbeResult=request_failed`, `orgAccessProbeStatus=401`). Fix production `AZURE_DEVOPS_ORG`, signed-in user org membership/visibility, or Azure DevOps work-item consent/access for that org, then rerun Chrome login and dashboard/work-item E2E.
+0. [FIXED after production runtime config] Production Azure login now passes the previous `invalid_client` token-exchange blocker and the later `profile_or_org_check_failed` org-access blocker. After correcting the production Azure DevOps org runtime config and adding the dedicated session-token encryption key, real Chrome fresh logout/login lands on `/dashboard`, and signed-in `/api/azure-devops/work-items?query=test` returns HTTP 200 with a valid JSON response.
 1. [FIXED in `f85f30e`] OAuth callback can 500 after token exchange if profile lookup/session creation throws, leaving OAuth cookies until expiry.
 2. [FIXED in `f85f30e`] OAuth provider error details are reflected into public redirect URLs and homepage UI.
 3. [FIXED in `a85225d`] Azure token encryption falls back to `AZURE_DEVOPS_CLIENT_SECRET`; app now avoids the client-secret fallback and does not persist session tokens when the dedicated key is missing.

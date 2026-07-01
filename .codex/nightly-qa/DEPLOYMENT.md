@@ -777,3 +777,13 @@
 - FAIL/NEXT: real Chrome production login still returns `auth_code=profile_or_org_check_failed`.
 - PASS: matching Dokploy log includes deployed probe diagnostics: profile OK/status 200, profile id present, account-list OK/status 200 with one account, account-list org not matched, and configured-org WIQL probe HTTP 401.
 - DIAGNOSIS: production OAuth/profile code is working; remaining blocker is configured Azure DevOps org access for the signed-in user/token. Fix `AZURE_DEVOPS_ORG`, user org membership/visibility, or work-item consent/access for that org.
+
+## 2026-07-01 11:36 CEST Production Auth Fix Verification
+
+- PASS: production runtime Azure DevOps org configuration was corrected in Dokploy using the user-provided accessible org value. The value is intentionally not recorded here.
+- PASS: production runtime `COPILOT_TRACKER_TOKEN_ENCRYPTION_KEY` is present in Dokploy so fresh web sessions can persist encrypted Azure DevOps tokens. The value is intentionally not recorded here.
+- PASS: Dokploy redeployed latest `main` commit `1506101 Record configured org access diagnosis` after the runtime env changes.
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 1506101` passed every hard gate: health OK, database ready, health `Cache-Control: no-store`, Azure auth redirect to Microsoft, PKCE `S256`, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
+- WARN: `/api/health` still reports `version.sha="unknown"` and `version.builtAt="unknown"`, so exact deployed commit proof remains blocked until build metadata is configured.
+- PASS: real Chrome fresh logout/login lands on `https://copilot-tracker.antek.page/dashboard`.
+- PASS: signed-in `/api/azure-devops/work-items?query=test` returns HTTP 200 with a valid JSON response and zero matches for that literal query.

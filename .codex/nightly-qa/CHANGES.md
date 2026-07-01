@@ -1242,3 +1242,15 @@
 - PASS: `pnpm test` (7 smoke tests + 132 web tests + 26 extension VS Code tests)
 - PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 9a3acb1`
 - PASS: `git diff --check`
+
+## 2026-07-01 - Production Auth Runtime Configuration
+
+- Updated production runtime Azure DevOps org configuration in Dokploy to the user-provided accessible org value; the value is not recorded in repo logs.
+- Added production runtime `COPILOT_TRACKER_TOKEN_ENCRYPTION_KEY` in Dokploy so new web sessions can store encrypted Azure DevOps tokens for work-item search; the value is not recorded in repo logs.
+- Redeployed production after the runtime env updates.
+
+## Checks
+
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 1506101` passed every hard gate; warnings remain limited to unknown build metadata/SHA.
+- PASS: real Chrome fresh logout/login lands on `/dashboard`.
+- PASS: signed-in `/api/azure-devops/work-items?query=test` returns HTTP 200 with a valid JSON response and zero matches for that literal query.

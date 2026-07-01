@@ -227,3 +227,12 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - The new matching Dokploy log gives the useful final split: profile lookup succeeds, accounts API succeeds and returns one account, account-list org matching fails, and the configured Azure DevOps org WIQL probe returns HTTP 401.
 - App-code auth flow is now well-instrumented and fail-closed. The next fix is configuration/access: set `AZURE_DEVOPS_ORG` to the org actually accessible to the signed-in user, add/repair that user's Azure DevOps org membership/visibility, or ensure Azure DevOps work-item consent/access for the configured org.
 - After that change, rerun Chrome login. If it succeeds, immediately verify dashboard load and `/api/azure-devops/work-items` search from the web UI.
+
+## 2026-07-01 11:36 CEST Auth Working
+
+- Production Azure auth is now working after the runtime org configuration was corrected in Dokploy and a dedicated `COPILOT_TRACKER_TOKEN_ENCRYPTION_KEY` was added. No org value or key value is recorded here.
+- Real Chrome fresh logout/login from the visible production `Log in with Azure DevOps` link lands on `/dashboard`.
+- Signed-in production `/api/azure-devops/work-items?query=test` now returns HTTP 200 with a valid JSON response. It returned zero matches for that literal query, which is fine for the auth/token-persistence check.
+- `pnpm smoke:production -- --allow-known-stale --expect-sha 1506101` passes every hard gate: health/database OK, health no-store headers, Microsoft redirect, PKCE `S256`, and required Azure DevOps scopes.
+- Remaining production proof gap: `/api/health` still reports unknown `sha` and `builtAt`, so configure Dokploy build metadata if strict exact-deploy proof is needed.
+- Best next step: test the visible dashboard task picker/search with a known work-item query, then configure `COPILOT_TRACKER_BUILD_SHA` and `COPILOT_TRACKER_BUILD_TIME` build/runtime metadata and rerun strict production smoke.

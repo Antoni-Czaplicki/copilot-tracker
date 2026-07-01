@@ -478,3 +478,16 @@
 - [x] Run focused web tests, typecheck, lint, extension compile/test, web build, root tests, live production smoke, and diff check
 - [x] Commit, push, poll CI/deploy, and retry signed-in Chrome dashboard/work-item E2E
 - [x] Record deployed probe result showing configured-org WIQL probe returns HTTP 401
+
+## Loop 51 - Production Auth Runtime Fix Verification
+
+- [x] Correct production Azure DevOps org runtime config in Dokploy without recording the value
+- [x] Add dedicated production `COPILOT_TRACKER_TOKEN_ENCRYPTION_KEY` without recording the value
+- [x] Redeploy production after runtime env changes
+- [x] Run production smoke against `1506101`
+- [x] Clear the old Chrome web session and create a fresh Azure login session
+- [x] Verify fresh Chrome login lands on `/dashboard`
+- [x] Verify signed-in `/api/azure-devops/work-items?query=test` returns HTTP 200
+- [x] Update status, deployment, handoff, findings, changes, loop log, and test cases
+- [ ] Configure build metadata so strict exact-SHA production smoke can pass without known-stale warnings
+- [ ] Test visible dashboard work-item search with a known matching work-item query

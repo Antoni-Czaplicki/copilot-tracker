@@ -2137,3 +2137,20 @@
 - FAIL/EXPECTED: real Chrome production login still returns `auth_code=profile_or_org_check_failed` with safe `auth_ref`.
 - PASS: matching Dokploy log now includes direct configured-org probe diagnostics.
 - DIAGNOSIS: profile lookup succeeds, profile id is present, accounts API succeeds with one returned account, account-list match fails, and configured-org WIQL probe returns HTTP 401. Remaining auth work is production Azure DevOps org/user access/consent configuration, not an app-code parser or redirect issue.
+
+## 2026-07-01 11:32:17 CEST - Loop 51 Start
+
+- PASS: repository is clean on `main` at `1506101 Record configured org access diagnosis`.
+- CONTEXT: production runtime Azure DevOps org config was corrected in Dokploy using the user-provided accessible org value, without recording the value in repo logs.
+- CONTEXT: production runtime `COPILOT_TRACKER_TOKEN_ENCRYPTION_KEY` was added in Dokploy, without recording the value, so newly created web sessions can persist Azure DevOps access/refresh tokens.
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 1506101` passed all hard gates; warnings remain limited to unknown build metadata/SHA.
+- Next: clear the old Chrome web session, create a fresh Azure login session, and test the signed-in work-items route.
+
+## 2026-07-01 11:36:00 CEST - Loop 51 Auth Retest
+
+- PASS: real Chrome production dashboard showed a signed-in session before logout.
+- PASS: app logout via `/api/auth/logout` returned to the public homepage.
+- PASS: following the visible `Log in with Azure DevOps` link completed Microsoft/Azure auth and landed on `/dashboard`.
+- PASS: signed-in `/api/azure-devops/work-items?query=test` returned HTTP 200 with a valid JSON response and zero matches for that literal query.
+- DIAGNOSIS: the previous production auth blockers are resolved: org matching now succeeds, and the dedicated token encryption key lets fresh web sessions store Azure DevOps tokens for work-item search.
+- REMAINING: exact deployed commit proof still requires production build metadata; `/api/health` still reports unknown SHA/build time.
