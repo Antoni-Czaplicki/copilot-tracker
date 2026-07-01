@@ -549,5 +549,8 @@
 - PASS: GitHub Actions for `a12045b Improve auth failure alert UX` completed successfully on both CI and Build extension workflows.
 - PASS: local VSIX packaging still succeeds after lockfile changes; package includes README, changelog, license, package manifest, and compiled `out/` files.
 - PASS: production dependency audit now reports no known moderate-or-higher vulnerabilities after moving pnpm security overrides to `pnpm-workspace.yaml`.
-- PENDING: dependency override fix has not yet been pushed/deployed at this log point.
+- PUSHED: `f76379a Enforce pnpm security overrides`.
+- PASS: GitHub Actions for `f76379a` completed successfully on both CI and Build extension workflows.
+- PASS: production `/api/health` returned HTTP 200 with `ok=true` and `database.ok=true`.
+- PASS: production Azure OAuth start redirect includes state, PKCE `S256`, client id, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
 - STALE/LIMITATION: production `/api/health` freshness and exact deployed commit remain unproven until production exposes build metadata and the expected no-store header.

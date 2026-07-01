@@ -259,3 +259,6 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | DEP-251 | Dependency/Security | PASS | Next and shadcn resolve to patched `postcss@8.5.15` with no vulnerable nested PostCSS copy | Manual command | `pnpm why postcss --prod` reports a single `postcss@8.5.15` version |
 | DEP-252 | Deployment | PASS | Extension VSIX packaging still succeeds after dependency override/lockfile changes | Manual command | `pnpm --filter ./apps/extension package` passed; generated artifact removed |
 | DEP-253 | CI/Release | PASS | Latest pushed commit `a12045b` completed both CI and extension artifact workflows | GitHub Actions | `gh run list` showed success for CI and Build extension workflows |
+| UI-254 | Web | PASS | Successful mutation count reader accepts finite numeric fields from JSON responses | Automated | Added `readNumericResponseField` coverage; web/root tests passed |
+| UI-255 | Web | PASS | Successful mutation count reader falls back for missing, non-numeric, non-finite, malformed, empty, array, and null payloads | Automated | Added `readNumericResponseField` fallback coverage; web/root tests passed |
+| UI-256 | Web | PASS | Admin billing sync and request-session mutation success paths share tolerant count parsing | Code review + automated | Reused `readNumericResponseField`; web/root tests passed |

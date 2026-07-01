@@ -921,3 +921,20 @@
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm --filter ./apps/extension compile`
 - PASS: `pnpm --filter ./apps/extension package`
+
+## 2026-07-01 - Tolerant Successful Mutation Counts
+
+- Added shared `readNumericResponseField` for optional numeric success counters returned by mutation endpoints.
+- Reused it in admin GitHub billing sync and request-session mutation success handling.
+- Hardened admin billing sync so an empty or malformed successful response falls back to a generic success message instead of surfacing a false sync failure.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web test` (112 tests)
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (112 web tests + 25 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`

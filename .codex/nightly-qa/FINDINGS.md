@@ -43,6 +43,7 @@
 15. [FIXED] GitHub username editor collapsed safe server validation errors into a generic `Failed` message.
 16. [FIXED] Frontend mutation/search helpers duplicated JSON `{ error }` parsing and could display blank server error strings instead of a useful fallback.
 17. [FIXED] Homepage auth failure notices had safe text but lacked alert semantics and stronger visual emphasis for blocked login states.
+18. [FIXED] Admin billing sync treated malformed or empty successful JSON responses as failures; success count parsing now falls back to a generic success message and shares tested behavior with request-session mutation counts.
 
 ## API / Backend
 

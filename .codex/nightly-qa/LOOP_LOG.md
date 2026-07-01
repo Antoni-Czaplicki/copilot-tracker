@@ -1564,3 +1564,36 @@
 - PASS: `pnpm --filter ./apps/extension compile`
 - PASS: `pnpm --filter ./apps/extension package`; generated VSIX removed after verification.
 - Next: commit, push, smoke production, and continue.
+
+## 2026-07-01 06:53:03 CEST - Loop 29 End
+
+- Committed and pushed dependency override fix as `f76379a Enforce pnpm security overrides`.
+- GitHub Actions for `f76379a` are in progress on both CI and Build extension workflows.
+- PASS: production `/api/health` returns HTTP 200 with `ok=true` and `database.ok=true`.
+- STALE/LIMITATION: production `/api/health` still reports `version.sha="unknown"`, `builtAt="unknown"`, and no visible `Cache-Control` header.
+- PASS: sanitized production Azure OAuth start redirects to Microsoft with PKCE `S256`, state, client id, and required Azure DevOps scopes.
+- Current git state after push: clean.
+- Next: start loop 30, poll CI/deploy, and continue improvement work.
+
+## 2026-07-01 06:53:47 CEST - Loop 30 Start
+
+- Previous pushed commit: `f76379a Enforce pnpm security overrides`; GitHub Actions were still in progress at the prior poll.
+- Current blocker remains external Azure OAuth `invalid_client`, unavailable Docker daemon, and unproven production commit metadata/cache-header freshness.
+- Next: poll CI, inspect deployment health implementation, and choose the next focused UX/test hardening slice.
+
+## 2026-07-01 06:56:10 CEST - Loop 30 Validation
+
+- PASS: GitHub Actions for `f76379a Enforce pnpm security overrides` completed successfully on both CI and extension build workflows.
+- Confirmed local health route code still sets `cache-control: no-store`; production missing header remains a deployment/proxy/freshness limitation rather than an obvious source-code miss.
+- FOUND: admin billing sync parsed success JSON directly, so an empty or malformed successful response could show a sync failure after the operation succeeded.
+- Added shared `readNumericResponseField` helper and tests for finite counts plus missing, malformed, empty, array, null, and non-numeric payloads.
+- Reused the helper in admin billing sync and request session mutation result parsing.
+- PASS: `pnpm --filter @copilot-tracker/web test` (112 tests)
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (112 web tests + 25 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`
+- Next: commit, push, smoke production, and continue.

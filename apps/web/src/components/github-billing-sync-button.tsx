@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { responseErrorMessage } from "@/lib/responseErrors";
+import { readNumericResponseField } from "@/lib/responseFields";
 
 import { Button } from "./ui/button";
 
@@ -28,8 +29,7 @@ export function GithubBillingSyncButton() {
         return;
       }
 
-      const payload = (await response.json()) as { synced?: unknown };
-      const synced = typeof payload.synced === "number" ? payload.synced : null;
+      const synced = await readNumericResponseField(response, "synced");
       setMessage(
         synced === null
           ? "Billing usage synced."

@@ -37,4 +37,11 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - Latest pushed commit before this update, `a12045b Improve auth failure alert UX`, passed both GitHub Actions workflows.
 - Found and fixed a production dependency audit issue: Next was resolving vulnerable `postcss@8.4.31`; pnpm security overrides now live in `pnpm-workspace.yaml`, and the lockfile resolves to patched `postcss@8.5.15`.
 - Latest checks also include PASS `pnpm audit --prod --audit-level moderate` and PASS `pnpm why postcss --prod` with one PostCSS version.
-- This dependency override fix is pending commit/push at the time of this handoff update.
+- This dependency override fix was committed and pushed as `f76379a Enforce pnpm security overrides`; GitHub Actions were in progress at the latest poll.
+
+## 2026-07-01 06:56 CEST Update
+
+- `f76379a Enforce pnpm security overrides` passed both GitHub Actions workflows.
+- Added shared successful-response count parsing for web mutations and reused it in admin billing sync plus request-session mutation handling.
+- Web tests are now 112; latest broad validation passed typecheck, lint, root tests, web build, and extension compile.
+- The successful-response count parsing fix is pending commit/push at this update point.

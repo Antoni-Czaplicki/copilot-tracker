@@ -1,12 +1,12 @@
 # Nightly QA Status
 
-- Current time: 2026-07-01 06:50:51 CEST
-- Current loop: 29
+- Current time: 2026-07-01 06:56:10 CEST
+- Current loop: 30
 - State: validation complete; preparing commit/push
-- Focus: Dependency/release readiness scan
+- Focus: Successful-response UI reliability for web mutations
 - Blocker: production Azure login returns `invalid_client`; Docker daemon unavailable; exact deployed commit cannot be proven until build SHA is configured; production health has not yet shown the new `Cache-Control: no-store` header
-- Latest change: moved ignored package-level security overrides into `pnpm-workspace.yaml`, refreshed the lockfile, and verified `pnpm audit --prod --audit-level moderate` reports no known vulnerabilities
-- Validation: PASS `pnpm audit --prod --audit-level moderate`; PASS `pnpm why postcss --prod` reports only `postcss@8.5.15`; PASS `pnpm -r typecheck`; PASS `pnpm -r lint`; PASS `pnpm test` (109 web + 25 extension); PASS web production build with safe placeholder env; PASS extension compile; PASS extension package
-- Next action: commit/push the dependency override fix, smoke production, then start loop 30
-- Last known git state: dependency/release readiness fix pending commit on top of `a12045b Improve auth failure alert UX`
+- Latest pushed commit: `f76379a Enforce pnpm security overrides`; GitHub Actions completed successfully
+- Latest change: added shared `readNumericResponseField` and reused it for admin billing sync and request-session mutation success counts so empty/malformed successful JSON falls back to generic success instead of erroring
+- Validation: PASS `pnpm --filter @copilot-tracker/web test` (112 tests); PASS web typecheck/lint; PASS `pnpm -r typecheck`; PASS `pnpm -r lint`; PASS `pnpm test` (112 web + 25 extension); PASS web production build with safe placeholder env; PASS extension compile
+- Next action: commit/push the UI reliability fix, smoke production, then continue loop 31
 - Production target: https://copilot-tracker.antek.page

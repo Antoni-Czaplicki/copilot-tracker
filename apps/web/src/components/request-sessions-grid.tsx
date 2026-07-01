@@ -29,6 +29,7 @@ import {
 } from "@/lib/requestSessionsGridModel";
 import { estimateRequestsCost, formatCurrency } from "@/lib/pricing";
 import { responseErrorMessage } from "@/lib/responseErrors";
+import { readNumericResponseField } from "@/lib/responseFields";
 import { cn } from "@/lib/utils";
 
 import { Badge } from "./ui/badge";
@@ -554,12 +555,7 @@ async function readMutationError(response: Response) {
 }
 
 async function readMutationResult(response: Response) {
-  try {
-    const payload = (await response.json()) as { updated?: unknown };
-    return {
-      updated: typeof payload.updated === "number" ? payload.updated : null,
-    };
-  } catch {
-    return { updated: null };
-  }
+  return {
+    updated: await readNumericResponseField(response, "updated"),
+  };
 }

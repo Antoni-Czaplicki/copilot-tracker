@@ -260,4 +260,15 @@
 - [x] Refresh lockfile and installed modules
 - [x] Verify audit passes and PostCSS resolves to the patched version
 - [x] Run broad validation
+- [x] Commit, push, and smoke production
+- [x] Verify CI completion for `f76379a`
+
+## Loop 30 - Successful Response UI Reliability
+
+- [x] Re-sync git, CI, and production health/auth smoke state
+- [x] Inspect health implementation for the missing production no-store header
+- [x] Inspect remaining client mutation JSON parsing paths
+- [x] Add shared numeric response-field helper and regression tests
+- [x] Reuse helper in admin billing sync and request session mutation success handling
+- [x] Run focused web validation and broad checks
 - [ ] Commit, push, and smoke production
