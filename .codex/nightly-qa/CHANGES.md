@@ -1159,3 +1159,12 @@
 
 - PASS: production `pnpm smoke:production -- --allow-known-stale --expect-sha 615f097` includes provider-error `auth_ref` behavior.
 - PASS: real Chrome failure page stays safe while matching Dokploy logs provide the detailed diagnosis.
+
+## 2026-07-01 - Deployment Operator Fix Docs
+
+- Clarified that Dokploy Dockerfile deploys need explicit Build Time Arguments and runtime environment variables for `COPILOT_TRACKER_BUILD_SHA` and `COPILOT_TRACKER_BUILD_TIME`.
+- Clarified that the current Azure OAuth backend flow is a confidential server-side token exchange and therefore expects a web/confidential Entra app registration with a valid client secret.
+
+## Checks
+
+- PASS: `git diff --check`

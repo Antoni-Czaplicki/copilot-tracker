@@ -44,6 +44,12 @@ In Dokploy or another Docker builder, map those values to:
 - runtime env `COPILOT_TRACKER_BUILD_SHA`
 - runtime env `COPILOT_TRACKER_BUILD_TIME`
 
+For Dokploy Dockerfile builds, set the build args in the Environment tab's
+Build Time Arguments field and set the runtime values in the service
+environment variables. Do not assume Dokploy injects the Git commit into the
+container automatically; if those values are not configured explicitly,
+`/api/health` will continue to report `unknown`.
+
 If production reports `version.sha="unknown"`, the deploy cannot be tied back
 to a commit from the health endpoint.
 
@@ -67,6 +73,12 @@ The app must allow delegated Azure DevOps access for:
 - `offline_access`
 - `vso.profile`
 - `vso.work`
+
+This backend currently performs a confidential server-side token exchange using
+`AZURE_DEVOPS_CLIENT_SECRET`, so the Entra application must be configured as a
+web/confidential client with a valid secret. A public/native client registration
+is incompatible with sending a client secret and can surface as Azure
+`AADSTS700025` in server-side logs.
 
 If the real login returns `auth_code=invalid_client`, check the Azure client ID,
 client secret, tenant/account type, and redirect URI before debugging app code.

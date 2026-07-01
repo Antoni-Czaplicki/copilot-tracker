@@ -423,3 +423,13 @@
 - [x] Document auth diagnostics/logging contract
 - [x] Run typecheck, lint, root tests, production web build, extension compile, live known-stale smoke, and diff check
 - [x] Commit, push, smoke production, poll CI, and verify deployed auth_ref/log behavior
+
+## Loop 46 - Operator Deployment Fix Documentation
+
+- [x] Re-sync `801c672` CI status after log-only deploy verification commit
+- [x] Review build metadata helper, Dockerfile, compose, and deployment docs
+- [x] Confirm Dokploy requires explicit Build Time Arguments/runtime env for exact deployed SHA proof
+- [x] Clarify Dokploy build metadata setup in deployment docs
+- [x] Clarify Azure web/confidential-client requirement for the current backend token exchange flow
+- [x] Run docs diff check
+- [ ] Commit, push, and poll CI

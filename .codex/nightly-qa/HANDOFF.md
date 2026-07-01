@@ -173,3 +173,9 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - Actual remaining auth problem: Azure reports `AADSTS700025`, which means the Azure app/client is currently public while this backend is presenting a client secret. Fix Azure app registration/client type for the confidential backend flow, or intentionally change the app to public-client PKCE without a secret.
 - No Dokploy MCP is exposed in this session; use Dokploy UI in Chrome for logs and Termius/SSH for VPS/Dokploy host repairs. Do not copy secrets into logs.
 - Remaining independent production gap: `/api/health` still reports unknown `sha`/`builtAt`, so strict exact-SHA smoke remains blocked until build metadata is configured.
+
+## 2026-07-01 09:29 CEST Deployment Docs Follow-Up
+
+- `801c672 Record auth diagnostics deploy verification` passed both GitHub Actions workflows.
+- Deployment docs now spell out that Dokploy Dockerfile builds need explicit Build Time Arguments plus runtime env for `COPILOT_TRACKER_BUILD_SHA` and `COPILOT_TRACKER_BUILD_TIME`; otherwise `/api/health` cannot prove the deployed commit.
+- Deployment docs now spell out that the current backend OAuth flow expects a web/confidential Entra app registration with a valid client secret. Public/native client registration is the likely reason for the current `AADSTS700025`/`invalid_client` failure.

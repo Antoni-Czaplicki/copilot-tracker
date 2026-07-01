@@ -2028,3 +2028,11 @@
 - DIAGNOSIS: the detailed server-side Azure error is `AADSTS700025`, meaning Azure treats the client as public while the backend presents a client secret. Fix Azure app registration/client type for the confidential backend flow, or intentionally migrate to public-client PKCE without a secret.
 - CONFIRMED: no Dokploy MCP is exposed through current tool discovery; use Chrome Dokploy UI for log lookup and Termius/SSH for VPS/Dokploy host fixes.
 - Next: commit this log-only operator handoff, then continue with the Azure config/build metadata follow-up.
+
+## 2026-07-01 09:29:26 CEST - Loop 46 Start
+
+- PASS: `801c672 Record auth diagnostics deploy verification` completed successfully on GitHub Actions CI and Build extension workflows.
+- Reviewed `readBuildInfo`, Dockerfile build args, compose env mapping, and deployment docs.
+- Confirmed source already supports explicit build metadata and common fallback env names; live production remains `unknown` because Dokploy is not passing the required values.
+- Started a docs-only clarification for Dokploy Build Time Arguments/runtime env setup and the current Azure web/confidential-client requirement.
+- PASS: `git diff --check`
