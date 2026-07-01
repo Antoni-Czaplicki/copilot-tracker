@@ -32,6 +32,7 @@ import {
   shouldRecordTaskHistoryEntry,
 } from "../taskHistory";
 import {
+  type AzureDevOpsWorkItem,
   TrackerClient,
   TrackerClientError,
   extensionSignInUrl,
@@ -44,6 +45,13 @@ import type { CopilotChatRequest, WorkspaceContext } from "../types";
 import type { SessionTokenStats } from "../sessionTokenStats";
 import type { TaskHistoryEntry } from "../taskHistory";
 import { currentSessionTokenStats } from "../sessionTokenStats";
+import {
+  isTerminalWorkItemState,
+  safeWorkItemUrl,
+  sortWorkItemsForQuickPick,
+  workItemQuickPickItem,
+  workItemTypeCodicon,
+} from "../workItemQuickPick";
 import { getTaskFromBranch } from "../workspaceContext";
 
 suite("Extension Test Suite", () => {
@@ -882,6 +890,79 @@ suite("Extension Test Suite", () => {
         fetchMock.restore();
       }
     });
+  });
+
+  test("Work item quick pick rows show type metadata and Azure open buttons", () => {
+    const item = workItemQuickPickItem(
+      createAzureWorkItem({
+        id: 17198,
+        title: "File deletion confirmation popup needs adjustment",
+        type: "Task",
+        state: "Waiting for Deployment",
+        project: "Tracker",
+        assignedTo: "A Person",
+        tags: "ux;qa",
+        url: "https://dev.azure.com/example/project/_workitems/edit/17198",
+      }),
+    );
+
+    assert.strictEqual(
+      item.label,
+      "$(checklist) 17198: File deletion confirmation popup needs adjustment",
+    );
+    assert.strictEqual(
+      item.description,
+      "Task / Waiting for Deployment / Tracker",
+    );
+    assert.strictEqual(item.detail, "Assigned to A Person | Tags: ux;qa");
+    assert.strictEqual(item.taskId, "17198");
+    assert.strictEqual(
+      item.workItemUrl,
+      "https://dev.azure.com/example/project/_workitems/edit/17198",
+    );
+    assert.strictEqual(item.buttons?.[0]?.tooltip, "Open in Azure DevOps");
+  });
+
+  test("Work item quick pick rows ignore unsafe open URLs", () => {
+    const item = workItemQuickPickItem(
+      createAzureWorkItem({
+        id: 1,
+        url: "javascript:alert(1)",
+      }),
+    );
+
+    assert.strictEqual(item.workItemUrl, undefined);
+    assert.strictEqual(item.buttons, undefined);
+  });
+
+  test("Work item quick pick sorts terminal states after active results", () => {
+    const completed = createAzureWorkItem({ id: 1, state: "Completed" });
+    const active = createAzureWorkItem({ id: 2, state: "Active" });
+    const accepted = createAzureWorkItem({ id: 3, state: "Accepted" });
+    const proposed = createAzureWorkItem({ id: 4, state: "Proposed" });
+
+    assert.deepStrictEqual(
+      sortWorkItemsForQuickPick([completed, active, accepted, proposed]).map(
+        (item) => item.id,
+      ),
+      [2, 4, 1, 3],
+    );
+    assert.strictEqual(isTerminalWorkItemState("Accepted"), true);
+    assert.strictEqual(isTerminalWorkItemState("Active"), false);
+  });
+
+  test("Work item quick pick maps common Azure work item types to icons", () => {
+    assert.strictEqual(workItemTypeCodicon("Bug"), "bug");
+    assert.strictEqual(workItemTypeCodicon("User Story"), "book");
+    assert.strictEqual(workItemTypeCodicon("Feature"), "flag");
+    assert.strictEqual(workItemTypeCodicon("Task"), "checklist");
+    assert.strictEqual(workItemTypeCodicon("Test Case"), "beaker");
+    assert.strictEqual(workItemTypeCodicon("Unknown"), "issues");
+    assert.strictEqual(
+      safeWorkItemUrl("https://dev.azure.com/example/project/_workitems/edit/1"),
+      "https://dev.azure.com/example/project/_workitems/edit/1",
+    );
+    assert.strictEqual(safeWorkItemUrl("not a url"), null);
   });
 
   test("TrackerClient blocks remote syncs when no token is available", async () => {
@@ -1856,6 +1937,22 @@ function requestHeader(request: CapturedFetch | undefined, name: string) {
 interface CapturedFetch {
   input: Parameters<typeof fetch>[0];
   init?: Parameters<typeof fetch>[1];
+}
+
+function createAzureWorkItem(
+  overrides: Partial<AzureDevOpsWorkItem> & Pick<AzureDevOpsWorkItem, "id">,
+): AzureDevOpsWorkItem {
+  return {
+    id: overrides.id,
+    title: overrides.title ?? `Task ${overrides.id}`,
+    state: overrides.state ?? null,
+    type: overrides.type ?? null,
+    project: overrides.project ?? null,
+    assignedTo: overrides.assignedTo ?? null,
+    changedAt: overrides.changedAt ?? null,
+    tags: overrides.tags ?? null,
+    url: overrides.url ?? null,
+  };
 }
 
 function createResourceSpanRecord(spans: unknown[]) {

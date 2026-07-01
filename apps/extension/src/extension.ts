@@ -47,7 +47,6 @@ import {
   shouldRecordTaskHistoryEntry,
 } from "./taskHistory";
 import {
-  type AzureDevOpsWorkItem,
   TrackerClient,
   getTrackerConfig,
   parseTrackerServerUrl,
@@ -58,6 +57,13 @@ import {
   TrackerEventType,
   WorkspaceContext,
 } from "./types";
+import {
+  type TaskQuickPickItem,
+  manualTaskQuickPickItem,
+  openWorkItemButton,
+  sortWorkItemsForQuickPick,
+  workItemQuickPickItem,
+} from "./workItemQuickPick";
 import { buildWorkspaceContext, setSelectedTask } from "./workspaceContext";
 
 const extensionId = "copilot-tracker";
@@ -378,11 +384,6 @@ async function pickAzureDevOpsTask(
   client: TrackerClient,
   initialValue: string,
 ): Promise<string | undefined> {
-  interface TaskQuickPickItem extends vscode.QuickPickItem {
-    taskId?: string;
-    disabled?: boolean;
-  }
-
   return new Promise((resolve) => {
     const quickPick = vscode.window.createQuickPick<TaskQuickPickItem>();
     const disposables: vscode.Disposable[] = [];
@@ -407,15 +408,6 @@ async function pickAzureDevOpsTask(
       resolve(value);
     }
 
-    function manualItem(value: string): TaskQuickPickItem {
-      return {
-        label: value ? `Use "${value}"` : "Type a task id or title",
-        description: value ? "Manual task value" : undefined,
-        taskId: value || undefined,
-        disabled: !value,
-      };
-    }
-
     function scheduleSearch(value: string) {
       if (settled) {
         return;
@@ -428,7 +420,7 @@ async function pickAzureDevOpsTask(
 
       if (query.length < 2 && !/^\d+$/u.test(query)) {
         quickPick.busy = false;
-        quickPick.items = [manualItem(query)];
+        quickPick.items = [manualTaskQuickPickItem(query)];
         return;
       }
 
@@ -446,8 +438,10 @@ async function pickAzureDevOpsTask(
               return;
             }
             quickPick.items = [
-              ...workItems.map(workItemQuickPickItem),
-              manualItem(query),
+              ...sortWorkItemsForQuickPick(workItems).map(
+                workItemQuickPickItem,
+              ),
+              manualTaskQuickPickItem(query),
             ];
           })
           .catch((error: unknown) => {
@@ -463,7 +457,7 @@ async function pickAzureDevOpsTask(
                 description: "Use the typed task value instead",
                 disabled: true,
               },
-              manualItem(query),
+              manualTaskQuickPickItem(query),
             ];
           })
           .finally(() => {
@@ -480,7 +474,7 @@ async function pickAzureDevOpsTask(
     quickPick.matchOnDescription = true;
     quickPick.matchOnDetail = true;
     quickPick.value = initialValue;
-    quickPick.items = [manualItem(initialValue.trim())];
+    quickPick.items = [manualTaskQuickPickItem(initialValue.trim())];
 
     disposables.push(
       quickPick.onDidChangeValue((value) => {
@@ -495,6 +489,16 @@ async function pickAzureDevOpsTask(
         const task = selected?.taskId ?? quickPick.value.trim();
         finish(task || undefined);
       }),
+      quickPick.onDidTriggerItemButton((event) => {
+        if (event.button !== openWorkItemButton || !event.item.workItemUrl) {
+          return;
+        }
+
+        logInfo("Opening Azure DevOps work item", {
+          workItemId: event.item.taskId ?? "unknown",
+        });
+        void vscode.env.openExternal(vscode.Uri.parse(event.item.workItemUrl));
+      }),
       quickPick.onDidHide(() => {
         finish(undefined);
       }),
@@ -503,26 +507,6 @@ async function pickAzureDevOpsTask(
     scheduleSearch(initialValue);
     quickPick.show();
   });
-}
-
-function workItemQuickPickItem(
-  workItem: AzureDevOpsWorkItem,
-): vscode.QuickPickItem & { taskId: string } {
-  const detail = [
-    workItem.assignedTo ? `Assigned to ${workItem.assignedTo}` : null,
-    workItem.tags ? `Tags: ${workItem.tags}` : null,
-  ]
-    .filter(Boolean)
-    .join(" | ");
-
-  return {
-    label: `$(issues) ${workItem.id}: ${workItem.title}`,
-    description: [workItem.type, workItem.state, workItem.project]
-      .filter(Boolean)
-      .join(" / "),
-    detail,
-    taskId: String(workItem.id),
-  };
 }
 
 async function showContext(context: vscode.ExtensionContext) {
