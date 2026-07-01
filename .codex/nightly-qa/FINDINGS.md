@@ -45,5 +45,5 @@
 2. [FIXED in `f85f30e`] OAuth provider error details are reflected into public redirect URLs and homepage UI.
 3. [FIXED in `a85225d`] Azure token encryption falls back to `AZURE_DEVOPS_CLIENT_SECRET`; app now avoids the client-secret fallback and does not persist session tokens when the dedicated key is missing.
 4. [FIXED in `91d2a7a`] Leaderboard exposes all signed-in developers' leaderboard and login mapping data to any signed-in user.
-5. [P3] Extension info logs and context UI include raw local paths, remote URLs, and storage paths.
+5. [FIXED locally, commit pending; test passed] Extension info logs and context UI include raw local paths, remote URLs, and storage paths.
 6. [P2] No web auth tests cover PKCE/state cookies, callback failures, session creation, profile/org checks, or work-item status mapping.

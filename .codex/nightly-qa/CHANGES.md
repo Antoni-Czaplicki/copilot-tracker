@@ -154,6 +154,17 @@
 - PASS: `pnpm --filter @copilot-tracker/web typecheck`
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env and build metadata
 
+## 2026-07-01 - Extension Log Privacy
+
+- Redacted local workspace/repository/storage/file fields from structured extension logs.
+- Redacted token-like fields while preserving useful non-sensitive context such as branch names and request counts.
+- Updated `Show Current Context` to report repository/storage presence without displaying raw local paths or remotes.
+- Added a regression test for path, remote URL, nested storage path, file, and token redaction.
+
+## Checks
+
+- PASS: `pnpm --filter ./apps/extension test`
+
 ## 2026-07-01 - Token Payload Integer Bounds
 
 - Added PostgreSQL `integer` upper bounds to token count payload validation so oversized token values fail schema validation before DB insert.

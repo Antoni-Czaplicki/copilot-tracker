@@ -39,7 +39,7 @@ function writeLog(
   }
 
   const formattedDetails =
-    details === undefined ? undefined : formatDetails(details);
+    details === undefined ? undefined : formatLogDetails(details);
   if (details !== undefined) {
     outputChannel[level](`${message}\n${formattedDetails}`);
     return;
@@ -48,7 +48,7 @@ function writeLog(
   outputChannel[level](message);
 }
 
-function formatDetails(details: unknown): string {
+export function formatLogDetails(details: unknown): string {
   if (details instanceof Error) {
     return details.stack ?? details.message;
   }
@@ -83,6 +83,25 @@ function redact(value: unknown): unknown {
 
 function isSensitiveKey(key: string, value: unknown): boolean {
   const normalized = key.toLowerCase().replace(/[-_]/g, "");
+  if (
+    [
+      "workspacefolders",
+      "workspacepath",
+      "repositoryroot",
+      "repositoryremoteurl",
+      "otelfilepath",
+      "storageroot",
+      "storagepath",
+      "statedbpath",
+      "chatsessionspath",
+      "workspacejsonpath",
+      "file",
+      "needles",
+    ].includes(normalized)
+  ) {
+    return true;
+  }
+
   if (
     normalized.includes("authorization") ||
     normalized.includes("password") ||

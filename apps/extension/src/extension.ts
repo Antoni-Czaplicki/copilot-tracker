@@ -455,14 +455,14 @@ async function showContext(context: vscode.ExtensionContext) {
   const details = [
     `Workspace: ${snapshot.workspaceName ?? "none"}`,
     `Repository name: ${getRepositoryDisplayName(snapshot)}`,
-    `Repository: ${snapshot.repositoryRoot ?? "none"}`,
-    `Remote: ${snapshot.repositoryRemoteUrl ?? "none"}`,
+    `Repository: ${snapshot.repositoryRoot ? "detected" : "none"}`,
+    `Remote: ${snapshot.repositoryRemoteUrl ? "detected" : "none"}`,
     `Branch: ${snapshot.branch ?? "none"}`,
     `Default task: ${snapshot.defaultTask ?? "none"}`,
     `Selected task: ${snapshot.selectedTask ?? "none"}`,
     `Server: ${config.serverUrl}`,
-    `OTel file: ${resolveOtelFilePath(context, config)}`,
-    `Chat title storage: ${getDefaultWorkspaceStorageRoot()}`,
+    `OTel file: ${config.otelFilePath ? "custom path configured" : "default extension storage"}`,
+    `Chat title storage: default VS Code workspace storage`,
     `Last sync: ${lastSyncStats.requestCount} requests, ${lastSyncStats.tokenCount} tokens, ${lastSyncStats.missingTokenCount} missing token counts`,
     `Current session tokens: ${lastSessionStats ? `${lastSessionStats.totalTokens} total (${lastSessionStats.inputTokens} input / ${lastSessionStats.outputTokens} output)` : "none"}`,
   ];

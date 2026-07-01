@@ -4,6 +4,7 @@ import * as os from "node:os";
 import * as path from "node:path";
 import * as vscode from "vscode";
 
+import { formatLogDetails } from "../logger";
 import { readCopilotOtelRequests } from "../otel";
 import type { WorkspaceContext } from "../types";
 import { getTaskFromBranch } from "../workspaceContext";
@@ -26,6 +27,34 @@ suite("Extension Test Suite", () => {
     assert.strictEqual(getTaskFromBranch("detached-abc123"), null);
     assert.strictEqual(getTaskFromBranch("feat/v2.1"), null);
     assert.strictEqual(getTaskFromBranch("chore/dependency-1.2.3"), null);
+  });
+
+  test("Redacts local paths, repository remotes, and tokens from structured logs", () => {
+    const formatted = formatLogDetails({
+      workspacePath: "/Users/example/private-project",
+      repositoryRoot: "/Users/example/private-project",
+      repositoryRemoteUrl:
+        "https://example.com/private-org/private-project.git",
+      file: "/Users/example/private-project/.vscode/state.json",
+      branch: "feature/123-login",
+      accessToken: "secret-token-value",
+      nested: {
+        storagePath: "/Users/example/Library/Application Support/Code",
+        requestCount: 3,
+      },
+    });
+
+    assert.match(formatted, /"workspacePath": "\[redacted\]"/);
+    assert.match(formatted, /"repositoryRoot": "\[redacted\]"/);
+    assert.match(formatted, /"repositoryRemoteUrl": "\[redacted\]"/);
+    assert.match(formatted, /"file": "\[redacted\]"/);
+    assert.match(formatted, /"storagePath": "\[redacted\]"/);
+    assert.match(formatted, /"accessToken": "\[redacted\]"/);
+    assert.match(formatted, /"branch": "feature\/123-login"/);
+    assert.match(formatted, /"requestCount": 3/);
+    assert.doesNotMatch(formatted, /\/Users\/example/);
+    assert.doesNotMatch(formatted, /private-org/);
+    assert.doesNotMatch(formatted, /secret-token-value/);
   });
 
   test("Reads Copilot OTel invoke_agent request spans", async () => {

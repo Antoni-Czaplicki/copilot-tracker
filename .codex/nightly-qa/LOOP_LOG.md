@@ -153,3 +153,11 @@
 - Validated compose syntax with `docker compose config`.
 - Docker daemon remains unavailable, so actual image/container startup remains blocked.
 - Next: commit compose service and continue non-auth-blocked gaps.
+
+## 2026-07-01 02:50:11 CEST - Loop 2 Progress
+
+- Resumed after context compaction at `f19a366` with a focused privacy redaction patch in progress.
+- Hardened extension structured logging to redact local workspace/repository/storage/file fields and token-like fields.
+- Updated `Show Current Context` so it reports repository/storage presence without displaying raw local paths or remotes.
+- Added a logger regression test covering local path, remote URL, nested storage path, file path, token redaction, and retained non-sensitive context.
+- Next: run extension tests, update findings/changes, commit/push, then continue remaining non-auth-blocked gaps.

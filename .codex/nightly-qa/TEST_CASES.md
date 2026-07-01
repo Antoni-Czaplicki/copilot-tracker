@@ -26,6 +26,7 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | EXT-018 | Extension | PASS | Status bar text reflects current session token totals and handles zero-metrics/partial-capture state | Automated/manual | Partial token lower-bound display implemented; extension tests passed |
 | EXT-019 | Extension | PENDING | Sign-in command handles missing trusted-server signature and prompts auth flow | Automated | |
 | EXT-020 | Extension | PENDING | `syncCopilotSessions` sends `session-sync-failed` event on parser/network failure | Automated + API mock | |
+| EXT-138 | Extension | PASS | Structured extension logs and context UI do not reveal local paths, repository remotes, storage paths, or tokens | Automated | Logger redaction regression added; `pnpm --filter ./apps/extension test` passed |
 | API-021 | API/Backend | PENDING | `POST /api/events` returns 401 with no auth token when auth disabled is false | Automated integration | |
 | API-022 | API/Backend | PENDING | `POST /api/events` accepts valid event payload and returns 202 | Automated | |
 | API-023 | API/Backend | PENDING | `POST /api/events` invalid payload returns 400 | Automated | |
