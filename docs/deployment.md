@@ -19,6 +19,11 @@ Set these variables in the deployment platform without committing their values:
 - `COPILOT_TRACKER_BUILD_SHA`
 - `COPILOT_TRACKER_BUILD_TIME`
 
+Set `AZURE_DEVOPS_ORG` to the organization slug, for example `my-org`. The app
+also normalizes `https://dev.azure.com/my-org` and the older
+`https://my-org.visualstudio.com` URL form to the same slug before checking
+Azure DevOps account membership.
+
 Optional production features:
 
 - `COPILOT_TRACKER_LEADERBOARD_ENABLED`

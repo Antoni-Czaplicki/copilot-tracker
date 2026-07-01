@@ -143,6 +143,10 @@ http://localhost:3737/api/auth/callback/azure-devops
 ```
 
 `AZURE_DEVOPS_CLIENT_ID`, `AZURE_DEVOPS_CLIENT_SECRET`, and `AZURE_DEVOPS_ORG` are required when `COPILOT_TRACKER_AUTH_MODE=azure-devops`.
+Set `AZURE_DEVOPS_ORG` to the Azure DevOps organization slug, such as
+`your-azure-devops-org`. The app also accepts
+`https://dev.azure.com/your-azure-devops-org` and the older
+`https://your-azure-devops-org.visualstudio.com` URL form.
 
 The app requests Azure DevOps `vso.profile` and `vso.work` delegated scopes to read the signed-in user's profile, organization accounts, and work item metadata for task search. It also requests `offline_access` so the web session can refresh Azure DevOps work-item search tokens.
 

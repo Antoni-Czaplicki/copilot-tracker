@@ -2077,3 +2077,27 @@
 - PASS: fresh real Chrome login returned safe `auth_code=profile_or_org_check_failed` with `auth_ref`.
 - PASS: matching Dokploy log contains deployed redacted diagnostics: profile lookup OK, profile HTTP 200, profile id present, org membership HTTP 200, one account returned, organization membership not matched.
 - Next: fix configured Azure DevOps org value or signed-in user's organization membership/visibility, then rerun Chrome signed-in dashboard and Azure work-item E2E.
+
+## 2026-07-01 10:34:40 CEST - Loop 49 Start
+
+- PASS: local repository is on `main`; `20094a0 Record deployed profile org diagnosis` exists locally and was pushed to `origin/main`.
+- PASS: production homepage loads in real Chrome with the visible Azure DevOps login link.
+- FAIL/EXPECTED: clicking the main production login link still returns `auth_code=profile_or_org_check_failed` with a safe `auth_ref`.
+- PASS: matching Dokploy log for the fresh `auth_ref` shows profile lookup OK/status 200/profile id present and org membership request OK/status 200 with one account returned but no configured-org match.
+- HYPOTHESIS: production may be using an old-style Azure DevOps organization URL in `AZURE_DEVOPS_ORG`; source normalized `https://dev.azure.com/<org>` but not `https://<org>.visualstudio.com`.
+
+## 2026-07-01 10:38:36 CEST - Loop 49 Validation
+
+- ADDED: `normalizeAzureDevOpsOrg` now accepts org slugs, `https://dev.azure.com/<org>`, and old-style `https://<org>.visualstudio.com` values.
+- ADDED: focused config tests for all supported org forms.
+- UPDATED: README and deployment docs now document accepted `AZURE_DEVOPS_ORG` formats.
+- PASS: `pnpm --filter @copilot-tracker/web test` (131 tests)
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS: `pnpm --filter ./apps/extension test` (26 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: clean rerun of `pnpm test` (7 smoke tests + 131 web tests + 26 extension VS Code tests)
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 20094a0` passed hard gates; warnings remain limited to unknown build metadata/SHA.
+- PASS: `git diff --check`
+- Next: commit/push normalization, poll CI/deploy, then retry production Chrome auth.

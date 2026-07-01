@@ -113,10 +113,18 @@ export function requireAzureDevOpsOAuthConfig() {
   };
 }
 
-function normalizeAzureDevOpsOrg(value: string) {
+export function normalizeAzureDevOpsOrg(value: string) {
   const trimmed = value.trim().replace(/\/+$/, "");
   try {
     const url = new URL(trimmed);
+    const hostname = url.hostname.toLowerCase();
+    if (hostname.endsWith(".visualstudio.com")) {
+      const subdomain = hostname.slice(0, -".visualstudio.com".length);
+      if (subdomain && subdomain !== "app.vssps" && !subdomain.includes(".")) {
+        return subdomain;
+      }
+    }
+
     return url.pathname.split("/").find(Boolean) ?? trimmed;
   } catch {
     return trimmed;

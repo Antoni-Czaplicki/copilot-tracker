@@ -751,3 +751,11 @@
 - PASS: real Chrome production login still returns a safe public `auth_code=profile_or_org_check_failed` plus `auth_ref`, with no provider details in the URL.
 - PASS: matching Dokploy log event now includes redacted profile/org diagnostics.
 - DIAGNOSIS: `profileResult=ok`, `profileStatus=200`, `hasProfileId=true`, `orgMembershipResult=not_matched`, `orgMembershipStatus=200`, and `orgMembershipAccountCount=1`. The remaining production auth issue is configured organization membership matching, not token exchange or profile lookup.
+
+## 2026-07-01 10:38 CEST Org URL Normalization Prep
+
+- PASS: fresh real Chrome production auth retry still reaches `profile_or_org_check_failed`, proving the Azure Web redirect fix remains effective but org matching is still the active blocker in the deployed build.
+- PASS: matching Dokploy log for the fresh `auth_ref` confirms profile lookup OK/status 200/profile id present and org membership OK/status 200 with one account returned but no configured-org match.
+- LOCAL CHANGE: source now normalizes old-style `https://<org>.visualstudio.com` `AZURE_DEVOPS_ORG` values before membership matching and work-item URL generation.
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 20094a0` passed all hard gates; warnings remain limited to unknown build metadata/SHA.
+- NEXT: deploy this change and retry real Chrome login. If still blocked, inspect/update the production `AZURE_DEVOPS_ORG` value or user organization membership/visibility.

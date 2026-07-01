@@ -1204,3 +1204,21 @@
 - PASS: `7020999` deployed successfully in Dokploy.
 - PASS/WARN: post-deploy `pnpm smoke:production -- --allow-known-stale --expect-sha 7020999`.
 - PASS: real Chrome + Dokploy logs verified deployed profile/org diagnostics.
+
+## 2026-07-01 - Azure DevOps Org URL Normalization
+
+- Exported and hardened `normalizeAzureDevOpsOrg` so `AZURE_DEVOPS_ORG` accepts the older `https://<org>.visualstudio.com` organization URL form as well as org slugs and `https://dev.azure.com/<org>`.
+- Added direct config tests for all accepted org formats.
+- Updated README and deployment docs to document the accepted `AZURE_DEVOPS_ORG` formats.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web test` (131 tests)
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS: `pnpm --filter ./apps/extension test` (26 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (7 smoke tests + 131 web tests + 26 extension VS Code tests)
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 20094a0`
+- PASS: `git diff --check`

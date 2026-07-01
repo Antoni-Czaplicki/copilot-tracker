@@ -203,3 +203,11 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - Real Chrome login still fails safely with `auth_code=profile_or_org_check_failed`.
 - Matching Dokploy log now proves profile lookup succeeds and org matching fails: profile OK/status 200/profile id present; org membership request OK/status 200; one account returned; configured organization not matched.
 - Next operator action: check `AZURE_DEVOPS_ORG` against the account returned for the signed-in user, or adjust the signed-in user's Azure DevOps organization membership/visibility. Then rerun Chrome login and dashboard/work-item E2E.
+
+## 2026-07-01 10:38 CEST Org URL Normalization Ready
+
+- Retried real Chrome production login after the Azure Web redirect fix; it still fails at `profile_or_org_check_failed`.
+- Dokploy log correlation for the fresh `auth_ref` again shows profile lookup succeeds and org membership does not match, with one account returned.
+- Added a local source fix for a likely env-format trap: `AZURE_DEVOPS_ORG` now normalizes old-style `https://<org>.visualstudio.com` URLs as well as org slugs and `https://dev.azure.com/<org>`.
+- Validation passed: web tests 131/131, typecheck, lint, extension compile/test, production-style web build, root `pnpm test`, live known-stale production smoke, and diff check.
+- Next: commit/push this normalization change, wait for CI/Dokploy deploy, then retry Chrome login. If it still fails, the remaining action is to update the configured org value or the signed-in user's Azure DevOps organization membership/visibility.

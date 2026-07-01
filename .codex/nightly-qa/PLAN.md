@@ -454,3 +454,14 @@
 - [x] Update deployment docs and QA logs
 - [x] Run broad validation
 - [x] Commit, push, poll CI, and verify deployed diagnostic behavior
+
+## Loop 49 - Azure DevOps Org URL Normalization
+
+- [x] Re-sync `20094a0` local/remote state and confirm QA log commit was pushed
+- [x] Retry real Chrome production login after the Azure Web redirect fix
+- [x] Correlate the fresh `profile_or_org_check_failed` `auth_ref` with Dokploy logs
+- [x] Confirm profile lookup succeeds and org membership returns one account but no configured-org match
+- [x] Add support for old-style `https://<org>.visualstudio.com` `AZURE_DEVOPS_ORG` values
+- [x] Add focused normalization tests and docs for accepted org formats
+- [x] Run focused web tests, typecheck, lint, root tests, extension tests, web build, production smoke, and diff check
+- [ ] Commit, push, poll CI/deploy, and retry signed-in Chrome dashboard/work-item E2E
