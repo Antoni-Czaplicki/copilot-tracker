@@ -1,11 +1,11 @@
 # Nightly QA Status
 
-- Current time: 2026-07-01 15:17:49 CEST
-- Current loop: 60
-- State: Extension task-history and branch prompt fixes are pushed and green; repository remote normalization hardening is implemented locally and validated
-- Focus: commit/push remote normalization hardening, then verify CI/package workflow
+- Current time: 2026-07-01 15:25:57 CEST
+- Current loop: 61
+- State: resumed active overnight QA goal after handoff; extension OTel remote-filter coverage is implemented and validated locally
+- Focus: commit/push the higher-level Azure DevOps SSH/HTTPS OTel filtering regression, then verify GitHub Actions
 - Blocker: Docker daemon is unavailable locally, so full local Docker image builds cannot be run on this machine. Dokploy built and deployed the Docker image successfully.
-- Latest completed pushed evidence: `6ed152d Cover Azure callback session outcomes`; GitHub Actions CI and Build extension passed, production rolled to the exact SHA after waiting for Dokploy, and strict production smoke passed.
+- Latest completed pushed evidence: `0416c27 Normalize extension repository remotes`; GitHub Actions CI and Build extension passed. Latest production web SHA remains `6ed152d` and strict production smoke for that deployed app SHA passed.
 - Diagnosis: production web auth/session token persistence is working. Real VS Code sign-in now uses tracker web sign-in plus a VS Code URI callback, stores a tracker session token in SecretStorage, and uses that token for API calls while Azure DevOps tokens remain server-side.
 - Latest live verification: real VS Code signed in through production, synced a one-request OTel fixture, displayed task `124`, 321 input tokens, 123 output tokens, 444 total tokens, and `$0.0001` estimated cost. Production dashboard reload showed the assigned task/session/token split. Rebuilt VSIX with OTel lifecycle stability fix stopped the repeated exporter/lifecycle log storm over a longer post-reload sample.
 - Latest local/deployed change: Docker builds generate `apps/web/src/generated/buildInfo.generated.ts` before `next build` from explicit metadata, common source metadata, or minimal `.git` refs; health reads that generated module after explicit env/common env fallbacks.
@@ -14,10 +14,12 @@
 - Latest deployed change: the Azure OAuth callback route now has route-level success and safe session-failure coverage without changing production defaults.
 - Latest local change: extension task history now records explicit no-task clears and resolves those historical clear entries as `selectedTask: null` instead of falling back to the current task.
 - Latest extension change: branch-change task switch prompts now use a tested workspace-scoped prompt key, so the same branch transition in another workspace is not suppressed by a prior prompt.
-- Latest local change: OTel repository matching now normalizes GitHub and Azure DevOps SSH/scp-like remotes to HTTPS-style forms before filtering requests to the workspace.
+- Latest extension change: OTel repository matching now normalizes GitHub and Azure DevOps SSH/scp-like remotes to HTTPS-style forms before filtering requests to the workspace.
+- Latest local extension coverage: `readCopilotOtelRequests` now has a full ingestion-path regression proving Azure DevOps SSH telemetry matches an HTTPS workspace remote while an unrelated repo in the same OTel file is filtered out.
 - Latest extension commit: `9d298f5 Fix extension task clear attribution`; GitHub Actions CI and Build extension passed.
 - Latest extension commit: `25da717 Scope branch task prompts by workspace`; GitHub Actions CI and Build extension passed.
-- Latest checks: `pnpm --filter ./apps/extension compile`, `pnpm --filter ./apps/extension test` (33 tests), `pnpm -r typecheck`, `pnpm -r lint`, root `pnpm test`, GitHub Actions CI, GitHub Actions Build extension, and strict production smoke for deployed app commit `6ed152d` passed.
-- Deployment note: `9d298f5` only changes extension/progress files; production web still serves `6ed152d` and passes strict smoke. No Dokploy reload was forced.
-- Next action: run diff check, commit/push remote normalization hardening, and verify GitHub Actions.
+- Latest extension commit: `0416c27 Normalize extension repository remotes`; GitHub Actions CI and Build extension passed.
+- Latest checks: `pnpm --filter ./apps/extension compile`, `pnpm --filter ./apps/extension test` (34 tests), `pnpm -r typecheck`, `pnpm -r lint`, root `pnpm test`, and strict production smoke for deployed app commit `6ed152d` passed.
+- Deployment note: `9d298f5`, `25da717`, and `0416c27` are extension/progress-only; production web still serves `6ed152d` and passes strict smoke. No Dokploy reload was forced for those extension-only commits.
+- Next action: run diff check, commit/push the OTel ingestion regression and handoff log updates, and verify GitHub Actions.
 - Production target: https://copilot-tracker.antek.page

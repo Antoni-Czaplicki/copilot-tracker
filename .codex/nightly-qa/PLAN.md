@@ -219,6 +219,15 @@
 - [x] Verify `/api/auth/azure-devops` real-browser flow returns `auth_code=invalid_client`
 - [x] Verify failure copy includes safe generic guidance and does not expose provider details
 
+## Loop 61 - Extension OTel Remote Filtering Coverage
+
+- [x] Resync repo, CI, production, and QA logs
+- [x] Identify the remaining extension coverage gap after remote normalization
+- [x] Add a full `readCopilotOtelRequests` regression for Azure DevOps SSH telemetry vs HTTPS workspace remotes
+- [x] Verify unrelated repositories in the same OTel file are filtered out
+- [x] Run extension compile/tests, repo typecheck/lint, root tests, and strict production smoke
+- [ ] Commit, push, and verify CI/extension package workflow
+
 ## Loop 59 - Azure OAuth Callback Success Coverage
 
 - [x] Re-sync repo, CI, and production smoke state

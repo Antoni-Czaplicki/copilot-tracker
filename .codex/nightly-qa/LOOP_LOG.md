@@ -2403,3 +2403,29 @@
 - PASS: `pnpm -r lint`.
 - PASS: root `pnpm test`.
 - NEXT: run diff check, commit/push remote normalization hardening, and verify CI/package workflow.
+
+## 2026-07-01 15:21:36 CEST - Handoff Creation
+
+- USER: requested stopping the active QA loop and creating a complete handoff for another agent.
+- PUSHED: `0416c27 Normalize extension repository remotes`.
+- PASS: GitHub Actions `CI` completed successfully for `0416c27`.
+- PASS: GitHub Actions `Build extension` completed successfully for `0416c27`; VSIX packaging/upload succeeded.
+- PASS: strict `pnpm smoke:production -- --expect-sha 6ed152d` passed. Production web intentionally remains on deployed app SHA `6ed152d`; later commits are extension/progress-only.
+- UPDATED: `STATUS.md`, `FINDINGS.md`, `CHANGES.md`, `TEST_CASES.md`, and `HANDOFF.md` for agent continuation.
+- NEXT: next agent should start from `.codex/nightly-qa/HANDOFF.md`, continue full real VS Code extension QA with Azure DevOps integration, and only use Dokploy Reload/Termius as safe operational fallback if production smoke proves a stale rollout or VPS issue.
+
+## 2026-07-01 15:25:57 CEST - Loop 61 Extension OTel Remote Filtering Coverage
+
+- RESUMED: active overnight QA goal after the handoff request because the thread goal remains active.
+- PASS: repo head is `0416c27`; GitHub Actions `CI` and `Build extension` are green for that commit.
+- PASS: strict production smoke passes for currently deployed web SHA `6ed152d`.
+- IDENTIFIED: direct URL normalization had coverage, but the full OTel ingestion/filtering path did not prove Azure DevOps SSH telemetry matches an HTTPS workspace remote.
+- ADDED: `readCopilotOtelRequests` regression with a mixed OTel file containing one Azure DevOps SSH repo request and one unrelated repo request.
+- PASS: the regression returns only the matching Azure DevOps SSH request for an HTTPS Azure DevOps workspace remote.
+- PASS: `pnpm --filter ./apps/extension compile`.
+- PASS: `pnpm --filter ./apps/extension test` (34 tests).
+- PASS: `pnpm -r typecheck`.
+- PASS: `pnpm -r lint`.
+- PASS: root `pnpm test` (11 smoke tests, 146 web tests, 34 extension tests).
+- PASS: strict `pnpm smoke:production -- --expect-sha 6ed152d`.
+- NEXT: run diff check, commit/push, and verify CI/package workflow.

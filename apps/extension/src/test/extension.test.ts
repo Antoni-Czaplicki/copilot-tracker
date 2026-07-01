@@ -384,6 +384,81 @@ suite("Extension Test Suite", () => {
     );
   });
 
+  test("Filters OTel requests by normalized Azure DevOps repository remotes", async () => {
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "copilot-otel-"));
+
+    try {
+      const otelFilePath = path.join(tempDir, "copilot-otel.jsonl");
+      await writeFile(
+        otelFilePath,
+        `${JSON.stringify(
+          createResourceSpanRecord([
+            {
+              traceId: "trace-azure-ssh",
+              spanId: "span-azure-ssh",
+              name: "invoke_agent copilot",
+              startTimeUnixNano: "1782638400000000000",
+              endTimeUnixNano: "1782638410000000000",
+              attributes: attributes({
+                "gen_ai.operation.name": "invoke_agent",
+                "gen_ai.agent.name": "GitHub Copilot Chat",
+                "gen_ai.conversation.id": "session-azure-ssh",
+                "gen_ai.request.model": "openai/OpenAI/gpt-5-nano",
+                "gen_ai.response.model": "gpt-5-nano",
+                "gen_ai.usage.input_tokens": 11,
+                "gen_ai.usage.output_tokens": 13,
+                "github.copilot.git.repository":
+                  "git@ssh.dev.azure.com:v3/ExampleOrg/ExampleProject/CopilotTracker.git",
+                "github.copilot.git.branch": "feature/456-api",
+              }),
+            },
+            {
+              traceId: "trace-other-repo",
+              spanId: "span-other-repo",
+              name: "invoke_agent copilot",
+              startTimeUnixNano: "1782638420000000000",
+              endTimeUnixNano: "1782638430000000000",
+              attributes: attributes({
+                "gen_ai.operation.name": "invoke_agent",
+                "gen_ai.agent.name": "GitHub Copilot Chat",
+                "gen_ai.conversation.id": "session-other-repo",
+                "gen_ai.request.model": "openai/OpenAI/gpt-5-nano",
+                "gen_ai.response.model": "gpt-5-nano",
+                "gen_ai.usage.input_tokens": 17,
+                "gen_ai.usage.output_tokens": 19,
+                "github.copilot.git.repository":
+                  "https://dev.azure.com/exampleorg/exampleproject/_git/OtherRepo",
+                "github.copilot.git.branch": "feature/999-other",
+              }),
+            },
+          ]),
+        )}\n`,
+      );
+
+      const requests = await readCopilotOtelRequests(
+        createWorkspaceContext({
+          repositoryRemoteUrl:
+            "https://dev.azure.com/exampleorg/exampleproject/_git/copilottracker",
+        }),
+        otelFilePath,
+      );
+
+      assert.strictEqual(requests.length, 1);
+      assert.strictEqual(requests[0]?.requestId, "trace-azure-ssh");
+      assert.strictEqual(requests[0]?.sessionId, "session-azure-ssh");
+      assert.strictEqual(
+        requests[0]?.repositoryRemoteUrl,
+        "git@ssh.dev.azure.com:v3/ExampleOrg/ExampleProject/CopilotTracker.git",
+      );
+      assert.strictEqual(requests[0]?.branch, "feature/456-api");
+      assert.strictEqual(requests[0]?.inputTokens, 11);
+      assert.strictEqual(requests[0]?.outputTokens, 13);
+      assert.strictEqual(requests[0]?.totalTokens, 24);
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
+    }
+  });
+
   test("Redacts local paths, repository remotes, and tokens from structured logs", () => {
     const formatted = formatLogDetails({
       workspacePath: "/Users/example/private-project",

@@ -1426,3 +1426,30 @@
 - Hardened extension repository remote normalization for OTel workspace filtering across GitHub SSH/HTTPS and Azure DevOps SSH/HTTPS forms.
 - PASS: `pnpm --filter ./apps/extension test` (33 tests)
 - PASS: `pnpm -r typecheck`, `pnpm -r lint`, and root `pnpm test`
+
+## 2026-07-01 - Extension Repository Remote Normalization Closeout
+
+- Pushed `0416c27 Normalize extension repository remotes`.
+- GitHub Actions `CI` and `Build extension` both passed for `0416c27`.
+- Production web remains intentionally verified at `6ed152d`; the later commits are extension/progress-only and did not require forcing a Dokploy Reload.
+- Strict production smoke passed for the deployed web SHA: `pnpm smoke:production -- --expect-sha 6ed152d`.
+
+## 2026-07-01 - Handoff Request
+
+- User asked to stop the active QA loop and prepare a complete handoff for another agent.
+- Updated `STATUS.md`, `FINDINGS.md`, `CHANGES.md`, `TEST_CASES.md`, `LOOP_LOG.md`, and `HANDOFF.md` with the latest CI/deploy/extension state and continuation plan.
+
+## 2026-07-01 - Extension OTel Remote Filtering Coverage
+
+- Added a full `readCopilotOtelRequests` regression that feeds a mixed OTel file through the real parser/filter path.
+- The test proves Azure DevOps SSH repository metadata matches an HTTPS Azure DevOps workspace remote after normalization.
+- The same test proves an unrelated repository in the same OTel file is filtered out before upload.
+
+## Checks
+
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS: `pnpm --filter ./apps/extension test` (34 tests)
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (11 smoke tests + 146 web tests + 34 extension tests)
+- PASS: strict `pnpm smoke:production -- --expect-sha 6ed152d`

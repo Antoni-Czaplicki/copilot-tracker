@@ -25,6 +25,8 @@
 21. [FIXED] Extension server JSON/string error bodies that were blank could surface empty messages instead of the HTTP-status fallback.
 22. [FIXED] Extension work-item result validation accepted non-positive or too-large integer IDs even though web/backend reject invalid Azure DevOps work-item IDs.
 23. [FIXED] Clearing a manual task on a branch with no detected task id did not write a no-task history entry, and historical no-task entries could fall back to the current task during OTel attribution.
+24. [FIXED] Branch-change prompt de-duplication was global instead of workspace-scoped, so the same branch transition in another workspace could suppress a needed task-switch prompt.
+25. [FIXED] OTel repository matching did not normalize Azure DevOps SSH/HTTPS remotes consistently, so valid Copilot requests could be dropped for workspaces cloned with a different remote URL style.
 
 ## Web UX
 

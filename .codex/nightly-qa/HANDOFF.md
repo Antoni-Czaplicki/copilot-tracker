@@ -339,3 +339,106 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - `25da717 Scope branch task prompts by workspace` is pushed and GitHub Actions CI/Build extension are green.
 - Added local remote-normalization hardening so OTel workspace matching accepts GitHub and Azure DevOps SSH/HTTPS forms consistently; extension tests are up to 33 and pass with repo typecheck/lint/root tests.
 - Next: commit/push the remote normalization hardening and verify GitHub Actions.
+
+## 2026-07-01 15:22 CEST Complete Continuation Handoff
+
+### Immediate State
+
+- Current repo: `/Users/antoniczaplicki/WebstormProjects/copilot-tracker`.
+- Current branch/head: `main` at `0416c27 Normalize extension repository remotes`.
+- GitHub Actions: `CI` and `Build extension` both passed for `0416c27`.
+- Production URL: `https://copilot-tracker.antek.page`.
+- Production web currently verified at exact app SHA `6ed152d`; strict `pnpm smoke:production -- --expect-sha 6ed152d` passes all hard gates.
+- Important nuance: commits after `6ed152d` are extension/progress-only (`9d298f5`, `25da717`, `0416c27`), so production web serving `6ed152d` is not a deploy failure by itself.
+- Worktree was clean before this handoff update; only `.codex/nightly-qa` handoff/progress files should now be dirty.
+
+### What Is Working
+
+- Azure web auth works in production after runtime org configuration and dedicated token-encryption key were corrected in Dokploy. Do not record the org value, key value, or admin list.
+- The requested admin access is active in production. Verify by behavior only; do not print the configured list.
+- Production health is exact and cache-safe for deployed web builds: `/api/health` exposes a non-unknown SHA/build time, database readiness, and no-store headers.
+- Real VS Code extension sign-in works through tracker web sign-in plus a VS Code URI callback. The extension stores a tracker session token in VS Code SecretStorage; Azure DevOps tokens remain server-side.
+- Real VS Code synced a realistic Copilot OTel fixture to production and the dashboard reflected the same request/session/task/token/cost data.
+- VS Code task assignment/search path works against production session auth. A manual task assignment updated the VS Code status/session title and appeared on the production dashboard.
+- OTel lifecycle spam found in real VS Code testing is fixed and pushed.
+- Extension task attribution has been hardened for explicit no-task clears, workspace-scoped branch prompt suppression, and GitHub/Azure DevOps remote URL normalization.
+
+### Latest Code Changes To Know
+
+- `311bd56`/`5b5b4c4`/related: extension auth was moved from direct VS Code Microsoft auth to tracker web callback session auth.
+- `ae3d4e4`: stabilized extension OTel lifecycle and self-caused Copilot exporter configuration changes.
+- `23e4df9`: fixed Docker build metadata so strict production smoke can prove the exact deployed web SHA.
+- `6477f9c`: improved Azure DevOps work-item search fallback and clearer no-match text.
+- `6ed152d`: added Azure OAuth callback success/session-failure route coverage.
+- `9d298f5`: fixed extension task clear attribution.
+- `25da717`: scoped branch task prompt de-duplication by workspace.
+- `0416c27`: normalized extension repository remotes for GitHub and Azure DevOps SSH/HTTPS workspace matching.
+- Local pending: added a full `readCopilotOtelRequests` regression proving Azure DevOps SSH telemetry matches an HTTPS workspace remote and unrelated repos in the same OTel file are filtered out.
+
+### Validation Already Run Recently
+
+- PASS: `pnpm --filter ./apps/extension compile`.
+- PASS: `pnpm --filter ./apps/extension test` (33 tests after remote normalization).
+- PASS: `pnpm -r typecheck`.
+- PASS: `pnpm -r lint`.
+- PASS: root `pnpm test`.
+- PASS: GitHub Actions `CI` and `Build extension` for `9d298f5`, `25da717`, and `0416c27`.
+- PASS: strict production smoke for deployed web SHA `6ed152d`.
+- PASS: after the local pending OTel ingestion regression, `pnpm --filter ./apps/extension test` is 34 tests, root `pnpm test` passes, and strict production smoke for `6ed152d` passes.
+
+### Highest-Value Next Work
+
+1. Continue full real VS Code QA with Azure DevOps integration, especially task/branch attribution.
+2. Use the installed Extension Development Host or rebuilt VSIX to test real branch transitions:
+   - branch with no task -> assign manual task -> generate/sync request -> clear task -> generate/sync request -> confirm no stale task attribution;
+   - branch with detected task -> manual override -> branch switch to different detected task -> prompt behavior -> assignment history;
+   - same branch transition in two workspaces -> prompt should not be suppressed globally;
+   - GitHub SSH/HTTPS and Azure DevOps SSH/HTTPS remotes -> OTel request should match the intended workspace.
+3. Verify Azure DevOps search in VS Code with a known real work-item query if available. If data is sparse, verify the authenticated 200/empty-state path and manual fallback.
+4. Recheck VS Code status bar, hover, click-through, current-session token split, and cost display after branch/task scenarios.
+5. Add automated coverage around full OTel request filtering using normalized remotes, not just direct normalizer tests.
+6. Consider a lightweight extension-host integration test or documented manual script for branch/task flows if practical.
+
+### Suggested Commands
+
+```bash
+git status --short
+gh run list --repo Antoni-Czaplicki/copilot-tracker --branch main --limit 8
+pnpm --filter ./apps/extension compile
+pnpm --filter ./apps/extension test
+pnpm -r typecheck
+pnpm -r lint
+pnpm test
+pnpm smoke:production -- --expect-sha 6ed152d
+```
+
+For web changes, also run:
+
+```bash
+env \
+  DATABASE_URL=postgres://placeholder:placeholder@localhost:5432/placeholder \
+  AZURE_DEVOPS_CLIENT_ID=placeholder \
+  AZURE_DEVOPS_CLIENT_SECRET=placeholder \
+  AZURE_DEVOPS_ORG=placeholder \
+  AZURE_DEVOPS_REDIRECT_URI=https://example.com/api/auth/callback/azure-devops \
+  NEXT_PUBLIC_APP_URL=https://example.com \
+  SESSION_SECRET=placeholder-placeholder-placeholder-placeholder \
+  COPILOT_TRACKER_TOKEN_ENCRYPTION_KEY=placeholder-placeholder-placeholder-placeholder \
+  pnpm --filter @copilot-tracker/web build
+```
+
+### Operational Notes
+
+- No callable Dokploy MCP/tool was exposed in this Codex session. Use Dokploy UI in Chrome and strict production smoke as the source of truth.
+- If Dokploy says a Dockerfile deployment is done but strict smoke still sees the previous SHA, use the documented Dokploy app `Reload` fallback, then rerun strict smoke.
+- If the VPS/Dokploy host itself is broken, open Termius, use the saved SSH/Dokploy access there, and fix the host directly. Never print or commit credentials.
+- The existing Chrome session is authorized and useful for production dashboard/Dokploy checks. Keep provider details, auth refs, org values, admin lists, tokens, and secrets out of committed files and final messages.
+- Public auth errors intentionally show only safe codes plus `auth_ref`; detailed diagnostics belong in redacted server/Dokploy logs.
+
+### Residual Risks
+
+- Real Azure DevOps matching-result search remains data-dependent; previous safe queries returned valid HTTP 200 responses but zero matches.
+- Rendered VS Code status bar hover/click behavior was verified once in real usage, but not covered by an automated extension-host test.
+- Branch/task correctness has strong pure coverage now, but still needs a deliberate real branch-switch QA pass with Copilot/Copilot Chat events.
+- Full local Docker image build remains blocked by unavailable Docker daemon on this machine.
+- Dokploy has previously marked builds done while production still served the previous SHA until app `Reload`; strict smoke catches this.
