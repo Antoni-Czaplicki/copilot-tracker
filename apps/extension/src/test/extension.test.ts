@@ -46,6 +46,7 @@ import type { SessionTokenStats } from "../sessionTokenStats";
 import type { TaskHistoryEntry } from "../taskHistory";
 import { currentSessionTokenStats } from "../sessionTokenStats";
 import {
+  azureDevOpsProjectFromRemoteUrl,
   isTerminalWorkItemState,
   safeWorkItemUrl,
   sortWorkItemsForQuickPick,
@@ -923,6 +924,22 @@ suite("Extension Test Suite", () => {
     assert.strictEqual(item.buttons?.[0]?.tooltip, "Open in Azure DevOps");
   });
 
+  test("Work item quick pick rows mark current repository project matches", () => {
+    const item = workItemQuickPickItem(
+      createAzureWorkItem({
+        id: 17198,
+        project: "Tracker",
+        assignedTo: "A Person",
+      }),
+      { currentProject: "tracker" },
+    );
+
+    assert.strictEqual(
+      item.detail,
+      "Current repo project | Assigned to A Person",
+    );
+  });
+
   test("Work item quick pick rows ignore unsafe open URLs", () => {
     const item = workItemQuickPickItem(
       createAzureWorkItem({
@@ -949,6 +966,82 @@ suite("Extension Test Suite", () => {
     );
     assert.strictEqual(isTerminalWorkItemState("Accepted"), true);
     assert.strictEqual(isTerminalWorkItemState("Active"), false);
+  });
+
+  test("Work item quick pick ranks exact id, current project, and recency", () => {
+    const sameProjectOlder = createAzureWorkItem({
+      id: 1,
+      project: "Tracker",
+      state: "Active",
+      changedAt: "2026-01-01T00:00:00.000Z",
+    });
+    const sameProjectNewer = createAzureWorkItem({
+      id: 2,
+      project: "Tracker",
+      state: "Active",
+      changedAt: "2026-07-01T00:00:00.000Z",
+    });
+    const otherProjectNewer = createAzureWorkItem({
+      id: 3,
+      project: "Other",
+      state: "Active",
+      changedAt: "2026-07-02T00:00:00.000Z",
+    });
+    const sameProjectCompleted = createAzureWorkItem({
+      id: 4,
+      project: "Tracker",
+      state: "Completed",
+      changedAt: "2026-07-03T00:00:00.000Z",
+    });
+    const context = {
+      query: "tracker",
+      repositoryRemoteUrl: "git@ssh.dev.azure.com:v3/Org/Tracker/Repo.git",
+    };
+
+    assert.deepStrictEqual(
+      sortWorkItemsForQuickPick(
+        [
+          sameProjectCompleted,
+          otherProjectNewer,
+          sameProjectOlder,
+          sameProjectNewer,
+        ],
+        context,
+      ).map((item) => item.id),
+      [2, 1, 3, 4],
+    );
+    assert.strictEqual(
+      sortWorkItemsForQuickPick(
+        [sameProjectNewer, sameProjectCompleted],
+        { ...context, query: "4" },
+      )[0]?.id,
+      4,
+    );
+  });
+
+  test("Work item quick pick extracts Azure DevOps project names from remotes", () => {
+    assert.strictEqual(
+      azureDevOpsProjectFromRemoteUrl(
+        "git@ssh.dev.azure.com:v3/Org/My Project/Repo.git",
+      ),
+      "my project",
+    );
+    assert.strictEqual(
+      azureDevOpsProjectFromRemoteUrl(
+        "https://Org@dev.azure.com/Org/Tracker/_git/Repo.git",
+      ),
+      "tracker",
+    );
+    assert.strictEqual(
+      azureDevOpsProjectFromRemoteUrl(
+        "https://org.visualstudio.com/Tracker/_git/Repo",
+      ),
+      "tracker",
+    );
+    assert.strictEqual(
+      azureDevOpsProjectFromRemoteUrl("https://github.com/owner/repo"),
+      null,
+    );
   });
 
   test("Work item quick pick maps common Azure work item types to icons", () => {

@@ -354,6 +354,7 @@ async function setTask(
   const task = await pickAzureDevOpsTask(
     client,
     snapshot.selectedTask ?? snapshot.defaultTask ?? "",
+    snapshot.repositoryRemoteUrl,
   );
 
   if (task === undefined) {
@@ -383,6 +384,7 @@ async function useBranchTask(
 async function pickAzureDevOpsTask(
   client: TrackerClient,
   initialValue: string,
+  repositoryRemoteUrl: string | null,
 ): Promise<string | undefined> {
   return new Promise((resolve) => {
     const quickPick = vscode.window.createQuickPick<TaskQuickPickItem>();
@@ -437,9 +439,10 @@ async function pickAzureDevOpsTask(
             if (settled || sequence !== searchSequence) {
               return;
             }
+            const quickPickContext = { query, repositoryRemoteUrl };
             quickPick.items = [
-              ...sortWorkItemsForQuickPick(workItems).map(
-                workItemQuickPickItem,
+              ...sortWorkItemsForQuickPick(workItems, quickPickContext).map(
+                (workItem) => workItemQuickPickItem(workItem, quickPickContext),
               ),
               manualTaskQuickPickItem(query),
             ];
