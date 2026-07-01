@@ -184,3 +184,5 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | EXT-176 | Extension | PASS | TrackerClient surfaces JSON error messages from non-2xx server responses | Automated | Added VS Code extension test; extension tests passed |
 | EXT-177 | Extension | PASS | TrackerClient retries network failures and surfaces `network_error` after final failure | Automated | Added VS Code extension test; extension tests passed |
 | DEP-178 | Deployment | PASS | Health build metadata prefers explicit values, falls back to common source metadata, and reports `unknown` only when metadata is absent/invalid | Automated | Added `readBuildInfo` web tests; web tests passed |
+| AUTH-179 | Auth | PASS | Disabled auth mode uses a stable local-dev admin identity shape | Automated | Added `localDevUserIdentity` coverage; web tests passed |
+| AUTH-180 | Auth | PASS | Bearer auth parsing accepts canonical headers and rejects missing, empty, Basic, and malformed bearer values | Automated | Added `parseBearerToken` coverage and reused parser in ingest/work-item paths; web tests passed |

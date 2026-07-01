@@ -634,3 +634,24 @@
 - PASS: `pnpm test` (44 web tests + 14 extension VS Code tests)
 - PASS: GitHub Actions for `96bab47 Add extension TrackerClient coverage` completed successfully.
 - Next: inspect diff, commit, push, and poll deployment.
+
+## 2026-07-01 04:33:25 CEST - Loop 3 Progress
+
+- Committed and pushed health build metadata normalization as `16d5c67 Normalize health build metadata`.
+- GitHub Actions for `16d5c67` are queued/in progress.
+- PASS: production `/api/health` returns OK with database ready.
+- LIMITATION: production `/api/health` still reports `version.sha="unknown"` and `builtAt="unknown"` until build metadata is configured/deployed.
+- PASS: sanitized production Azure OAuth start still redirects to Microsoft with PKCE `S256`, state, client id, and required Azure DevOps scopes.
+- Next: poll CI and continue with the next non-auth-blocked gap.
+
+## 2026-07-01 04:35:33 CEST - Loop 3 Validation
+
+- PASS: GitHub Actions for `16d5c67 Normalize health build metadata` completed successfully on both CI and extension build workflows.
+- Extracted local disabled-auth identity and bearer token parsing into `authIdentity`.
+- Updated ingest auth and Azure work-item bearer paths to reject empty/garbled bearer headers before attempting Azure auth.
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web test` (47 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (47 web tests + 14 extension VS Code tests)
+- Next: inspect diff, commit, push, and continue.

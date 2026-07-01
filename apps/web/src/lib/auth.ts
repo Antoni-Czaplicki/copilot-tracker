@@ -10,6 +10,7 @@ import {
   azureDevOpsScope,
   requireAzureDevOpsOAuthConfig,
 } from "./config";
+import { localDevUserIdentity, parseBearerToken } from "./authIdentity";
 import type { AzureDevOpsSessionTokens, StoredUser } from "./store";
 import {
   clearSessionAzureDevOpsTokens,
@@ -60,15 +61,7 @@ export function oauthCodeVerifierCookie() {
 
 export async function currentUser(): Promise<StoredUser | null> {
   if (authMode() === "disabled") {
-    return upsertUser({
-      userId: "local-dev",
-      login: "local-dev",
-      name: "Local Developer",
-      avatarUrl: null,
-      email: null,
-      githubLogin: null,
-      role: "admin",
-    });
+    return upsertUser(localDevUserIdentity());
   }
 
   const cookieStore = await cookies();
@@ -101,23 +94,14 @@ export async function authenticateIngestRequest(
   request: NextRequest,
 ): Promise<StoredUser | null> {
   if (authMode() === "disabled") {
-    return upsertUser({
-      userId: "local-dev",
-      login: "local-dev",
-      name: "Local Developer",
-      avatarUrl: null,
-      email: null,
-      githubLogin: null,
-      role: "admin",
-    });
+    return upsertUser(localDevUserIdentity());
   }
 
-  const authorization = request.headers.get("authorization");
-  if (!authorization?.startsWith("Bearer ")) {
+  const token = parseBearerToken(request.headers.get("authorization"));
+  if (!token) {
     return null;
   }
 
-  const token = authorization.slice("Bearer ".length).trim();
   const azureUser = await fetchAzureDevOpsUser(token);
   if (!azureUser) {
     return null;

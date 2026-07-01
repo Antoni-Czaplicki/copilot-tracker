@@ -11,6 +11,7 @@ import {
   AzureDevOpsWorkItemsError,
   searchAzureDevOpsWorkItems,
 } from "@/lib/azureDevOpsWorkItems";
+import { parseBearerToken } from "@/lib/authIdentity";
 
 export async function GET(request: NextRequest) {
   const query = request.nextUrl.searchParams.get("query")?.trim() ?? "";
@@ -43,10 +44,10 @@ export async function GET(request: NextRequest) {
 }
 
 async function getAzureDevOpsAccessToken(request: NextRequest) {
-  const authorization = request.headers.get("authorization");
-  if (authorization?.startsWith("Bearer ")) {
+  const bearerToken = parseBearerToken(request.headers.get("authorization"));
+  if (bearerToken) {
     const user = await authenticateIngestRequest(request);
-    return user ? authorization.slice("Bearer ".length).trim() : null;
+    return user ? bearerToken : null;
   }
 
   const user = await currentUser();

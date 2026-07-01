@@ -459,3 +459,17 @@
 - PASS: `pnpm --filter @copilot-tracker/web test` (44 tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm test` (44 web tests + 14 extension VS Code tests)
+
+## 2026-07-01 - Auth Identity and Bearer Parsing Coverage
+
+- Extracted the local disabled-auth admin identity into a shared helper used by both page/session auth and ingest auth.
+- Added strict bearer token parsing that accepts canonical case-insensitive `Bearer <token>` headers and rejects empty, Basic, and whitespace/extra-token malformed variants.
+- Reused the parser in the Azure DevOps work-item route so malformed bearer headers do not trigger unnecessary upstream Azure calls.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web test` (47 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (47 web tests + 14 extension VS Code tests)

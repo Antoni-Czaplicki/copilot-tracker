@@ -131,3 +131,15 @@
 - PASS: GitHub Actions for `96bab47 Add extension TrackerClient coverage` completed successfully on both CI and extension build workflows.
 - LOCAL: `/api/health` build metadata lookup now treats blank/`unknown` values as absent and can use common source commit/time variables when available.
 - LIMITATION: production still needs explicit build metadata env/build args to prove exact deployed commit from `/api/health`.
+
+## 2026-07-01 04:33 CEST Production Poll
+
+- PUSHED: `16d5c67 Normalize health build metadata`.
+- IN PROGRESS: GitHub Actions for `16d5c67` started after push.
+- PASS: production `/api/health` returned HTTP 200 with `ok=true` and `database.ok=true`.
+- LIMITATION: production `/api/health` still reports `sha="unknown"` and `builtAt="unknown"`.
+- PASS: production Azure OAuth start redirect includes state, PKCE `S256`, client id, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
+
+## 2026-07-01 04:35 CEST CI Poll
+
+- PASS: GitHub Actions for `16d5c67 Normalize health build metadata` completed successfully on both CI and extension build workflows.
