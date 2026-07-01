@@ -659,3 +659,18 @@
 - PASS: `pnpm --filter ./apps/extension test` (20 tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm test` (81 web tests + 20 extension VS Code tests)
+
+## 2026-07-01 - Extension Task History Resolution Coverage
+
+- Extracted task-history parsing and request-time task resolution from `extension.ts` into `taskHistory`.
+- Added tests that validate/sort stored history, resolve OTel requests to the latest prior task state, and preserve fallback behavior when manual selections are cleared.
+
+## Checks
+
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS: `pnpm --filter ./apps/extension lint`
+- PASS: `pnpm --filter ./apps/extension test` (23 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (81 web tests + 23 extension VS Code tests)

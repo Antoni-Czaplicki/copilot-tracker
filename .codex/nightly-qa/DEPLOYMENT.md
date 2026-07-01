@@ -307,3 +307,15 @@
 ## 2026-07-01 05:26 CEST CI Poll
 
 - PASS: GitHub Actions for `21a41f5 Improve GitHub username error feedback` completed successfully on both CI and extension build workflows.
+
+## 2026-07-01 05:27 CEST Production Poll
+
+- PUSHED: `88b55a0 Add extension dashboard URL coverage`.
+- IN PROGRESS: GitHub Actions for `88b55a0` started after push.
+- PASS: production `/api/health` returned HTTP 200 with `ok=true` and `database.ok=true`.
+- LIMITATION: production `/api/health` still reports `sha="unknown"` and `builtAt="unknown"`.
+- PASS: production Azure OAuth start redirect includes state, PKCE `S256`, client id, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
+
+## 2026-07-01 05:31 CEST CI Poll
+
+- PASS: GitHub Actions for `88b55a0 Add extension dashboard URL coverage` completed successfully on both CI and extension build workflows.

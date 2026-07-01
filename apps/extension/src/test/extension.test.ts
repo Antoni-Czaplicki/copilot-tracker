@@ -21,6 +21,10 @@ import {
   formatNumber,
 } from "../statusFormatting";
 import {
+  createTaskResolverFromHistory,
+  readTaskHistoryFromValue,
+} from "../taskHistory";
+import {
   TrackerClient,
   TrackerClientError,
   parseTrackerServerUrl,
@@ -28,6 +32,7 @@ import {
 import type { AzureDevOpsTokenOptions } from "../azureDevOpsAuth";
 import type { CopilotChatRequest, WorkspaceContext } from "../types";
 import type { SessionTokenStats } from "../sessionTokenStats";
+import type { TaskHistoryEntry } from "../taskHistory";
 import { currentSessionTokenStats } from "../sessionTokenStats";
 import { getTaskFromBranch } from "../workspaceContext";
 
@@ -133,6 +138,112 @@ suite("Extension Test Suite", () => {
     assert.strictEqual(getTaskFromBranch("detached-abc123"), null);
     assert.strictEqual(getTaskFromBranch("feat/v2.1"), null);
     assert.strictEqual(getTaskFromBranch("chore/dependency-1.2.3"), null);
+  });
+
+  test("Reads valid task history entries sorted by timestamp", () => {
+    const history = readTaskHistoryFromValue([
+      { workspaceId: "workspace-1" },
+      createTaskHistoryEntry({
+        branch: "feature/456-api",
+        timestamp: "2026-07-01T00:10:00.000Z",
+      }),
+      createTaskHistoryEntry({
+        branch: "feature/123-login",
+        timestamp: "2026-07-01T00:00:00.000Z",
+      }),
+      {
+        ...createTaskHistoryEntry(),
+        selectedTask: 123,
+      },
+    ]);
+
+    assert.deepStrictEqual(
+      history.map((entry) => entry.branch),
+      ["feature/123-login", "feature/456-api"],
+    );
+  });
+
+  test("Resolves historical task assignments by request start time", () => {
+    const resolver = createTaskResolverFromHistory(
+      [
+        createTaskHistoryEntry({
+          branch: "feature/123-login",
+          defaultTask: "123",
+          selectedTask: "123",
+          timestamp: "2026-07-01T00:00:00.000Z",
+        }),
+        createTaskHistoryEntry({
+          branch: "feature/456-api",
+          defaultTask: "456",
+          selectedTask: "789",
+          timestamp: "2026-07-01T00:10:00.000Z",
+        }),
+      ],
+      createWorkspaceContext(),
+    );
+
+    assert.strictEqual(
+      resolver(createOtelTaskRequest("2026-06-30T23:59:00.000Z")),
+      null,
+    );
+    assert.deepStrictEqual(
+      resolver(createOtelTaskRequest("2026-07-01T00:05:00.000Z")),
+      {
+        branch: "feature/123-login",
+        defaultTask: "123",
+        selectedTask: "123",
+      },
+    );
+    assert.deepStrictEqual(
+      resolver(createOtelTaskRequest("2026-07-01T00:15:00.000Z")),
+      {
+        branch: "feature/456-api",
+        defaultTask: "456",
+        selectedTask: "789",
+      },
+    );
+  });
+
+  test("Task history resolver falls back when manual selection was cleared", () => {
+    const resolver = createTaskResolverFromHistory(
+      [
+        createTaskHistoryEntry({
+          branch: "feature/456-api",
+          defaultTask: "456",
+          selectedTask: null,
+          timestamp: "2026-07-01T00:10:00.000Z",
+        }),
+        createTaskHistoryEntry({
+          branch: null,
+          defaultTask: null,
+          selectedTask: null,
+          timestamp: "2026-07-01T00:20:00.000Z",
+        }),
+      ],
+      createWorkspaceContext({
+        branch: "fallback-branch",
+        defaultTask: "fallback-default",
+        selectedTask: "fallback-selected",
+      }),
+    );
+
+    assert.deepStrictEqual(
+      resolver(createOtelTaskRequest("2026-07-01T00:15:00.000Z")),
+      {
+        branch: "feature/456-api",
+        defaultTask: "456",
+        selectedTask: "456",
+      },
+    );
+    assert.deepStrictEqual(
+      resolver(createOtelTaskRequest("2026-07-01T00:25:00.000Z")),
+      {
+        branch: "fallback-branch",
+        defaultTask: "fallback-default",
+        selectedTask: "fallback-selected",
+      },
+    );
+    assert.strictEqual(resolver(createOtelTaskRequest(null)), null);
   });
 
   test("Redacts local paths, repository remotes, and tokens from structured logs", () => {
@@ -768,7 +879,9 @@ suite("Extension Test Suite", () => {
   });
 });
 
-function createWorkspaceContext(): WorkspaceContext {
+function createWorkspaceContext(
+  overrides: Partial<WorkspaceContext> = {},
+): WorkspaceContext {
   return {
     workspaceId: "workspace-id",
     workspacePath: "/tmp/copilot-tracker",
@@ -779,6 +892,30 @@ function createWorkspaceContext(): WorkspaceContext {
     branch: "main",
     defaultTask: null,
     selectedTask: null,
+    ...overrides,
+  };
+}
+
+function createTaskHistoryEntry(
+  overrides: Partial<TaskHistoryEntry> = {},
+): TaskHistoryEntry {
+  return {
+    workspaceId: "workspace-id",
+    timestamp: "2026-07-01T00:00:00.000Z",
+    branch: "main",
+    defaultTask: null,
+    selectedTask: null,
+    source: "test",
+    ...overrides,
+  };
+}
+
+function createOtelTaskRequest(requestStartedAt: string | null) {
+  return {
+    traceId: "trace-1",
+    conversationId: "session-1",
+    requestStartedAt,
+    requestCompletedAt: null,
   };
 }
 

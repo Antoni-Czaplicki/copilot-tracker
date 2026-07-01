@@ -227,3 +227,6 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | EXT-219 | Extension | PASS | Open-dashboard URL helper builds tracker dashboard links rooted at `/dashboard` | Automated | Extracted `trackerDashboardUrl`; extension tests passed |
 | EXT-220 | Extension | PASS | Open-dashboard URL helper encodes focused session ids in dashboard links | Automated | Extracted `trackerDashboardUrl`; extension tests passed |
 | EXT-221 | Extension | PASS | Open-dashboard URL helper rejects invalid tracker server URLs before opening external links | Automated | Extracted `trackerDashboardUrl`; extension tests passed |
+| EXT-222 | Extension | PASS | Task history reader ignores malformed entries and sorts valid task states by timestamp | Automated | Extracted `taskHistory`; extension tests passed |
+| EXT-223 | Extension | PASS | OTel request task resolver assigns historical branch/default/selected task based on request start time | Automated | Extracted `taskHistory`; extension tests passed |
+| EXT-224 | Extension | PASS | OTel request task resolver falls back to branch default or workspace fallback when manual selection is cleared | Automated | Extracted `taskHistory`; extension tests passed |

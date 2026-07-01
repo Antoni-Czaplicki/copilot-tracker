@@ -69,4 +69,13 @@
 - [x] Extract open-dashboard URL helper
 - [x] Add tests for base dashboard URL and encoded session links
 - [x] Run local validation
+- [x] Commit, push, and smoke production
+- [x] Verify CI completion for `88b55a0`
+
+## Loop 9 - Extension Task History Resolution
+
+- [x] Extract task-history parsing/resolution helpers
+- [x] Add history validation and sorting tests
+- [x] Add request-time task attribution tests
+- [x] Run local validation
 - [ ] Commit, push, and smoke production
