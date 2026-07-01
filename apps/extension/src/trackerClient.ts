@@ -1,12 +1,13 @@
 import * as vscode from "vscode";
 
-import { AzureDevOpsTokenOptions } from "./azureDevOpsAuth";
 import { logInfo, logWarn } from "./logger";
 import { CopilotChatRequest, TrackerEvent } from "./types";
 
 const extensionId = "copilot-tracker";
 const defaultServerUrl = "http://localhost:3737";
 const trustedServerOriginsKey = "trustedServerOrigins";
+const trackerAuthTokenSecretKey = "trackerAuthToken";
+const trackerAuthStateSecretKey = "trackerAuthState";
 const requestTimeoutMs = 15_000;
 const maxRequestAttempts = 3;
 const maxAzureDevOpsWorkItemId = 2_147_483_647;
@@ -27,6 +28,12 @@ export interface AzureDevOpsWorkItem {
   assignedTo: string | null;
   changedAt: string | null;
   url: string | null;
+}
+
+export interface TrackerSecretStorage {
+  get(key: string): Thenable<string | undefined>;
+  store(key: string, value: string): Thenable<void>;
+  delete(key: string): Thenable<void>;
 }
 
 export function getTrackerConfig(): TrackerConfig {
@@ -60,21 +67,40 @@ export class TrackerClientError extends Error {
 
 export class TrackerClient {
   public constructor(
-    private readonly getToken: (
-      options?: AzureDevOpsTokenOptions,
-    ) => Promise<string | null>,
+    private readonly secretStorage: TrackerSecretStorage,
     private readonly trustedServerOrigins: vscode.Memento,
   ) {}
 
-  public async signInAndTrustServer(): Promise<boolean> {
+  public async signInAndTrustServer(callbackUri: vscode.Uri): Promise<boolean> {
     const serverUrl = parseTrackerServerUrl(getTrackerConfig().serverUrl);
-    const token = await this.getToken({ interactive: true });
-    if (!token) {
-      return false;
+    await this.ensureTrustedServerOrigin(serverUrl, true);
+    const state = crypto.randomUUID();
+    await this.secretStorage.store(trackerAuthStateSecretKey, state);
+
+    const signInUrl = extensionSignInUrl(serverUrl, callbackUri, state);
+    logInfo("Opening Copilot Tracker browser sign-in", {
+      serverOrigin: serverUrl.origin,
+      callbackScheme: callbackUri.scheme,
+    });
+    return vscode.env.openExternal(vscode.Uri.parse(signInUrl.toString()));
+  }
+
+  public async completeSignIn(uri: vscode.Uri): Promise<void> {
+    const params = new URLSearchParams(uri.query);
+    const token = params.get("token");
+    const state = params.get("state");
+    const expectedState = await this.secretStorage.get(trackerAuthStateSecretKey);
+    await this.secretStorage.delete(trackerAuthStateSecretKey);
+
+    if (!token || !state || !expectedState || state !== expectedState) {
+      throw new TrackerClientError(
+        "invalid_auth_callback",
+        "Copilot Tracker sign-in callback was invalid. Please try signing in again.",
+      );
     }
 
-    await this.ensureTrustedServerOrigin(serverUrl, true);
-    return true;
+    await this.secretStorage.store(trackerAuthTokenSecretKey, token);
+    logInfo("Copilot Tracker browser sign-in completed");
   }
 
   public async sendEvent(event: TrackerEvent): Promise<void> {
@@ -96,42 +122,29 @@ export class TrackerClient {
     const params = new URLSearchParams({ query });
     const payload = await this.get<{ workItems?: AzureDevOpsWorkItem[] }>(
       `/api/azure-devops/work-items?${params.toString()}`,
-      { interactive: true, workItemAccess: true },
     );
     return normalizeWorkItems(payload);
   }
 
-  private async get<T>(
-    path: string,
-    tokenOptions: AzureDevOpsTokenOptions = {},
-  ): Promise<T> {
-    const response = await this.request(
-      path,
-      { method: "GET" },
-      tokenOptions,
-    );
+  private async get<T>(path: string): Promise<T> {
+    const response = await this.request(path, { method: "GET" });
     return response as T;
   }
 
   private async post(path: string, body: unknown): Promise<void> {
-    await this.request(
-      path,
-      {
-        method: "POST",
-        body: JSON.stringify(body),
-      },
-      { interactive: false },
-    );
+    await this.request(path, {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
   }
 
   private async request(
     path: string,
     init: { method: "GET" | "POST"; body?: string },
-    tokenOptions: AzureDevOpsTokenOptions,
   ): Promise<unknown> {
     const config = getTrackerConfig();
     const serverUrl = parseTrackerServerUrl(config.serverUrl);
-    const token = await this.getToken(tokenOptions);
+    const token = await this.secretStorage.get(trackerAuthTokenSecretKey);
     const headers: Record<string, string> = {
       "content-type": "application/json",
     };
@@ -142,10 +155,7 @@ export class TrackerClient {
       );
     }
     if (token) {
-      await this.ensureTrustedServerOrigin(
-        serverUrl,
-        tokenOptions.interactive === true,
-      );
+      await this.ensureTrustedServerOrigin(serverUrl, false);
       headers.authorization = `Bearer ${token}`;
     }
 
@@ -204,7 +214,7 @@ export class TrackerClient {
     }
 
     const choice = await vscode.window.showWarningMessage(
-      `Allow Copilot Tracker to send your Azure DevOps token to ${serverUrl.origin}?`,
+      `Allow Copilot Tracker to authenticate with ${serverUrl.origin}?`,
       { modal: true },
       "Allow",
     );
@@ -234,6 +244,17 @@ export class TrackerClient {
       ),
     ];
   }
+}
+
+export function extensionSignInUrl(
+  serverUrl: URL,
+  callbackUri: vscode.Uri,
+  state: string,
+) {
+  const url = new URL("/api/auth/extension-token", serverUrl);
+  url.searchParams.set("callback", callbackUri.toString());
+  url.searchParams.set("state", state);
+  return url;
 }
 
 async function readResponseBody(response: Response): Promise<unknown> {

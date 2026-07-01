@@ -787,3 +787,20 @@
 - WARN: `/api/health` still reports `version.sha="unknown"` and `version.builtAt="unknown"`, so exact deployed commit proof remains blocked until build metadata is configured.
 - PASS: real Chrome fresh logout/login lands on `https://copilot-tracker.antek.page/dashboard`.
 - PASS: signed-in `/api/azure-devops/work-items?query=test` returns HTTP 200 with a valid JSON response and zero matches for that literal query.
+
+## 2026-07-01 12:19 CEST Production Admin Runtime Config
+
+- PASS: production `ADMIN_AZURE_DEVOPS_LOGINS` was updated in Dokploy to include the requested login. The admin list is intentionally not recorded here.
+- PASS: existing runtime env, build args, and build secrets were preserved while saving the admin update.
+- PASS: Dokploy deploy trigger returned OK and application status reported `done`.
+- PASS: fresh real Chrome logout/login shows Admin navigation for the requested login.
+- PASS: direct `https://copilot-tracker.antek.page/admin` loads admin content and export links without unauthorized state.
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 0f9b2b8` passed every hard gate after the admin redeploy; warnings remain limited to unknown build metadata/SHA.
+
+## 2026-07-01 12:39 CEST Extension Token Auth Pending Deploy
+
+- LOCAL: implemented `/api/auth/extension-token` and extension URI callback auth after real VS Code exposed Microsoft `AADSTS65002` on the old direct Azure DevOps scope request.
+- LOCAL: placeholder-env web build lists `/api/auth/extension-token` as a dynamic route.
+- LOCAL: rebuilt VSIX excludes stale `azureDevOpsAuth.js` and installed into real VS Code.
+- NOT YET DEPLOYED: new route and extension-token API behavior are pending commit/push and Dokploy deployment.
+- NEXT VERIFY AFTER DEPLOY: production rejects unsafe extension callbacks with HTTP 400; authenticated extension sign-in redirects back to VS Code; extension sync uploads the OTel fixture and production dashboard shows the session.

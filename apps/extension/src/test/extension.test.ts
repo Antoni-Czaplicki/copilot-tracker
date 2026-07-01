@@ -27,9 +27,9 @@ import {
 import {
   TrackerClient,
   TrackerClientError,
+  extensionSignInUrl,
   parseTrackerServerUrl,
 } from "../trackerClient";
-import type { AzureDevOpsTokenOptions } from "../azureDevOpsAuth";
 import type { CopilotChatRequest, WorkspaceContext } from "../types";
 import type { SessionTokenStats } from "../sessionTokenStats";
 import type { TaskHistoryEntry } from "../taskHistory";
@@ -387,6 +387,57 @@ suite("Extension Test Suite", () => {
     }
   });
 
+  test("Builds extension sign-in URL with callback and state", () => {
+    const url = extensionSignInUrl(
+      new URL("https://copilot-tracker.example.com"),
+      vscode.Uri.parse("vscode://antoni-czaplicki.copilot-tracker/auth"),
+      "state-123",
+    );
+
+    assert.strictEqual(
+      url.href,
+      "https://copilot-tracker.example.com/api/auth/extension-token?callback=vscode%3A%2F%2Fantoni-czaplicki.copilot-tracker%2Fauth&state=state-123",
+    );
+  });
+
+  test("TrackerClient stores callback token only when state matches", async () => {
+    const secretStorage = new MemorySecretStorage({
+      trackerAuthState: "state-123",
+    });
+    const client = new TrackerClient(secretStorage, new MemoryMemento());
+
+    await client.completeSignIn(
+      vscode.Uri.parse(
+        "vscode://antoni-czaplicki.copilot-tracker/auth?token=tracker-token&state=state-123",
+      ),
+    );
+
+    assert.strictEqual(
+      await secretStorage.get("trackerAuthToken"),
+      "tracker-token",
+    );
+    assert.strictEqual(await secretStorage.get("trackerAuthState"), undefined);
+  });
+
+  test("TrackerClient rejects callback tokens with mismatched state", async () => {
+    const secretStorage = new MemorySecretStorage({
+      trackerAuthState: "state-123",
+    });
+    const client = new TrackerClient(secretStorage, new MemoryMemento());
+
+    await assert.rejects(
+      client.completeSignIn(
+        vscode.Uri.parse(
+          "vscode://antoni-czaplicki.copilot-tracker/auth?token=tracker-token&state=wrong",
+        ),
+      ),
+      (error: unknown) =>
+        error instanceof TrackerClientError &&
+        error.code === "invalid_auth_callback",
+    );
+    assert.strictEqual(await secretStorage.get("trackerAuthToken"), undefined);
+  });
+
   test("Current session token stats return null without completed token totals", () => {
     assert.strictEqual(
       currentSessionTokenStats([
@@ -447,9 +498,8 @@ suite("Extension Test Suite", () => {
     assert.strictEqual(stats.estimatedUsd.toFixed(3), "0.475");
   });
 
-  test("TrackerClient searches work items with interactive work-item auth", async () => {
+  test("TrackerClient searches work items with stored tracker auth", async () => {
     await withTrackerServerUrl("http://localhost:3737", async () => {
-      const tokenCalls: AzureDevOpsTokenOptions[] = [];
       const fetchMock = installFetchMock([
         Response.json({
           workItems: [
@@ -468,16 +518,13 @@ suite("Extension Test Suite", () => {
       ]);
 
       try {
-        const client = new TrackerClient(async (options) => {
-          tokenCalls.push(options ?? {});
-          return "access-token";
-        }, new MemoryMemento());
+        const secretStorage = new MemorySecretStorage({
+          trackerAuthToken: "tracker-session-token",
+        });
+        const client = new TrackerClient(secretStorage, new MemoryMemento());
 
         const items = await client.searchWorkItems("login task");
 
-        assert.deepStrictEqual(tokenCalls, [
-          { interactive: true, workItemAccess: true },
-        ]);
         assert.strictEqual(items.length, 1);
         assert.strictEqual(items[0]?.id, 123);
         assert.strictEqual(fetchMock.requests.length, 1);
@@ -487,7 +534,7 @@ suite("Extension Test Suite", () => {
         );
         assert.strictEqual(
           requestHeader(fetchMock.requests[0], "authorization"),
-          "Bearer access-token",
+          "Bearer tracker-session-token",
         );
       } finally {
         fetchMock.restore();
@@ -546,10 +593,10 @@ suite("Extension Test Suite", () => {
       ]);
 
       try {
-        const client = new TrackerClient(
-          async () => "access-token",
-          new MemoryMemento(),
-        );
+        const secretStorage = new MemorySecretStorage({
+          trackerAuthToken: "tracker-session-token",
+        });
+        const client = new TrackerClient(secretStorage, new MemoryMemento());
 
         const items = await client.searchWorkItems("login task");
 
@@ -567,7 +614,7 @@ suite("Extension Test Suite", () => {
 
       try {
         const client = new TrackerClient(
-          async () => null,
+          new MemorySecretStorage(),
           new MemoryMemento(),
         );
 
@@ -592,7 +639,7 @@ suite("Extension Test Suite", () => {
 
       try {
         const client = new TrackerClient(
-          async () => null,
+          new MemorySecretStorage(),
           new MemoryMemento(),
         );
 
@@ -619,7 +666,7 @@ suite("Extension Test Suite", () => {
 
       try {
         const client = new TrackerClient(
-          async () => null,
+          new MemorySecretStorage(),
           new MemoryMemento(),
         );
 
@@ -644,7 +691,7 @@ suite("Extension Test Suite", () => {
 
       try {
         const client = new TrackerClient(
-          async () => null,
+          new MemorySecretStorage(),
           new MemoryMemento(),
         );
 
@@ -671,7 +718,7 @@ suite("Extension Test Suite", () => {
 
       try {
         const client = new TrackerClient(
-          async () => null,
+          new MemorySecretStorage(),
           new MemoryMemento(),
         );
 
@@ -1095,6 +1142,28 @@ class MemoryMemento {
 
   public keys(): readonly string[] {
     return [...this.values.keys()];
+  }
+}
+
+class MemorySecretStorage {
+  private readonly values = new Map<string, string>();
+
+  public constructor(initialValues: Record<string, string> = {}) {
+    for (const [key, value] of Object.entries(initialValues)) {
+      this.values.set(key, value);
+    }
+  }
+
+  public async get(key: string): Promise<string | undefined> {
+    return this.values.get(key);
+  }
+
+  public async store(key: string, value: string): Promise<void> {
+    this.values.set(key, value);
+  }
+
+  public async delete(key: string): Promise<void> {
+    this.values.delete(key);
   }
 }
 

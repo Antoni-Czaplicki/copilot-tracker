@@ -150,7 +150,7 @@ Set `AZURE_DEVOPS_ORG` to the Azure DevOps organization slug, such as
 
 The app requests Azure DevOps `vso.profile` and `vso.work` delegated scopes to read the signed-in user's profile, organization accounts, and work item metadata for task search. It also requests `offline_access` so the web session can refresh Azure DevOps work-item search tokens.
 
-The extension signs in through VS Code's Microsoft authentication provider and the server validates that token against Azure DevOps before accepting usage. Background sync uses the profile scope silently; work-item search asks for work-item access when the user explicitly searches. Users can optionally map their Azure DevOps identity to a GitHub username for billing/reporting correlation.
+The extension signs in by opening the tracker web app and receiving a tracker session token through a VS Code URI callback. The web app keeps Azure DevOps access and refresh tokens server-side from the normal PKCE login, so the extension does not request or transmit raw Azure DevOps tokens. Users can optionally map their Azure DevOps identity to a GitHub username for billing/reporting correlation.
 
 `COPILOT_TRACKER_TOKEN_ENCRYPTION_KEY` is used to encrypt Azure DevOps session tokens at rest. Set a stable, dedicated value in every production environment. When it is omitted, the app does not persist Azure DevOps access or refresh tokens for web-session work-item search.
 
@@ -186,10 +186,11 @@ The extension signs in through VS Code's Microsoft authentication provider and t
 - `POST /api/admin/github-billing/sync` for admin-triggered sync
 - `GET /api/auth/azure-devops`
 - `GET /api/auth/callback/azure-devops`
+- `GET /api/auth/extension-token`
 - `POST /api/auth/logout`
 - `GET /api/health`
 
-By default, ingest endpoints validate the VS Code Azure DevOps bearer token and configured organization membership. Set `COPILOT_TRACKER_AUTH_MODE=disabled` only for local development.
+By default, ingest endpoints accept tracker session bearer tokens created by the web sign-in flow. Legacy Azure DevOps bearer-token validation remains available for direct API clients. Set `COPILOT_TRACKER_AUTH_MODE=disabled` only for local development.
 
 ## Database
 

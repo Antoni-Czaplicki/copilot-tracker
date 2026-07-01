@@ -22,7 +22,7 @@ where they can be explored on a dashboard and leaderboard.
 - **Copilot Tracker: Open Dashboard** — open the tracker dashboard.
 - **Copilot Tracker: Show Current Context** — inspect the active attribution.
 - **Copilot Tracker: Show Logs** — open the extension log output.
-- **Copilot Tracker: Sign In** — sign in with VS Code Microsoft auth and trust the configured tracker server origin.
+- **Copilot Tracker: Sign In** — open the tracker web sign-in flow and store a tracker session token for the configured server origin.
 
 ## Settings
 

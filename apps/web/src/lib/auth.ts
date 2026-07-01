@@ -128,6 +128,11 @@ export async function authenticateIngestRequest(
     return null;
   }
 
+  const trackerSessionUser = await readUserBySessionId(token);
+  if (trackerSessionUser) {
+    return trackerSessionUser;
+  }
+
   const azureUser = await fetchAzureDevOpsUser(token);
   if (!azureUser) {
     return null;

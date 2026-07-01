@@ -111,3 +111,4 @@
 25. [FIXED] Production smoke verifier behavior had only live-run evidence; local tests now cover fresh, strict stale, and known-stale outcomes without touching production.
 26. [FIXED] Azure OAuth failures had safe client URLs but no correlation id or redacted structured server log event for Dokploy diagnostics.
 27. [FIXED] Production diagnostics were too shallow for OAuth failures; production now gives a safe public `auth_ref` and keeps the detailed, redacted provider failure in Dokploy/server logs for operator lookup.
+28. [FIXED pending deploy] Real VS Code extension sign-in requested Azure DevOps scopes through VS Code's Microsoft auth provider and failed with Microsoft `AADSTS65002`. The extension now uses tracker web sign-in plus a VS Code URI callback, stores only a tracker session token in SecretStorage, and leaves Azure DevOps tokens server-side.

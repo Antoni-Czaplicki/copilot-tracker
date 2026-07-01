@@ -202,17 +202,17 @@ If no data appears on the dashboard:
 5. Run `Copilot Tracker: Sync Copilot OTel Now`.
 6. Check `Copilot Tracker: Show Logs`.
 
-If the request is rejected by the server, make sure you are signed in to
-Microsoft/Azure DevOps inside VS Code and that your account belongs to the
-configured Azure DevOps organization. By default, the ingest API validates the
-VS Code Azure DevOps bearer token before accepting usage.
+If the request is rejected by the server, run `Copilot Tracker: Sign In`, finish
+the tracker web sign-in in your browser, and make sure your account belongs to
+the configured Azure DevOps organization. The extension stores a tracker session
+token from the web app; Azure DevOps access and refresh tokens remain server-side.
 
 For the first authenticated call to a non-local server, run
 `Copilot Tracker: Sign In` and approve the trusted server origin prompt.
 
 If the extension keeps using `localhost`, set `copilot-tracker.serverUrl` in
 user settings and reload VS Code. Workspace-level `serverUrl` values are ignored
-so a repository cannot redirect Azure DevOps bearer tokens.
+so a repository cannot redirect tracker session tokens.
 
 If you see duplicate extension installs, keep
 `antoni-czaplicki.copilot-tracker` and uninstall any old package such as

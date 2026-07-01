@@ -81,6 +81,10 @@ void test("authFailureHint covers token exchange, provider, and callback failure
   assert.match(authFailureHint("token_exchange_failed") ?? "", /access token/);
   assert.match(authFailureHint("provider_error") ?? "", /provider error/);
   assert.match(authFailureHint("callback_failed") ?? "", /server logs/);
+  assert.match(
+    authFailureHint("extension_signin_required") ?? "",
+    /web app first/,
+  );
 });
 
 void test("authFailureHint omits details for unknown codes", () => {

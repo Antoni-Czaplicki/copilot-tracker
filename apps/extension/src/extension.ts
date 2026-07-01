@@ -5,7 +5,6 @@ import {
   getDefaultWorkspaceStorageRoot,
 } from "./chatSessionTitles";
 import { trackerDashboardUrl } from "./dashboardUrl";
-import { getAzureDevOpsToken } from "./azureDevOpsAuth";
 import {
   initializeLogger,
   logError,
@@ -84,7 +83,7 @@ export function activate(context: vscode.ExtensionContext) {
     ),
   });
 
-  const client = new TrackerClient(getAzureDevOpsToken, context.globalState);
+  const client = new TrackerClient(context.secrets, context.globalState);
 
   statusItem = vscode.window.createStatusBarItem(
     `${extensionId}.status`,
@@ -137,6 +136,11 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(`${extensionId}.showLogs`, () =>
       showLogs(),
     ),
+  );
+  context.subscriptions.push(
+    vscode.window.registerUriHandler({
+      handleUri: (uri) => handleAuthCallback(context, client, uri),
+    }),
   );
 
   void initializeExtension(context, client);
@@ -236,14 +240,16 @@ function disposeOtelSyncLifecycle() {
 }
 
 async function signIn(
-  _context: vscode.ExtensionContext,
+  context: vscode.ExtensionContext,
   client: TrackerClient,
 ) {
   try {
-    const signedIn = await client.signInAndTrustServer();
-    if (!signedIn) {
+    const signInStarted = await client.signInAndTrustServer(
+      extensionAuthCallbackUri(context),
+    );
+    if (!signInStarted) {
       void vscode.window.showWarningMessage(
-        "Copilot Tracker could not sign in to Azure DevOps.",
+        "Copilot Tracker could not open the browser sign-in flow.",
         "Show Logs",
       ).then((choice) => {
         if (choice === "Show Logs") {
@@ -253,9 +259,9 @@ async function signIn(
       return;
     }
 
-    lastSyncError = null;
-    updateStatusItem(currentWorkspaceContext);
-    void vscode.window.showInformationMessage("Copilot Tracker is signed in.");
+    void vscode.window.showInformationMessage(
+      "Continue Copilot Tracker sign-in in your browser.",
+    );
   } catch (error) {
     lastSyncError = error instanceof Error ? error.message : String(error);
     logError("Copilot Tracker sign-in failed", error);
@@ -268,6 +274,43 @@ async function signIn(
       },
     );
   }
+}
+
+async function handleAuthCallback(
+  context: vscode.ExtensionContext,
+  client: TrackerClient,
+  uri: vscode.Uri,
+) {
+  if (uri.path !== "/auth") {
+    logWarn("Ignoring unknown Copilot Tracker URI callback", {
+      path: uri.path,
+    });
+    return;
+  }
+
+  try {
+    await client.completeSignIn(uri);
+    lastSyncError = null;
+    updateStatusItem(currentWorkspaceContext);
+    void vscode.window.showInformationMessage("Copilot Tracker is signed in.");
+    scheduleSync(context, client, 350);
+  } catch (error) {
+    lastSyncError = error instanceof Error ? error.message : String(error);
+    logError("Copilot Tracker sign-in callback failed", error);
+    updateStatusItem(currentWorkspaceContext);
+    void vscode.window.showWarningMessage(
+      "Copilot Tracker sign-in callback failed.",
+      "Show Logs",
+    ).then((choice) => {
+      if (choice === "Show Logs") {
+        showLogs();
+      }
+    });
+  }
+}
+
+function extensionAuthCallbackUri(context: vscode.ExtensionContext) {
+  return vscode.Uri.parse(`${vscode.env.uriScheme}://${context.extension.id}/auth`);
 }
 
 async function setTask(

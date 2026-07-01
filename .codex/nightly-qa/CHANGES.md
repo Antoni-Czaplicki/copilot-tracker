@@ -1254,3 +1254,37 @@
 - PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 1506101` passed every hard gate; warnings remain limited to unknown build metadata/SHA.
 - PASS: real Chrome fresh logout/login lands on `/dashboard`.
 - PASS: signed-in `/api/azure-devops/work-items?query=test` returns HTTP 200 with a valid JSON response and zero matches for that literal query.
+
+## 2026-07-01 - Production Admin Runtime Configuration
+
+- Added the requested login to production `ADMIN_AZURE_DEVOPS_LOGINS` in Dokploy without recording the admin list.
+- Preserved existing runtime env, build args, and build secrets while saving the update.
+- Redeployed production after the runtime env change.
+
+## Checks
+
+- PASS: fresh real Chrome logout/login shows Admin navigation.
+- PASS: direct `/admin` load renders admin content and export links without unauthorized state.
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 0f9b2b8` passed every hard gate; warnings remain limited to unknown build metadata/SHA.
+
+## 2026-07-01 - VS Code Extension Tracker Session Auth
+
+- Replaced the extension's direct VS Code Microsoft/Azure DevOps token flow with a tracker web sign-in callback flow after real VS Code testing hit Microsoft `AADSTS65002`.
+- Added `/api/auth/extension-token` to mint a tracker session token from an existing authenticated web session and return it through the extension URI callback.
+- Updated API authentication so extension bearer tokens map to tracker sessions, while legacy direct Azure bearer validation remains as a fallback for direct API clients.
+- Updated work-item search to use the server-stored Azure token when the bearer is a tracker session.
+- Stored extension auth tokens in VS Code SecretStorage and validated callback state before accepting a token.
+- Removed the old extension Azure DevOps auth provider source and cleaned stale build output before VSIX packaging.
+- Fixed root VS Code extension-host launch/tasks to target `apps/extension`.
+- Updated README/INSTALL/extension README for the new auth model.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web test` (137 tests)
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder env
+- PASS: `pnpm --filter ./apps/extension test` (29 tests)
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm --filter ./apps/extension package`; rebuilt VSIX excludes the deleted auth module and was installed in real VS Code.

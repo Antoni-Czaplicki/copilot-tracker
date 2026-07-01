@@ -13,6 +13,7 @@ import {
   searchAzureDevOpsWorkItems,
 } from "@/lib/azureDevOpsWorkItems";
 import { parseBearerToken } from "@/lib/authIdentity";
+import { readUserBySessionId } from "@/lib/store";
 
 export async function GET(request: NextRequest) {
   const query = request.nextUrl.searchParams.get("query")?.trim() ?? "";
@@ -47,6 +48,11 @@ export async function GET(request: NextRequest) {
 async function getAzureDevOpsAccessToken(request: NextRequest) {
   const bearerToken = parseBearerToken(request.headers.get("authorization"));
   if (bearerToken) {
+    const trackerSessionUser = await readUserBySessionId(bearerToken);
+    if (trackerSessionUser) {
+      return readAzureDevOpsSessionAccessToken(bearerToken);
+    }
+
     const user = await authenticateIngestRequest(request);
     return user ? bearerToken : null;
   }

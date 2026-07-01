@@ -14,6 +14,9 @@ const startRoute = await import("../app/api/auth/azure-devops/route");
 const callbackRoute = await import(
   "../app/api/auth/callback/azure-devops/route"
 );
+const extensionTokenRoute = await import(
+  "../app/api/auth/extension-token/route"
+);
 const originalFetch = globalThis.fetch;
 
 void test("Azure OAuth start redirects to Microsoft with PKCE and expected scopes", async () => {
@@ -53,6 +56,17 @@ void test("Azure OAuth start sets short-lived PKCE state and verifier cookies", 
   assertCookie(cookies, "copilot_tracker_oauth_state", "Secure");
   assertCookie(cookies, "copilot_tracker_oauth_code_verifier", "HttpOnly");
   assertCookie(cookies, "copilot_tracker_oauth_state", "SameSite=lax");
+});
+
+void test("extension token route rejects invalid callback URLs before session lookup", async () => {
+  const response = await extensionTokenRoute.GET(
+    new NextRequest(
+      "https://copilot-tracker.example/api/auth/extension-token?callback=https%3A%2F%2Fevil.example%2Fauth",
+    ),
+  );
+
+  assert.equal(response.status, 400);
+  assert.deepEqual(await response.json(), { error: "invalid_callback" });
 });
 
 void test("Azure OAuth callback provider errors redirect safely and clear OAuth cookies", async () => {

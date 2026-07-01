@@ -236,3 +236,20 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - `pnpm smoke:production -- --allow-known-stale --expect-sha 1506101` passes every hard gate: health/database OK, health no-store headers, Microsoft redirect, PKCE `S256`, and required Azure DevOps scopes.
 - Remaining production proof gap: `/api/health` still reports unknown `sha` and `builtAt`, so configure Dokploy build metadata if strict exact-deploy proof is needed.
 - Best next step: test the visible dashboard task picker/search with a known work-item query, then configure `COPILOT_TRACKER_BUILD_SHA` and `COPILOT_TRACKER_BUILD_TIME` build/runtime metadata and rerun strict production smoke.
+
+## 2026-07-01 12:19 CEST Admin Access Added
+
+- Added the requested login to production `ADMIN_AZURE_DEVOPS_LOGINS` in Dokploy and redeployed; the admin list is not recorded here.
+- Fresh real Chrome logout/login now shows Admin navigation.
+- Direct production `/admin` loads admin content/export links without unauthorized state.
+- Post-redeploy production smoke still passes hard gates; only unknown build metadata/SHA warnings remain.
+- Best next step remains real VS Code extension usage QA against production, then strict build metadata configuration when convenient.
+
+## 2026-07-01 12:39 CEST Extension Auth Rewrite Ready
+
+- Real VS Code QA found a true extension blocker: `Copilot Tracker: Sign In` failed in Microsoft auth with `AADSTS65002` because VS Code's Microsoft first-party client cannot request the Azure DevOps delegated scopes the extension was asking for.
+- Implemented the safer production flow: the extension opens the tracker web app, the web app mints a tracker session from the already-authenticated web session, and VS Code receives that tracker token through a `vscode://.../auth` callback. Azure DevOps tokens stay server-side.
+- Added `/api/auth/extension-token`, callback URL/state validation, extension URI handler, SecretStorage token persistence, API session-bearer auth, and work-item search support via the server-stored Azure token.
+- Removed the old extension Azure DevOps auth provider source and verified the rebuilt VSIX no longer packages stale `azureDevOpsAuth.js`.
+- Validation passed: web tests 137/137, extension tests 29/29, web lint/typecheck/build, repo typecheck/lint, clean VSIX package, and rebuilt VSIX installed in real VS Code.
+- Pending: commit/push/deploy this change, then rerun real VS Code sign-in and OTel sync against production. Production exact-SHA proof remains blocked by missing `/api/health` build metadata.

@@ -103,6 +103,9 @@ export function authFailureHint(code: string) {
     case "callback_failed": {
       return "The callback failed after Azure redirected back to the app. Check server logs for the stable failure code and stack trace.";
     }
+    case "extension_signin_required": {
+      return "Sign in to the Copilot Tracker web app first, then run the VS Code extension sign-in command again.";
+    }
     default: {
       return null;
     }

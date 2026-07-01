@@ -491,3 +491,31 @@
 - [x] Update status, deployment, handoff, findings, changes, loop log, and test cases
 - [ ] Configure build metadata so strict exact-SHA production smoke can pass without known-stale warnings
 - [ ] Test visible dashboard work-item search with a known matching work-item query
+
+## Loop 52 - Real VS Code Usage QA And Admin Config
+
+- [x] Start loop and sync repo state
+- [x] Inspect extension commands/configuration for real-use testing
+- [x] Add requested login to production admin runtime config without recording the admin list
+- [x] Redeploy production after admin runtime config update
+- [x] Verify fresh Chrome login shows Admin navigation
+- [x] Verify direct `/admin` access for requested login
+- [x] Run production smoke after admin redeploy
+- [x] Launch/install the VS Code extension in a real host
+- [x] Configure the extension for production
+- [x] Reproduce real sign-in blocker in VS Code
+- [ ] Trigger realistic Copilot/OTel sync and verify production dashboard data
+- [ ] Record results, commit, push, and poll CI
+
+## Loop 53 - Extension Tracker Session Auth
+
+- [x] Classify real VS Code `AADSTS65002` failure as direct Microsoft-provider/Azure-scope incompatibility
+- [x] Add web extension-token route using the existing authenticated tracker session
+- [x] Change extension sign-in to browser + VS Code URI callback
+- [x] Store tracker session tokens in VS Code SecretStorage
+- [x] Accept tracker session bearer tokens in ingest/API routes
+- [x] Use server-stored Azure DevOps tokens for extension work-item search
+- [x] Add focused tests and update docs
+- [x] Run web tests, extension tests, typecheck, lint, build, and clean VSIX package
+- [ ] Commit, push, and verify CI/Dokploy deployment
+- [ ] Rerun real VS Code sign-in/sync/dashboard E2E against production

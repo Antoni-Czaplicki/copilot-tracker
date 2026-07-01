@@ -96,6 +96,7 @@
   },
   "activationEvents": [
     "onStartupFinished",
+    "onUri",
     "onCommand:copilot-tracker.setTask",
     "onCommand:copilot-tracker.useBranchTask",
     "onCommand:copilot-tracker.syncCopilotSessions",

@@ -2154,3 +2154,39 @@
 - PASS: signed-in `/api/azure-devops/work-items?query=test` returned HTTP 200 with a valid JSON response and zero matches for that literal query.
 - DIAGNOSIS: the previous production auth blockers are resolved: org matching now succeeds, and the dedicated token encryption key lets fresh web sessions store Azure DevOps tokens for work-item search.
 - REMAINING: exact deployed commit proof still requires production build metadata; `/api/health` still reports unknown SHA/build time.
+
+## 2026-07-01 11:58:50 CEST - Loop 52 Start
+
+- PASS: repository is clean on `main` and aligned with `origin/main`.
+- PASS: last pushed QA evidence commit `0f9b2b8 Record production auth fix verification` has passing GitHub Actions CI and Build extension workflows.
+- FOCUS: real VS Code usage QA now that production Azure auth and signed-in work-item API are working.
+- PLAN: inspect extension real-use commands/config, build or package the extension, launch a VS Code host, configure it for production, trigger a realistic sync/status/dashboard workflow, then record production evidence.
+
+## 2026-07-01 12:19:09 CEST - Loop 52 Admin Runtime Config
+
+- UPDATED: production `ADMIN_AZURE_DEVOPS_LOGINS` in Dokploy to include the requested login while preserving existing runtime env, build args, and build secrets. The admin list is intentionally not recorded here.
+- PASS: Dokploy environment save returned OK and the runtime env has one canonical admin-login line.
+- PASS: Dokploy deploy trigger returned OK and application status reported `done`.
+- PASS: fresh production Chrome logout/login landed on `/dashboard` with the Admin nav visible.
+- PASS: direct production `/admin` load rendered admin content and export links without unauthorized state.
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 0f9b2b8` passed all hard gates after redeploy; warnings remain limited to unknown build metadata/SHA.
+- Next: resume real VS Code extension usage QA against production.
+
+## 2026-07-01 12:39:46 CEST - Loop 53 Extension Auth Rewrite
+
+- FAIL/REAL: real VS Code `Copilot Tracker: Sign In` opened Microsoft auth and failed with `AADSTS65002` because the VS Code Microsoft first-party client is not preauthorized for Azure DevOps delegated scopes.
+- DIAGNOSIS: the extension should not request raw Azure DevOps tokens through VS Code. The web app already owns the correct PKCE Azure session and stores Azure tokens server-side.
+- IMPLEMENTED: added `/api/auth/extension-token`, which requires an existing tracker web session, copies server-side Azure token material into a new tracker session, and redirects to the extension's `vscode://.../auth` callback with a tracker session token.
+- IMPLEMENTED: extension now registers a URI handler, opens the tracker web sign-in route, validates callback state, stores the tracker token in VS Code SecretStorage, and sends it as the API bearer token.
+- IMPLEMENTED: API ingest accepts tracker session bearer tokens before falling back to legacy raw Azure bearer validation. Work-item search uses stored Azure tokens when the bearer is a tracker session.
+- REMOVED: stale extension Azure DevOps auth provider source. Cleaned the generated output before packaging so the VSIX no longer includes the deleted module.
+- FIXED: root VS Code launch/task config now targets `apps/extension` and runs the extension package `pnpm watch`.
+- PASS: `pnpm --filter @copilot-tracker/web test` (137 tests)
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder env
+- PASS: `pnpm --filter ./apps/extension test` (29 tests)
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: clean VSIX package excludes `azureDevOpsAuth.js`; rebuilt VSIX installed into real VS Code.
+- Next: commit/push, verify CI/deploy, then rerun real VS Code sign-in and sync against production.
