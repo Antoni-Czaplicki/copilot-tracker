@@ -85,6 +85,13 @@ DATABASE_URL=postgres://copilot_tracker:copilot_tracker@localhost:54329/copilot_
 
 The web app runs on `http://localhost:3737`.
 
+To exercise the containerized app and database together, set the Azure DevOps
+values in your shell or compose environment and run:
+
+```sh
+docker compose up --build app
+```
+
 ## Azure DevOps Login
 
 Create a Microsoft Entra app registration with Azure DevOps delegated access and set:

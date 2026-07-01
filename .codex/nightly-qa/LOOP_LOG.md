@@ -145,3 +145,11 @@
 - Updated README and homepage copy to match safer branch task detection behavior.
 - Validated with web typecheck, lint, and placeholder production build.
 - Next: commit docs/copy alignment and continue non-auth-blocked gaps.
+
+## 2026-07-01 02:40:46 CEST - Loop 2 Progress
+
+- Committed and pushed task-detection copy alignment as `ecebf93 Align task detection copy`.
+- Added compose app service for app+Postgres container smoke modeling.
+- Validated compose syntax with `docker compose config`.
+- Docker daemon remains unavailable, so actual image/container startup remains blocked.
+- Next: commit compose service and continue non-auth-blocked gaps.

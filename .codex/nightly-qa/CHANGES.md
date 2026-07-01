@@ -48,6 +48,16 @@
 - PASS: `pnpm --filter @copilot-tracker/web lint`
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env and build metadata
 
+## 2026-07-01 - Compose App Service
+
+- Added an `app` service to `docker-compose.yml` so local/container smoke can model the app, DB health dependency, app port, and runtime env contract together.
+- Documented `docker compose up --build app` for containerized app+DB smoke testing.
+
+## Checks
+
+- PASS: `docker compose config`
+- BLOCKED: `docker compose up`/image build still cannot run because the Docker daemon is unavailable
+
 ## 2026-07-01 - Branch Task Detection Copy Alignment
 
 - Updated README and homepage copy to match the safer branch task parser.

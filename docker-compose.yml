@@ -1,4 +1,41 @@
 services:
+  app:
+    build:
+      context: .
+      args:
+        DATABASE_URL: postgres://copilot_tracker:copilot_tracker@postgres:5432/copilot_tracker
+        NEXT_PUBLIC_APP_URL: http://localhost:3737
+        AZURE_DEVOPS_CLIENT_ID: placeholder-client-id
+        AZURE_DEVOPS_CLIENT_SECRET: placeholder-client-secret
+        AZURE_DEVOPS_ORG: placeholder-org
+        COPILOT_TRACKER_AUTH_MODE: azure-devops
+        COPILOT_TRACKER_BUILD_SHA: local-compose
+        COPILOT_TRACKER_BUILD_TIME: local-compose
+    container_name: copilot-tracker-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://copilot_tracker:copilot_tracker@postgres:5432/copilot_tracker
+      NEXT_PUBLIC_APP_URL: http://localhost:3737
+      AZURE_DEVOPS_CLIENT_ID: ${AZURE_DEVOPS_CLIENT_ID:-}
+      AZURE_DEVOPS_CLIENT_SECRET: ${AZURE_DEVOPS_CLIENT_SECRET:-}
+      AZURE_DEVOPS_ORG: ${AZURE_DEVOPS_ORG:-}
+      AZURE_DEVOPS_TENANT_ID: ${AZURE_DEVOPS_TENANT_ID:-organizations}
+      ADMIN_AZURE_DEVOPS_LOGINS: ${ADMIN_AZURE_DEVOPS_LOGINS:-}
+      COPILOT_TRACKER_AUTH_MODE: ${COPILOT_TRACKER_AUTH_MODE:-azure-devops}
+      COPILOT_TRACKER_LEADERBOARD_ENABLED: ${COPILOT_TRACKER_LEADERBOARD_ENABLED:-true}
+      COPILOT_TRACKER_TOKEN_ENCRYPTION_KEY: ${COPILOT_TRACKER_TOKEN_ENCRYPTION_KEY:-}
+      CRON_SECRET: ${CRON_SECRET:-}
+      GITHUB_COPILOT_BILLING_TOKEN: ${GITHUB_COPILOT_BILLING_TOKEN:-}
+      GITHUB_COPILOT_BILLING_SCOPE_TYPE: ${GITHUB_COPILOT_BILLING_SCOPE_TYPE:-}
+      GITHUB_COPILOT_BILLING_SCOPE: ${GITHUB_COPILOT_BILLING_SCOPE:-}
+      COPILOT_TRACKER_BUILD_SHA: local-compose
+      COPILOT_TRACKER_BUILD_TIME: local-compose
+    ports:
+      - "3737:3737"
+
   postgres:
     image: postgres:18-alpine
     container_name: copilot-tracker-postgres
