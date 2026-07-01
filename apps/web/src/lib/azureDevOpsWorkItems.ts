@@ -20,6 +20,9 @@ const workItemFields = [
   "System.AssignedTo",
   "System.ChangedDate",
 ];
+const defaultWorkItemSearchLimit = 20;
+const maxWorkItemSearchLimit = 50;
+const maxAzureDevOpsWorkItemId = 2_147_483_647;
 
 export class AzureDevOpsWorkItemsError extends Error {
   public constructor(
@@ -89,12 +92,17 @@ async function queryWorkItemIds(
   return [];
 }
 
-function buildWiqlQueries(query: string, limit: number) {
-  const safeLimit = Math.min(Math.max(limit, 1), 50);
-  if (/^\d+$/u.test(query)) {
+export function buildWiqlQueries(query: string, limit: number) {
+  const safeLimit = safeSearchLimit(limit);
+  const workItemId = parseWorkItemId(query);
+  if (workItemId !== null) {
     return [
-      `SELECT TOP ${safeLimit} [System.Id] FROM WorkItems WHERE [System.Id] = ${Number(query)}`,
+      `SELECT TOP ${safeLimit} [System.Id] FROM WorkItems WHERE [System.Id] = ${workItemId}`,
     ];
+  }
+
+  if (/^\d+$/u.test(query)) {
+    return [];
   }
 
   const escaped = escapeWiqlString(query);
@@ -102,6 +110,34 @@ function buildWiqlQueries(query: string, limit: number) {
     `SELECT TOP ${safeLimit} [System.Id] FROM WorkItems WHERE [System.Title] CONTAINS WORDS '${escaped}' ORDER BY [System.ChangedDate] DESC`,
     `SELECT TOP ${safeLimit} [System.Id] FROM WorkItems WHERE [System.Title] CONTAINS '${escaped}' ORDER BY [System.ChangedDate] DESC`,
   ];
+}
+
+function safeSearchLimit(limit: number) {
+  if (!Number.isFinite(limit)) {
+    return defaultWorkItemSearchLimit;
+  }
+
+  return Math.min(
+    Math.max(Math.trunc(limit), 1),
+    maxWorkItemSearchLimit,
+  );
+}
+
+function parseWorkItemId(query: string) {
+  if (!/^\d+$/u.test(query)) {
+    return null;
+  }
+
+  const id = Number(query);
+  if (
+    !Number.isSafeInteger(id) ||
+    id <= 0 ||
+    id > maxAzureDevOpsWorkItemId
+  ) {
+    return null;
+  }
+
+  return id;
 }
 
 async function fetchWorkItems(accessToken: string, ids: number[]) {

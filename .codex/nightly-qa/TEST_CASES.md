@@ -151,3 +151,4 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | UI-143 | Web | PASS | GitHub username normalization trims `@`, accepts valid handles, and rejects invalid handles | Automated | Added web `node:test` coverage |
 | UI-144 | Web | PASS | Estimated cost calculation prices known aliases, counts unpriced requests, and formats small USD values | Automated | Added web `node:test` coverage |
 | EXT-145 | Extension | PASS | OTel upload cache skips unchanged records across syncs while reuploading stable metadata changes | Automated | Added request upload signature cache tests; `pnpm --filter ./apps/extension test` passed |
+| API-146 | API/Backend | PASS | Azure DevOps WIQL builder clamps limits, escapes text, and rejects unsafe numeric work-item ids | Automated | Added web `node:test` coverage; web test/lint/typecheck/build passed |

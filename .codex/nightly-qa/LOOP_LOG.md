@@ -201,3 +201,17 @@
 - Broader checks passed after the OTel upload cache: `pnpm -r typecheck`, `pnpm -r lint`, and `pnpm test:web`.
 - Extension tests for the changed slice already passed with 9 tests.
 - Next: inspect diff, commit/push, then poll CI/production.
+
+## 2026-07-01 03:12:18 CEST - Loop 2 Progress
+
+- Committed and pushed OTel unchanged-upload skipping as `322bc7d Skip unchanged OTel request uploads`.
+- Local checks before commit: extension test, repo typecheck, repo lint, and web tests all passed.
+- Next: poll GitHub Actions/production and continue remaining route/integration/deployment gaps.
+
+## 2026-07-01 03:17:28 CEST - Loop 2 Progress
+
+- Hardened Azure DevOps WIQL query generation for task search.
+- Numeric work-item queries now reject unsafe IDs and out-of-bounds values instead of emitting invalid WIQL; search limits clamp/fallback safely.
+- Added 3 web tests for numeric ID query generation, unsafe numeric rejection, text escaping, and default limit fallback.
+- Validation passed: web test, lint, typecheck, and placeholder production build.
+- Next: inspect diff, commit/push, then poll CI/production.

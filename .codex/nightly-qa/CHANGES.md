@@ -37,6 +37,20 @@
 
 - PASS: `pnpm --filter ./apps/extension test`
 
+## 2026-07-01 - Azure DevOps Work-Item Query Hardening
+
+- Exported and tested the Azure DevOps WIQL query builder.
+- Clamped non-finite and out-of-range work-item search limits to safe bounds.
+- Rejected unsafe numeric work-item IDs such as `0`, values above Azure/PostgreSQL integer bounds, and giant digit strings instead of emitting invalid WIQL.
+- Preserved apostrophe escaping for title searches and tested both `CONTAINS WORDS` and fallback `CONTAINS` query shapes.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web test`
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env and build metadata
+
 ## 2026-07-01 - Web Domain Test Harness
 
 - Added a lightweight web test harness using Node's built-in test runner with `tsx`.
