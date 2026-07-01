@@ -2,7 +2,7 @@
 
 ## Current Summary
 
-Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent review, extension hardening, OAuth callback hardening, deployment health/secret-contract work, and API boundary validation are complete locally. Local compile/test/lint/typecheck/web build checks have passed for these slices.
+Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent review, extension hardening, OAuth callback hardening, deployment health/secret-contract work, API boundary validation, and request grid task editing UX are complete locally. Local compile/test/lint/typecheck/web build checks have passed for these slices.
 
 ## Remaining Risks
 
@@ -14,7 +14,7 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 
 ## Next Steps
 
-1. Commit/push the API boundary validation slice.
+1. Commit/push the request grid UX slice.
 2. Poll production `/api/health` and provider-error callback until the latest deployment is visible.
 3. Continue converting high-risk findings into tests and small fixes.
 4. Run deeper Chrome/VS Code E2E flows after production freshness is proven.

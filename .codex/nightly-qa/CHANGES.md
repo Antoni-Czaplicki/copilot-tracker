@@ -58,3 +58,16 @@
 - PASS: `pnpm --filter @copilot-tracker/web typecheck`
 - PASS: `pnpm --filter @copilot-tracker/web lint`
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env and build metadata
+
+## 2026-07-01 - Request Grid Task Editing UX
+
+- Made single-request task editing reachable in `RequestSessionsGrid` by rendering the existing `TaskEditor` in the task column.
+- Upgraded `TaskEditor` to use Azure DevOps `WorkItemPicker`, surface save errors, clear stale status on edits, and notify the grid after confirmed saves.
+- Added horizontal overflow around the request table so wide request/session rows remain usable on narrow screens.
+- Made bulk/session assignment reject a 2xx response with `updated: 0` instead of optimistically showing unpersisted local changes.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env and build metadata

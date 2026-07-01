@@ -13,10 +13,10 @@
 
 ## Web UX
 
-1. [P1] Single-row task edit is implemented but unreachable in dashboard/admin UI.
-2. [P2] Bulk/session assignment applies success UI after any 2xx and ignores backend `updated` count.
+1. [FIXED locally, commit pending] Single-row task edit is implemented but unreachable in dashboard/admin UI.
+2. [FIXED locally, commit pending] Bulk/session assignment applies success UI after any 2xx and ignores backend `updated` count.
 3. [P2] Admin GitHub billing sync mutates state via navigated GET without in-page loading/error/success UX.
-4. [P3] Request sessions grid can overflow on mobile without a horizontal scroll wrapper.
+4. [FIXED locally, commit pending] Request sessions grid can overflow on mobile without a horizontal scroll wrapper.
 5. [P3] OAuth callback rethrows unexpected exchange errors instead of routing to the auth-failure UI.
 6. [P2] Web test suite is missing.
 

@@ -123,11 +123,11 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | UI-115 | Web | PENDING | Admin unknown view falls back to overview and active nav is correct | Automated | |
 | UI-116 | Web | PENDING | `/leaderboard` returns notFound when feature flag disabled | Automated | |
 | UI-117 | Web | PENDING | Request sessions grid groups by session, sorts newest first, focuses `sessionId` | Automated | |
-| UI-118 | Web | PENDING | Selection flow sends expected payload for selected requests/session | Automated | |
+| UI-118 | Web | PASS | Selection flow sends expected payload for selected requests/session | Automated | Added `updated: 0` guard for bulk/session assignment; build/lint/typecheck passed |
 | UI-119 | Web | PENDING | WorkItemPicker searches only for query >=2 chars or digits-only | Component + MSW | |
 | UI-120 | Web | PENDING | WorkItemPicker debounce prevents extra calls and Enter selects highlighted item | Component | |
 | UI-121 | Web | PENDING | WorkItemPicker Escape and arrow keys preserve listbox semantics | Component | |
-| UI-122 | Web | PENDING | TaskEditor/GitHubLoginEditor idle/saving/saved/error transitions | Component | Regression |
+| UI-122 | Web | PASS | TaskEditor/GitHubLoginEditor idle/saving/saved/error transitions | Component | TaskEditor now handles saving/saved/error and clears status on edits; build/lint/typecheck passed |
 | UI-123 | Web | PENDING | Admin export link changes with selected view | Automated | |
 | UI-124 | Web | PENDING | Request grid pagination and empty messages render correctly | Automated | |
 | UI-125 | Web | PENDING | Token display differentiates missing vs partial Copilot OTel data | Automated | |

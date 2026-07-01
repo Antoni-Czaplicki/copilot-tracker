@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { DataGrid } from "./ui/data-grid";
+import { TaskEditor } from "./task-editor";
 import { WorkItemPicker } from "./work-item-picker";
 
 export type RequestGridRequest = CopilotChatRequest & {
@@ -104,6 +105,12 @@ export function RequestSessionsGrid({
         return;
       }
 
+      const result = await readMutationResult(response);
+      if (result.updated === 0) {
+        setError("No matching requests were updated.");
+        return;
+      }
+
       const affectedIds =
         requestRecordIds ??
         requests
@@ -127,6 +134,13 @@ export function RequestSessionsGrid({
     } finally {
       setSavingKey(null);
     }
+  }
+
+  function handleSingleTaskSaved(requestRecordId: string, selectedTask: string) {
+    setTaskOverrides((current) => ({
+      ...current,
+      [requestRecordId]: selectedTask,
+    }));
   }
 
   function toggleRequest(requestRecordId: string, checked: boolean) {
@@ -279,6 +293,7 @@ export function RequestSessionsGrid({
               showDeveloper={showDeveloper}
               taskOverrides={taskOverrides}
               toggleRequest={toggleRequest}
+              onTaskSaved={handleSingleTaskSaved}
             />
           </section>
         );
@@ -293,12 +308,14 @@ function SessionRequestTable({
   showDeveloper,
   taskOverrides,
   toggleRequest,
+  onTaskSaved,
 }: {
   requests: RequestGridRequest[];
   selectedIds: Set<string>;
   showDeveloper: boolean;
   taskOverrides: Record<string, string>;
   toggleRequest: (requestRecordId: string, checked: boolean) => void;
+  onTaskSaved: (requestRecordId: string, selectedTask: string) => void;
 }) {
   const columns = useMemo<ColumnDef<RequestGridRequest>[]>(
     () => [
@@ -390,12 +407,22 @@ function SessionRequestTable({
       {
         id: "task",
         header: "Task",
-        cell: ({ row }) => (
-          <strong>{getCurrentTask(row.original, taskOverrides)}</strong>
-        ),
+        cell: ({ row }) => {
+          const currentTask = getCurrentTask(row.original, taskOverrides);
+          return (
+            <TaskEditor
+              key={`${row.original.requestRecordId}:${currentTask}`}
+              initialTask={currentTask}
+              requestRecordId={row.original.requestRecordId}
+              onSaved={(task) => {
+                onTaskSaved(row.original.requestRecordId, task);
+              }}
+            />
+          );
+        },
       },
     ],
-    [selectedIds, showDeveloper, taskOverrides, toggleRequest],
+    [onTaskSaved, selectedIds, showDeveloper, taskOverrides, toggleRequest],
   );
   const table = useReactTable({
     data: requests,
@@ -413,7 +440,9 @@ function SessionRequestTable({
 
   return (
     <div className="grid gap-2">
-      <DataGrid table={table} emptyMessage="No captured requests" />
+      <div className="overflow-x-auto">
+        <DataGrid table={table} emptyMessage="No captured requests" />
+      </div>
       {requests.length > 25 ? (
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-muted-foreground text-xs">
@@ -494,6 +523,17 @@ async function readMutationError(response: Response) {
   }
 
   return "Could not update task assignments.";
+}
+
+async function readMutationResult(response: Response) {
+  try {
+    const payload = (await response.json()) as { updated?: unknown };
+    return {
+      updated: typeof payload.updated === "number" ? payload.updated : null,
+    };
+  } catch {
+    return { updated: null };
+  }
 }
 
 function groupRequestsBySession(
