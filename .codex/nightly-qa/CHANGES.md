@@ -832,3 +832,18 @@
 - PASS: `pnpm test` (105 web tests + 23 extension VS Code tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm --filter ./apps/extension compile`
+
+## 2026-07-01 - Extension TrackerClient Response Hardening
+
+- Hardened work-item search response handling so malformed successful payload entries are ignored instead of reaching picker rendering.
+- Hardened extension server error parsing so blank JSON/string error bodies fall back to `Copilot Tracker server returned HTTP <status>`.
+- Added extension regression tests for both cases.
+
+## Checks
+
+- PASS: `pnpm --filter ./apps/extension test` (25 tests)
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (105 web tests + 25 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`

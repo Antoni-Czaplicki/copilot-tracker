@@ -495,6 +495,52 @@ suite("Extension Test Suite", () => {
     });
   });
 
+  test("TrackerClient ignores malformed work item search payload entries", async () => {
+    await withTrackerServerUrl("http://localhost:3737", async () => {
+      const fetchMock = installFetchMock([
+        Response.json({
+          workItems: [
+            {
+              id: 123,
+              title: "Fix login",
+              state: "Active",
+              type: "Bug",
+              project: "Project",
+              assignedTo: "A Person",
+              changedAt: "2026-07-01T00:00:00.000Z",
+              url: "https://dev.azure.com/example/project/_workitems/edit/123",
+            },
+            {
+              id: "not-a-number",
+              title: "Malformed",
+              state: "Active",
+              type: "Bug",
+              project: "Project",
+              assignedTo: null,
+              changedAt: null,
+              url: null,
+            },
+            "not-an-object",
+          ],
+        }),
+      ]);
+
+      try {
+        const client = new TrackerClient(
+          async () => "access-token",
+          new MemoryMemento(),
+        );
+
+        const items = await client.searchWorkItems("login task");
+
+        assert.strictEqual(items.length, 1);
+        assert.strictEqual(items[0]?.id, 123);
+      } finally {
+        fetchMock.restore();
+      }
+    });
+  });
+
   test("TrackerClient blocks remote syncs when no token is available", async () => {
     await withTrackerServerUrl("https://tracker.example.com", async () => {
       const fetchMock = installFetchMock([]);
@@ -539,6 +585,32 @@ suite("Extension Test Suite", () => {
             error.message === "bad payload",
         );
         assert.strictEqual(fetchMock.requests.length, 1);
+      } finally {
+        fetchMock.restore();
+      }
+    });
+  });
+
+  test("TrackerClient falls back when server error messages are blank", async () => {
+    await withTrackerServerUrl("http://localhost:3737", async () => {
+      const fetchMock = installFetchMock([
+        Response.json({ error: "   " }, { status: 400 }),
+      ]);
+
+      try {
+        const client = new TrackerClient(
+          async () => null,
+          new MemoryMemento(),
+        );
+
+        await assert.rejects(
+          client.sendChatRequests([createChatRequest()]),
+          (error: unknown) =>
+            error instanceof TrackerClientError &&
+            error.code === "http_400" &&
+            error.status === 400 &&
+            error.message === "Copilot Tracker server returned HTTP 400",
+        );
       } finally {
         fetchMock.restore();
       }

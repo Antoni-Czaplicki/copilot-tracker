@@ -97,7 +97,7 @@ export class TrackerClient {
       `/api/azure-devops/work-items?${params.toString()}`,
       { interactive: true, workItemAccess: true },
     );
-    return payload.workItems ?? [];
+    return normalizeWorkItems(payload);
   }
 
   private async get<T>(
@@ -355,16 +355,54 @@ function responseBodyToMessage(responseBody: unknown) {
   }
 
   if (typeof responseBody === "string") {
-    return responseBody.slice(0, 240);
+    return responseBody.trim().slice(0, 240) || null;
   }
 
   if (
     typeof responseBody === "object" &&
+    !Array.isArray(responseBody) &&
     "error" in responseBody &&
-    typeof responseBody.error === "string"
+    typeof responseBody.error === "string" &&
+    responseBody.error.trim()
   ) {
-    return responseBody.error;
+    return responseBody.error.trim();
   }
 
   return null;
+}
+
+function normalizeWorkItems(payload: unknown): AzureDevOpsWorkItem[] {
+  if (
+    !payload ||
+    typeof payload !== "object" ||
+    Array.isArray(payload) ||
+    !("workItems" in payload) ||
+    !Array.isArray(payload.workItems)
+  ) {
+    return [];
+  }
+
+  return payload.workItems.filter(isAzureDevOpsWorkItem);
+}
+
+function isAzureDevOpsWorkItem(value: unknown): value is AzureDevOpsWorkItem {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return false;
+  }
+
+  const item = value as Record<string, unknown>;
+  return (
+    Number.isInteger(item.id) &&
+    typeof item.title === "string" &&
+    isNullableString(item.state) &&
+    isNullableString(item.type) &&
+    isNullableString(item.project) &&
+    isNullableString(item.assignedTo) &&
+    isNullableString(item.changedAt) &&
+    isNullableString(item.url)
+  );
+}
+
+function isNullableString(value: unknown): value is string | null {
+  return value === null || typeof value === "string";
 }

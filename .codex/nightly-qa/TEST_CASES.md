@@ -244,3 +244,5 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | UI-236 | Web | PASS | Shared response-error reader trims safe server error strings before displaying them | Automated | Added `responseErrors` coverage; web tests passed |
 | UI-237 | Web | PASS | Shared response-error reader ignores empty, non-string, array, malformed, and empty responses and uses caller fallbacks | Automated | Added `responseErrors` coverage; web tests passed |
 | UI-238 | Web | PASS | Task editing, session mutations, billing sync, GitHub mapping, and WorkItemPicker reuse the shared safe error parser | Code review + automated | Rewired helpers; web/root tests passed |
+| EXT-239 | Extension | PASS | TrackerClient work-item search ignores malformed successful payload entries and returns only well-shaped work items | Automated | Added VS Code extension regression test; extension/root tests passed |
+| EXT-240 | Extension | PASS | TrackerClient blank JSON error messages fall back to the HTTP status message | Automated | Added VS Code extension regression test; extension/root tests passed |

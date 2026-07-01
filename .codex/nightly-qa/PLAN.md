@@ -187,4 +187,15 @@
 - [x] Add shared response-error helper and tests
 - [x] Wire task editing, session bulk assignment, GitHub billing sync, GitHub login mapping, and work-item search helpers
 - [x] Run focused web tests and broad validation
+- [x] Commit, push, and smoke production
+- [x] Verify CI completion for `fc5ccd1`
+
+## Loop 23 - Extension TrackerClient Response Hardening
+
+- [x] Re-sync prior commit CI status
+- [x] Inspect extension task search/client response handling
+- [x] Filter malformed work-item search payload entries
+- [x] Fall back for blank server error strings
+- [x] Add extension regression tests
+- [x] Run focused extension tests and broad validation
 - [ ] Commit, push, and smoke production

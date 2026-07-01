@@ -21,6 +21,8 @@
 17. [PARTIAL] Extension dashboard deep-link URL construction now has direct coverage; actual `vscode.env.openExternal` behavior still needs rendered extension-host verification.
 18. [PARTIAL] Extension task-history parsing and request-time attribution now have pure coverage; live branch-change prompt interaction still needs rendered extension-host verification.
 19. [FIXED] Task history resolver depended on pre-sorted history input even though the helper is exported for reuse.
+20. [FIXED] Extension work-item search trusted successful server payload shape and could pass malformed work-item entries into picker rendering.
+21. [FIXED] Extension server JSON/string error bodies that were blank could surface empty messages instead of the HTTP-status fallback.
 
 ## Web UX
 

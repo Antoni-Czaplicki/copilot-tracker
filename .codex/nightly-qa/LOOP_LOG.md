@@ -1370,3 +1370,33 @@
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm --filter ./apps/extension compile`
 - Next: commit, push, smoke production, and continue.
+
+## 2026-07-01 06:22:09 CEST - Loop 22 End
+
+- Committed and pushed shared frontend response-error handling as `fc5ccd1 Share frontend response error handling`.
+- GitHub Actions for `fc5ccd1` are in progress.
+- PASS: production `/api/health` returns HTTP 200 with `ok=true` and `database.ok=true`.
+- STALE/LIMITATION: production `/api/health` still reports `version.sha="unknown"`, `builtAt="unknown"`, and no visible `Cache-Control` header.
+- PASS: sanitized production Azure OAuth start redirects to Microsoft with PKCE `S256`, state, client id, and required Azure DevOps scopes.
+- Current git state after push: clean.
+- Next: start the next loop and continue while CI/deploy catches up.
+
+## 2026-07-01 06:22:34 CEST - Loop 23 Start
+
+- Previous pushed commit: `fc5ccd1 Share frontend response error handling`; GitHub Actions were still in progress at the prior poll.
+- Current blocker remains external Azure OAuth `invalid_client`, unavailable Docker daemon, and unproven production commit metadata/cache-header freshness.
+- Next: inspect extension task search, auth, and context code for a small, meaningful regression test or hardening improvement.
+
+## 2026-07-01 06:24:41 CEST - Loop 23 Validation
+
+- PASS: GitHub Actions for `fc5ccd1 Share frontend response error handling` completed successfully on both CI and extension build workflows.
+- Hardened extension `TrackerClient.searchWorkItems` to return only well-shaped work-item entries from successful server responses.
+- Hardened extension server-error message parsing so blank JSON/string errors fall back to the HTTP status message.
+- Added extension tests for malformed work-item payload filtering and blank error fallback.
+- PASS: `pnpm --filter ./apps/extension test` (25 tests)
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (105 web tests + 25 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`
+- Next: commit, push, smoke production, and continue.
