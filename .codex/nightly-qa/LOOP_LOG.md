@@ -13,3 +13,10 @@
 - Imported a 110+ case test matrix into `TEST_CASES.md`.
 - Implemented the first extension-focused patch: safer branch task extraction, quick-pick async settlement guards, active-editor context refresh, and friendly dashboard URL validation.
 - Next: run extension compile/test/lint and continue to the highest-value web/auth/API/deployment issue.
+
+## 2026-07-01 02:00:41 CEST - Loop 1 Progress
+
+- Committed and pushed extension hardening as `39568ea Harden extension task assignment UX`.
+- Implemented OAuth callback hardening: stable failure codes, no provider descriptions in redirect URLs, and OAuth cookie clearing on callback failure branches.
+- Validated OAuth patch with web typecheck, lint, and placeholder production build.
+- Next: commit/push OAuth patch, then verify production freshness and continue with deployment/API fixes.

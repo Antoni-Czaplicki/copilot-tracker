@@ -15,3 +15,16 @@
 - PASS: `pnpm -r typecheck`
 - PASS: `pnpm -r lint`
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+
+## 2026-07-01 - OAuth Callback Failure Hardening
+
+- Wrapped the Azure DevOps OAuth callback so all callback failures after entry clear PKCE/state cookies instead of leaving a half-open flow.
+- Stopped reflecting provider `error_description` or other free-form diagnostics into public redirect URLs and homepage UI.
+- Converted provider-denied/error callbacks to stable client-visible error codes.
+- Preserved controlled failure redirects for invalid state, token exchange failures, profile/org check failures, misconfiguration, and unexpected callback failures.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env

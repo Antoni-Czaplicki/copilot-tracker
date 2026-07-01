@@ -40,8 +40,8 @@
 
 ## Auth / Security / Privacy
 
-1. [P1] OAuth callback can 500 after token exchange if profile lookup/session creation throws, leaving OAuth cookies until expiry.
-2. [P2] OAuth provider error details are reflected into public redirect URLs and homepage UI.
+1. [FIXED locally, commit pending] OAuth callback can 500 after token exchange if profile lookup/session creation throws, leaving OAuth cookies until expiry.
+2. [FIXED locally, commit pending] OAuth provider error details are reflected into public redirect URLs and homepage UI.
 3. [P1] Azure token encryption falls back to `AZURE_DEVOPS_CLIENT_SECRET`; production should require a dedicated stable encryption key.
 4. [P1] Leaderboard exposes all signed-in developers' leaderboard and login mapping data to any signed-in user.
 5. [P3] Extension info logs and context UI include raw local paths, remote URLs, and storage paths.

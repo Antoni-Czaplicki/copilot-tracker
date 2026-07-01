@@ -17,7 +17,6 @@ interface HomePageProps {
   searchParams?: Promise<{
     auth?: string;
     auth_code?: string;
-    auth_description?: string;
     taskPage?: string;
   }>;
 }
@@ -43,10 +42,6 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
   const authError = parameters?.auth;
   const authErrorCode = formatAuthMessage(parameters?.auth_code, 80);
-  const authErrorDescription = formatAuthMessage(
-    parameters?.auth_description,
-    600,
-  );
 
   return (
     <main className="grid gap-4">
@@ -72,9 +67,6 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                 that your account belongs to the configured organization.
               </div>
               {authErrorCode ? <div>Error: {authErrorCode}</div> : null}
-              {authErrorDescription ? (
-                <div>Details: {authErrorDescription}</div>
-              ) : null}
             </CardDescription>
           </CardHeader>
         </Card>

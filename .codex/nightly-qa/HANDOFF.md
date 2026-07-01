@@ -2,14 +2,14 @@
 
 ## Current Summary
 
-Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent review, and the first extension hardening patch are complete. Local compile/test/lint/typecheck/web build checks have passed for this slice.
+Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent review, first extension hardening patch, and OAuth callback hardening are complete. Local compile/test/lint/typecheck/web build checks have passed for these slices.
 
 ## Remaining Risks
 
 - Production deployment not verified yet.
 - Full browser/VS Code E2E testing not started yet.
 - Web/API/auth automated tests are still missing.
-- OAuth callback and provider-error privacy issues remain open.
+- OAuth callback/provider-error privacy issues have a local passing fix and are ready to commit/push.
 
 ## Next Steps
 
