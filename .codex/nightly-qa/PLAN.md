@@ -93,4 +93,18 @@
 - [x] Defensively sort history inside resolver helper
 - [x] Update tests to pass unsorted history
 - [x] Run local validation
+- [x] Commit, push, and smoke production
+- [ ] Verify CI completion for `db1bd63`
+
+## Loop 12 - Extension Packaging Validation
+
+- [x] Run extension VSIX package command
+- [x] Remove generated VSIX artifact from the worktree
+- [x] Record result and continue
+
+## Loop 13 - Extension Package License
+
+- [x] Add package-local extension LICENSE
+- [x] Rerun extension package command
+- [x] Verify warning is gone and validate
 - [ ] Commit, push, and smoke production

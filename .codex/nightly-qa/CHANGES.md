@@ -675,6 +675,16 @@
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm test` (81 web tests + 23 extension VS Code tests)
 
+## 2026-07-01 - Extension Package License
+
+- Added `apps/extension/LICENSE` so the VSIX package includes a package-local MIT license file.
+- Reran extension packaging and confirmed the previous missing-license warning is gone.
+
+## Checks
+
+- PASS: `pnpm --filter ./apps/extension package`
+- PASS: `pnpm --filter ./apps/extension lint`
+
 ## 2026-07-01 - Task History Resolver Robustness
 
 - Made `createTaskResolverFromHistory` sort a copy of history internally so callers cannot accidentally pass unsorted task history.

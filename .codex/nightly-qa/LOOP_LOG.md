@@ -1061,3 +1061,43 @@
 - PASS: `pnpm test` (81 web tests + 23 extension VS Code tests)
 - PASS: `git diff --check`
 - Next: commit, push, production smoke, then continue.
+
+## 2026-07-01 05:37:20 CEST - Loop 11 End
+
+- Committed and pushed defensive task-history sorting as `db1bd63 Harden task history resolution`.
+- GitHub Actions for `db1bd63` are in progress.
+- PASS: production `/api/health` returns HTTP 200 with `ok=true` and `database.ok=true`.
+- LIMITATION: production `/api/health` still reports `version.sha="unknown"` and `builtAt="unknown"`.
+- PASS: sanitized production Azure OAuth start redirects to Microsoft with PKCE `S256`, state, client id, and required Azure DevOps scopes.
+- Next: continue with the next high-value gap and poll CI.
+
+## 2026-07-01 05:37:50 CEST - Loop 12 Start
+
+- Started extension packaging validation.
+- Goal: verify `vsce package --no-dependencies` still works after extension refactors and tests.
+- Current git state: post-push QA logs modified; no code changes pending.
+- Next: run `pnpm --filter ./apps/extension package`, then clean up generated VSIX artifact if produced.
+
+## 2026-07-01 05:38:31 CEST - Loop 12 End
+
+- PASS: GitHub Actions for `db1bd63 Harden task history resolution` completed successfully on both CI and extension build workflows.
+- PASS: `pnpm --filter ./apps/extension package` completed successfully and produced `copilot-tracker-0.0.1.vsix`.
+- NOTE: `vsce` reported the existing package-context warning that no LICENSE file is present inside the extension package.
+- Cleaned up the generated VSIX artifact so the worktree stays source-only.
+- Next: continue with the next high-value gap.
+
+## 2026-07-01 05:39:19 CEST - Loop 13 Start
+
+- Started extension package license polish.
+- Finding: root `LICENSE` exists, but `apps/extension` has no package-local LICENSE file, causing `vsce` to warn during packaging.
+- Next: add matching MIT license text to the extension package context and rerun packaging.
+
+## 2026-07-01 05:40:28 CEST - Loop 13 Validation
+
+- Added `apps/extension/LICENSE` with the same MIT license text as the repository root.
+- PASS: `pnpm --filter ./apps/extension package` completed successfully and included `LICENSE.txt` in the VSIX.
+- PASS: the previous missing-license `vsce` warning is gone.
+- CLEANUP: removed the generated `copilot-tracker-0.0.1.vsix` artifact from the worktree.
+- PASS: `pnpm --filter ./apps/extension lint`
+- PASS: `git diff --check`
+- Next: commit, push, production smoke, then continue.

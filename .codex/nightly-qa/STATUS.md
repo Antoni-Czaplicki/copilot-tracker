@@ -1,10 +1,10 @@
 # Nightly QA Status
 
-- Current time: 2026-07-01 05:35:58 CEST
-- Current loop: 11
+- Current time: 2026-07-01 05:40:28 CEST
+- Current loop: 13
 - State: local validation passed; preparing commit
-- Focus: Defensive sorting for task-history resolver
+- Focus: Remove VSIX missing-license warning
 - Blocker: production Azure login returns `invalid_client`; Docker daemon unavailable; exact deployed commit cannot be proven until build SHA is configured
-- Next action: commit/push defensive task-history sorting, then smoke production and poll CI
-- Last known git state: extension task history coverage pushed at `439b174 Add extension task history coverage`
+- Next action: commit/push extension package license, then smoke production and poll CI
+- Last known git state: defensive task-history sorting pushed at `db1bd63 Harden task history resolution`
 - Production target: https://copilot-tracker.antek.page

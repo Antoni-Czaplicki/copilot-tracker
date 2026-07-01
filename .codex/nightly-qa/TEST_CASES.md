@@ -231,3 +231,5 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | EXT-223 | Extension | PASS | OTel request task resolver assigns historical branch/default/selected task based on request start time | Automated | Extracted `taskHistory`; extension tests passed |
 | EXT-224 | Extension | PASS | OTel request task resolver falls back to branch default or workspace fallback when manual selection is cleared | Automated | Extracted `taskHistory`; extension tests passed |
 | EXT-225 | Extension | PASS | OTel request task resolver handles unsorted task-history input defensively | Automated | Resolver now sorts a copy internally; extension tests passed |
+| DEP-226 | Deployment | PASS | VS Code extension packages into a VSIX after refactors | Manual command | `pnpm --filter ./apps/extension package` passed; generated artifact removed |
+| DEP-227 | Deployment | PASS | Extension VSIX package includes a local MIT license file without `vsce` missing-license warning | Manual command | Added `apps/extension/LICENSE`; package command passed and warning disappeared |
