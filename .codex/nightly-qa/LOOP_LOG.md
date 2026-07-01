@@ -1131,3 +1131,35 @@
 - PASS: `pnpm test` (86 web tests + 23 extension VS Code tests)
 - PASS: `git diff --check`
 - Next: commit, push, smoke production, and continue.
+
+## 2026-07-01 05:49:39 CEST - Loop 14 End
+
+- Committed and pushed Azure session-token helper coverage as `c944583 Add Azure session token coverage`.
+- GitHub Actions for `c944583` are in progress.
+- PASS: production `/api/health` returns HTTP 200 with `ok=true` and `database.ok=true`.
+- LIMITATION: production `/api/health` still reports `version.sha="unknown"` and `builtAt="unknown"`.
+- PASS: sanitized production Azure OAuth start redirects to Microsoft with PKCE `S256`, state, client id, and required Azure DevOps scopes.
+- Next: continue with the next high-value gap and poll CI.
+
+## 2026-07-01 05:50:17 CEST - Loop 15 Start
+
+- GitHub Actions for `c944583 Add Azure session token coverage`: extension build succeeded; CI still in progress.
+- Current git state: post-push QA logs modified; no source changes pending yet.
+- Finding: session-token encryption/decryption behavior is embedded in `store.ts`, and malformed encrypted token envelopes should be directly rejected and tested.
+- Next: extract crypto helpers, preserve legacy plaintext-read behavior when a key exists, and add direct security regression coverage.
+
+## 2026-07-01 05:52:27 CEST - Loop 15 Validation
+
+- PASS: GitHub Actions for `c944583 Add Azure session token coverage` completed successfully on both CI and extension build workflows.
+- Extracted session-token encryption/decryption into `sessionTokenCrypto`.
+- Tightened encrypted token parsing to require exactly the expected envelope segments and valid base64url IV/tag/ciphertext sizes.
+- Added tests for round-trip encryption, missing-key behavior, legacy plaintext reads with a configured key, malformed envelopes, and tampered ciphertext.
+- PASS: `pnpm --filter @copilot-tracker/web test` (91 tests)
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (91 web tests + 23 extension VS Code tests)
+- PASS: `git diff --check`
+- Next: commit, push, smoke production, and continue.

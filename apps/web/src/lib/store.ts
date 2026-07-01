@@ -4,12 +4,6 @@ import type {
   TrackerEvent,
   TrackerEventType,
 } from "@copilot-tracker/shared";
-import {
-  createCipheriv,
-  createDecipheriv,
-  createHash,
-  randomBytes,
-} from "node:crypto";
 import { and, eq, inArray, sql } from "drizzle-orm";
 
 import { env } from "@/env";
@@ -23,8 +17,11 @@ import {
   trackerEvents,
   users,
 } from "./db/schema";
+import {
+  decryptSessionTokenValue,
+  encryptSessionTokenValue,
+} from "./sessionTokenCrypto";
 
-const encryptedTokenPrefix = "v1:";
 const maxBulkTaskUpdateSize = 500;
 
 export interface StoredUser {
@@ -561,70 +558,9 @@ function toStoredChatRequest(
 }
 
 function encryptSessionToken(value: string | null): string | null {
-  if (!value) {
-    return null;
-  }
-
-  const key = sessionTokenEncryptionKey();
-  if (!key) {
-    return null;
-  }
-
-  const iv = randomBytes(12);
-  const cipher = createCipheriv("aes-256-gcm", key, iv);
-  const encrypted = Buffer.concat([
-    cipher.update(value, "utf8"),
-    cipher.final(),
-  ]);
-  const tag = cipher.getAuthTag();
-  return [
-    encryptedTokenPrefix,
-    iv.toString("base64url"),
-    tag.toString("base64url"),
-    encrypted.toString("base64url"),
-  ].join(".");
+  return encryptSessionTokenValue(value, env.COPILOT_TRACKER_TOKEN_ENCRYPTION_KEY);
 }
 
 function decryptSessionToken(value: string | null): string | null {
-  if (!value) {
-    return null;
-  }
-
-  if (!value.startsWith(encryptedTokenPrefix)) {
-    return sessionTokenEncryptionKey() ? value : null;
-  }
-
-  const key = sessionTokenEncryptionKey();
-  if (!key) {
-    return null;
-  }
-
-  const [, ivValue, tagValue, encryptedValue] = value.split(".");
-  if (!ivValue || !tagValue || !encryptedValue) {
-    return null;
-  }
-
-  try {
-    const decipher = createDecipheriv(
-      "aes-256-gcm",
-      key,
-      Buffer.from(ivValue, "base64url"),
-    );
-    decipher.setAuthTag(Buffer.from(tagValue, "base64url"));
-    return Buffer.concat([
-      decipher.update(Buffer.from(encryptedValue, "base64url")),
-      decipher.final(),
-    ]).toString("utf8");
-  } catch {
-    return null;
-  }
-}
-
-function sessionTokenEncryptionKey() {
-  const material = env.COPILOT_TRACKER_TOKEN_ENCRYPTION_KEY;
-  if (!material) {
-    return null;
-  }
-
-  return createHash("sha256").update(material).digest();
+  return decryptSessionTokenValue(value, env.COPILOT_TRACKER_TOKEN_ENCRYPTION_KEY);
 }

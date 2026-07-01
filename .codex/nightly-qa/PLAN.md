@@ -115,4 +115,13 @@
 - [x] Extract Azure DevOps session-token parsing/expiry helpers
 - [x] Add tests for access-token validation, refresh-token fallback, default expiry, and near-expiry behavior
 - [x] Run focused web tests and broad validation
+- [x] Commit, push, and smoke production
+- [x] Verify CI completion for `c944583`
+
+## Loop 15 - Session Token Crypto Helpers
+
+- [x] Extract session-token encryption/decryption helpers from `store.ts`
+- [x] Reject malformed encrypted-token envelopes directly
+- [x] Add round-trip, missing-key, legacy-token, malformed-token, and tamper tests
+- [x] Run focused web tests and broad validation
 - [ ] Commit, push, and smoke production

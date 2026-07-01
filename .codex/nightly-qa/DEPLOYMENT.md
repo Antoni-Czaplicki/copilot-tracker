@@ -372,3 +372,15 @@
 
 - PASS: GitHub Actions for `ef40fc3 Add extension package license` completed successfully on both CI and extension build workflows.
 - LIMITATION: production `/api/health` still reports `version.sha="unknown"` and `builtAt="unknown"` until deploy build metadata is configured.
+
+## 2026-07-01 05:49 CEST Production Poll
+
+- PUSHED: `c944583 Add Azure session token coverage`.
+- IN PROGRESS: GitHub Actions for `c944583` started after push.
+- PASS: production `/api/health` returned HTTP 200 with `ok=true` and `database.ok=true`.
+- LIMITATION: production `/api/health` still reports `sha="unknown"` and `builtAt="unknown"`.
+- PASS: production Azure OAuth start redirect includes state, PKCE `S256`, client id, and required `offline_access`, `vso.profile`, and `vso.work` scopes.
+
+## 2026-07-01 05:52 CEST CI Poll
+
+- PASS: GitHub Actions for `c944583 Add Azure session token coverage` completed successfully on both CI and extension build workflows.

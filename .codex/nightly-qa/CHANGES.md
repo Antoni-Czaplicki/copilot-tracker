@@ -714,3 +714,19 @@
 - PASS: `pnpm -r typecheck`
 - PASS: `pnpm -r lint`
 - PASS: `pnpm test` (86 web tests + 23 extension VS Code tests)
+
+## 2026-07-01 - Session Token Crypto Coverage
+
+- Extracted session-token encryption/decryption from `store.ts` into `sessionTokenCrypto`.
+- Tightened encrypted token parsing to reject malformed envelopes, invalid base64url segments, invalid IV/tag sizes, and tampered ciphertext.
+- Added direct crypto tests while preserving the existing legacy plaintext-read behavior when an encryption key is configured.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web test` (91 tests)
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (91 web tests + 23 extension VS Code tests)
