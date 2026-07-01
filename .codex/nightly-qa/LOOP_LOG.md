@@ -44,3 +44,10 @@
 - Implemented request grid task editing UX: reachable single-row task editor with Azure work-item search, row override after confirmed save, mobile horizontal overflow, and `updated: 0` guard for bulk/session assignment.
 - Validated UI slice with web lint, typecheck, and placeholder production build.
 - Next: commit/push UI slice and poll production freshness again.
+
+## 2026-07-01 02:13 CEST - Loop 1 Progress
+
+- Committed and pushed request grid UX as `392f9ca Expose request task editing in grid`.
+- Production poll showed OAuth privacy fix live but `/api/health` still 404, indicating production had not deployed the health/build metadata commit.
+- Adjusted token encryption behavior to avoid deployment-blocking startup failure when the dedicated encryption key is absent: the app no longer falls back to the Azure client secret and does not persist session tokens without the dedicated key.
+- Next: validate/commit/push recovery and poll production.

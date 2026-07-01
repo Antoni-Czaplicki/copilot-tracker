@@ -18,3 +18,9 @@
 
 - PASS: `GET /api/health` under `next start` returned structured readiness JSON and build metadata.
 - BLOCKED: Docker build could not run because the Docker daemon socket was unavailable on this machine.
+
+## 2026-07-01 02:13 CEST Production HTTP Checks
+
+- PASS: homepage returned HTTP 200.
+- PASS: provider-error callback no longer reflects `error_description`, so production is at least serving OAuth hardening from `f85f30e`.
+- STALE/BLOCKED: `/api/health` still returned 404, so production had not deployed `03c390b` or newer. The hard production encryption-key requirement may have blocked startup if the deployment environment lacks `COPILOT_TRACKER_TOKEN_ENCRYPTION_KEY`; recovery change is in progress to fail closed for token storage without blocking deployment.

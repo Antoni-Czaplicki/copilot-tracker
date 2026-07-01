@@ -118,7 +118,7 @@ The app requests Azure DevOps `vso.profile` and `vso.work` delegated scopes to r
 
 The extension signs in through VS Code's Microsoft authentication provider and the server validates that token against Azure DevOps before accepting usage. Background sync uses the profile scope silently; work-item search asks for work-item access when the user explicitly searches. Users can optionally map their Azure DevOps identity to a GitHub username for billing/reporting correlation.
 
-`COPILOT_TRACKER_TOKEN_ENCRYPTION_KEY` is used to encrypt Azure DevOps session tokens at rest. Set a stable, dedicated value in every production environment; production startup fails when it is missing.
+`COPILOT_TRACKER_TOKEN_ENCRYPTION_KEY` is used to encrypt Azure DevOps session tokens at rest. Set a stable, dedicated value in every production environment. When it is omitted, the app does not persist Azure DevOps access or refresh tokens for web-session work-item search.
 
 `apps/web/.env.example` contains the expected environment variables.
 

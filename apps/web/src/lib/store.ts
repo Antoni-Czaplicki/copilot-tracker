@@ -660,7 +660,7 @@ function encryptSessionToken(value: string | null): string | null {
 
   const key = sessionTokenEncryptionKey();
   if (!key) {
-    return value;
+    return null;
   }
 
   const iv = randomBytes(12);
@@ -684,7 +684,7 @@ function decryptSessionToken(value: string | null): string | null {
   }
 
   if (!value.startsWith(encryptedTokenPrefix)) {
-    return value;
+    return sessionTokenEncryptionKey() ? value : null;
   }
 
   const key = sessionTokenEncryptionKey();
