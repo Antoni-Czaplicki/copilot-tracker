@@ -1341,6 +1341,39 @@
 - PASS: `pnpm --filter ./apps/extension compile`
 - Next: commit, push, smoke production, and continue.
 
+## 2026-07-01 07:08:02 CEST - Loop 32 End
+
+- Committed and pushed Azure DevOps work-item upstream response hardening as `de00e83 Harden Azure work item responses`.
+- GitHub Actions for `de00e83` are in progress on both CI and Build extension workflows.
+- PASS: production `/api/health` returns HTTP 200 with `ok=true` and `database.ok=true`.
+- STALE/LIMITATION: production `/api/health` still reports `version.sha="unknown"`, `builtAt="unknown"`, and no visible `Cache-Control` header.
+- PASS: sanitized production Azure OAuth start redirects to Microsoft with PKCE `S256`, state, client id, and required Azure DevOps scopes.
+- Current git state after push: clean.
+- Next: start loop 33, poll CI/deploy, and continue improvement work.
+
+## 2026-07-01 07:08:53 CEST - Loop 33 Start
+
+- Previous pushed commit: `de00e83 Harden Azure work item responses`; GitHub Actions were in progress at the prior poll.
+- Current blocker remains external Azure OAuth `invalid_client`, unavailable Docker daemon, and unproven production commit metadata/cache-header freshness.
+- Next: poll CI, inspect admin/API mutation route boundaries, and implement the next focused improvement.
+
+## 2026-07-01 07:11:24 CEST - Loop 33 Validation
+
+- PASS: GitHub Actions for `de00e83 Harden Azure work item responses` completed successfully on both CI and extension build workflows.
+- FOUND: GitHub billing sync still allowed signed-in admin GET requests to mutate state; the UI already uses POST and cron can keep using bearer-auth GET.
+- Added `canRunBillingSync` helper and tests.
+- Changed `/api/admin/github-billing/sync` so GET is cron-bearer only and POST allows cron bearer or admin fallback.
+- Updated README API docs and billing sync instructions to distinguish cron GET from admin POST.
+- PASS: `pnpm --filter @copilot-tracker/web test` (120 tests)
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (120 web tests + 25 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`
+- Next: commit, push, smoke production, and continue.
+
 ## 2026-07-01 07:02:58 CEST - Loop 31 End
 
 - Committed and pushed WorkItemPicker payload normalization as `f2ab551 Normalize work item picker results`.

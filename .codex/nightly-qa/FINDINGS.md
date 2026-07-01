@@ -99,3 +99,4 @@
 16. [FIXED] GitHub billing sync cron authorization used raw header equality instead of the shared hardened bearer parser and lacked direct fail-closed coverage.
 17. [FIXED] Some stable Azure auth failure hints were not directly covered, leaving safe operator guidance vulnerable to accidental drift.
 18. [FIXED] `/api/health` did not explicitly send `Cache-Control: no-store`, which weakens freshness checks behind intermediaries.
+19. [FIXED] GitHub billing sync still allowed signed-in admin GET requests to mutate state; GET is now cron-bearer only and admin/manual sync uses POST.

@@ -972,3 +972,20 @@
 - PASS: `pnpm test` (117 web tests + 25 extension VS Code tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
 - PASS: `pnpm --filter ./apps/extension compile`
+
+## 2026-07-01 - Billing Sync Method Authorization
+
+- Added tested `canRunBillingSync` authorization helper.
+- Tightened `/api/admin/github-billing/sync` so cron bearer auth can run GET/POST, while signed-in admin fallback is available only for POST.
+- Updated README API and cron/manual billing sync instructions.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web test` (120 tests)
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (120 web tests + 25 extension VS Code tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm --filter ./apps/extension compile`

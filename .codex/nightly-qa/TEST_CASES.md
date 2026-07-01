@@ -269,3 +269,7 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | API-261 | API/Backend | PASS | Azure DevOps work-item batch successful response malformed JSON maps to typed bad-response 502 | Automated | Added malformed batch response coverage; web/root tests passed |
 | API-262 | API/Backend | PASS | Azure DevOps work-item search ignores invalid upstream work-item ids before batch fetching | Automated | Expanded matching-id test with string, negative, and too-large ids; web/root tests passed |
 | API-263 | API/Backend | PASS | Azure DevOps work-item search tolerates missing successful upstream result arrays as empty results | Automated | Added missing-array fallback coverage; web/root tests passed |
+| API-264 | API/Security | PASS | GitHub billing sync cron bearer authorization is allowed even without admin fallback | Automated | Added `canRunBillingSync` coverage; web/root tests passed |
+| API-265 | API/Security | PASS | GitHub billing sync admin fallback is allowed only when the route explicitly enables admin access | Automated | Added `allowAdmin` coverage for POST-vs-GET behavior; web/root tests passed |
+| API-266 | API/Security | PASS | GitHub billing sync rejects unauthenticated requests without cron or admin authorization | Automated | Added `canRunBillingSync` rejection coverage; web/root tests passed |
+| DOC-267 | Docs | PASS | README distinguishes cron GET billing sync from admin POST billing sync | Docs review + validation | Updated API list and billing sync instructions; typecheck/lint/tests/build passed |

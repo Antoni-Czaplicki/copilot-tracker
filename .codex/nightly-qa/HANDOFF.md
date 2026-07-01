@@ -58,4 +58,11 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - `f2ab551 Normalize work item picker results` passed both GitHub Actions workflows.
 - Hardened Azure DevOps work-item upstream successful response parsing and malformed JSON handling.
 - Web tests are now 117; latest broad validation passed typecheck, lint, root tests, web build, and extension compile.
-- The Azure DevOps upstream response hardening fix is pending commit/push at this update point.
+- The Azure DevOps upstream response hardening fix was committed and pushed as `de00e83 Harden Azure work item responses`; GitHub Actions were in progress at the latest poll.
+
+## 2026-07-01 07:11 CEST Update
+
+- `de00e83 Harden Azure work item responses` passed both GitHub Actions workflows.
+- Tightened GitHub billing sync so cron bearer auth can use GET/POST, while admin/manual browser sync is POST-only.
+- Web tests are now 120; latest broad validation passed typecheck, lint, root tests, web build, and extension compile.
+- The billing sync method authorization fix is pending commit/push at this update point.

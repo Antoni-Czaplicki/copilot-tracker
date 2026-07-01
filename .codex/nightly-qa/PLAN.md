@@ -293,4 +293,15 @@
 - [x] Guard WIQL id and batch work-item payload shapes
 - [x] Add Azure DevOps work-item regression tests
 - [x] Run focused and broad validation
+- [x] Commit, push, and smoke production
+- [x] Verify CI completion for `de00e83`
+
+## Loop 33 - Billing Sync Method Authorization
+
+- [x] Re-sync git and CI state for `de00e83`
+- [x] Inspect admin billing sync route method behavior
+- [x] Add pure billing sync authorization helper and tests
+- [x] Make GET cron-only while POST keeps admin/manual fallback
+- [x] Update README API and billing sync docs
+- [x] Run focused and broad validation
 - [ ] Commit, push, and smoke production

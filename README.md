@@ -178,7 +178,8 @@ The extension signs in through VS Code's Microsoft authentication provider and t
 - `PATCH /api/users/me/github-login`
 - `PATCH /api/admin/users/:userId/github-login`
 - `GET /api/admin/export?type=requests|developers|tasks|developer-tasks|models|github-billing`
-- `GET /api/admin/github-billing/sync`
+- `GET /api/admin/github-billing/sync` with `CRON_SECRET` bearer auth
+- `POST /api/admin/github-billing/sync` for admin-triggered sync
 - `GET /api/auth/azure-devops`
 - `GET /api/auth/callback/azure-devops`
 - `POST /api/auth/logout`
@@ -218,4 +219,5 @@ curl -H "Authorization: Bearer $CRON_SECRET" \
   http://localhost:3737/api/admin/github-billing/sync
 ```
 
-Admins can also trigger the same sync from the GitHub billing tab in `/admin`.
+Admins can also trigger the same sync with the POST-backed button in the
+GitHub billing tab in `/admin`.
