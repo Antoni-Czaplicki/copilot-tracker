@@ -370,3 +370,16 @@
 - PASS: `pnpm --filter @copilot-tracker/web lint`
 - PASS: `pnpm --filter @copilot-tracker/web typecheck`
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env and build metadata
+
+## 2026-07-01 - Dashboard Focused-Session Pagination
+
+- Preserved `sessionId` in dashboard task pagination links so a tracker link opened from the extension keeps the focused session while moving between task summary pages.
+- Moved task pagination href construction into a tested helper.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web test` (24 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (24 web tests + 10 extension VS Code tests)

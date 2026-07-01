@@ -460,3 +460,28 @@
 - Updated root `pnpm test` to run the web regression suite before the extension VS Code suite.
 - Validation passed: `pnpm test` ran 22 web tests and 10 extension tests successfully.
 - Next: inspect diff, commit/push root test script coverage, then continue.
+
+## 2026-07-01 03:57:10 CEST - Loop 3 Progress
+
+- Committed and pushed root test script coverage as `a584f11 Run web tests from root test script`.
+- Local tree is clean after push.
+- GitHub Actions for `a584f11` are in progress.
+- Production health still returns OK with database ready and `version.sha="unknown"`.
+- Next: continue the next non-auth-blocked improvement while CI runs.
+
+## 2026-07-01 03:59:18 CEST - Loop 3 Progress
+
+- Previous commit CI is green for both CI and extension build jobs.
+- Found a dashboard UX regression: task pagination links dropped `sessionId`, so opening the tracker from the extension and paging task summaries lost the focused session.
+- Moved task pagination href construction into a tested helper and wired dashboard pagination through it.
+- Next: run web lint/typecheck/tests/build, then commit if clean.
+
+## 2026-07-01 04:00:42 CEST - Loop 3 Progress
+
+- Validation passed for dashboard focused-session pagination.
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web test` (24 tests)
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (24 web tests + 10 extension VS Code tests)
+- Next: inspect diff, commit, push, and keep polling deployment/CI.

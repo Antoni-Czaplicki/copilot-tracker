@@ -2,7 +2,7 @@
 
 ## Current Summary
 
-Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent review, extension hardening, OAuth callback hardening, deployment health/secret-contract work, API boundary validation, request grid task editing UX, token-storage deployment recovery, leaderboard privacy gating, token integer bounds, Drizzle migration env contract, batch ingest response semantics, extension partial-token cost display, extension workspace task isolation, admin billing sync UX, branch-task docs/copy alignment, compose app-service modeling, extension log/context privacy hardening, the first web/domain test harness, extension OTel unchanged-upload skipping, Azure DevOps WIQL query hardening, deployment contract documentation, WorkItemPicker debounce UX polish, extension event user privacy, extension server URL validation, admin export validation-order hardening, admin export pure test coverage, extension IPv6 localhost support, web task-clearing support, safe Azure auth failure hints, extension placeholder test replacement, homepage copy spacing polish, README task/API docs alignment, README build-command validation, and root test coverage alignment are complete locally. Local compile/test/lint/typecheck/web build checks have passed for these slices.
+Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent review, extension hardening, OAuth callback hardening, deployment health/secret-contract work, API boundary validation, request grid task editing UX, token-storage deployment recovery, leaderboard privacy gating, token integer bounds, Drizzle migration env contract, batch ingest response semantics, extension partial-token cost display, extension workspace task isolation, admin billing sync UX, branch-task docs/copy alignment, compose app-service modeling, extension log/context privacy hardening, the first web/domain test harness, extension OTel unchanged-upload skipping, Azure DevOps WIQL query hardening, deployment contract documentation, WorkItemPicker debounce UX polish, extension event user privacy, extension server URL validation, admin export validation-order hardening, admin export pure test coverage, extension IPv6 localhost support, web task-clearing support, safe Azure auth failure hints, extension placeholder test replacement, homepage copy spacing polish, README task/API docs alignment, README build-command validation, root test coverage alignment, and dashboard focused-session pagination preservation are complete locally. Local compile/test/lint/typecheck/web build checks have passed for these slices.
 
 ## Remaining Risks
 
@@ -19,8 +19,9 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - PASS: `pnpm -r typecheck`
 - PASS: `pnpm -r lint`
 - PASS: `pnpm --filter ./apps/extension test`
-- PASS: `pnpm --filter @copilot-tracker/web test` (22 tests)
+- PASS: `pnpm --filter @copilot-tracker/web test` (24 tests)
 - PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env
+- PASS: `pnpm test` (24 web tests + 10 extension tests)
 
 ## Next Steps
 

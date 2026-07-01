@@ -174,3 +174,4 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | DOC-166 | Docs | PASS | README documents task clearing and the current web API route surface | Docs review | Updated README; `git diff --check` passed |
 | DOC-167 | Docs/Deployment | PASS | README full-build command includes production-safe placeholder env values and succeeds as written | Manual command | Ran documented `pnpm build` command successfully |
 | QA-168 | Quality | PASS | Root `pnpm test` runs both web regression tests and extension VS Code tests | Manual command | `pnpm test` passed with 22 web tests and 10 extension tests |
+| UI-169 | Web | PASS | Dashboard task pagination preserves focused `sessionId` query parameter | Automated | Added `dashboardTaskPageHref` regression coverage; web tests passed |

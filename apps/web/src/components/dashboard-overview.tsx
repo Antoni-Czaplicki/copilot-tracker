@@ -27,6 +27,7 @@ import {
   summarizeRequests,
   taskSummaries,
 } from "@/lib/analytics";
+import { dashboardTaskPageHref } from "@/lib/dashboardLinks";
 import { formatCurrency } from "@/lib/pricing";
 
 interface DashboardOverviewProps {
@@ -189,7 +190,11 @@ export function DashboardOverview({
               <div className="flex items-center gap-2">
                 {currentTaskPage > 1 ? (
                   <LinkButton
-                    href={taskPageHref(taskPageBasePath, currentTaskPage - 1)}
+                    href={dashboardTaskPageHref(
+                      taskPageBasePath,
+                      currentTaskPage - 1,
+                      focusedSessionId,
+                    )}
                     variant="outline"
                   >
                     Previous
@@ -197,7 +202,11 @@ export function DashboardOverview({
                 ) : null}
                 {currentTaskPage < taskPageCount ? (
                   <LinkButton
-                    href={taskPageHref(taskPageBasePath, currentTaskPage + 1)}
+                    href={dashboardTaskPageHref(
+                      taskPageBasePath,
+                      currentTaskPage + 1,
+                      focusedSessionId,
+                    )}
                     variant="outline"
                   >
                     Next
@@ -239,10 +248,4 @@ function Metric({ label, value }: { label: string; value: number | string }) {
       </CardContent>
     </Card>
   );
-}
-
-function taskPageHref(basePath: string, page: number) {
-  const params = new URLSearchParams();
-  params.set("taskPage", String(page));
-  return `${basePath}?${params.toString()}`;
 }
