@@ -226,6 +226,14 @@
 - [x] Add a full `readCopilotOtelRequests` regression for Azure DevOps SSH telemetry vs HTTPS workspace remotes
 - [x] Verify unrelated repositories in the same OTel file are filtered out
 - [x] Run extension compile/tests, repo typecheck/lint, root tests, and strict production smoke
+- [x] Commit, push, and verify CI/extension package workflow
+
+## Loop 62 - Extension OTel Historical Task Attribution Coverage
+
+- [x] Identify full-ingestion historical task attribution gap
+- [x] Add multi-request OTel fixture with branch default, manual override, and explicit no-task clear history
+- [x] Verify OTel requests resolve tasks by request timestamp through `createTaskResolverFromHistory`
+- [x] Run extension compile/tests, repo typecheck/lint, root tests, and strict production smoke
 - [ ] Commit, push, and verify CI/extension package workflow
 
 ## Loop 59 - Azure OAuth Callback Success Coverage

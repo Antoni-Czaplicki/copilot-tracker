@@ -1068,6 +1068,142 @@ suite("Extension Test Suite", () => {
     }
   });
 
+  test("Applies historical task assignments to OTel requests by timestamp", async () => {
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "copilot-otel-"));
+
+    try {
+      const otelFilePath = path.join(tempDir, "copilot-otel.jsonl");
+      await writeFile(
+        otelFilePath,
+        `${JSON.stringify(
+          createResourceSpanRecord([
+            {
+              traceId: "trace-history-before-clear",
+              spanId: "span-history-before-clear",
+              name: "invoke_agent copilot",
+              startTimeUnixNano: "1782638400000000000",
+              endTimeUnixNano: "1782638401000000000",
+              attributes: attributes({
+                "gen_ai.operation.name": "invoke_agent",
+                "gen_ai.agent.name": "GitHub Copilot Chat",
+                "gen_ai.conversation.id": "session-history",
+                "gen_ai.request.model": "openai/OpenAI/gpt-5-nano",
+                "gen_ai.response.model": "gpt-5-nano",
+                "gen_ai.usage.input_tokens": 3,
+                "gen_ai.usage.output_tokens": 5,
+                "github.copilot.git.repository":
+                  "https://github.com/Antoni-Czaplicki/copilot-tracker.git",
+                "github.copilot.git.branch": "raw/otel-branch",
+              }),
+            },
+            {
+              traceId: "trace-history-override",
+              spanId: "span-history-override",
+              name: "invoke_agent copilot",
+              startTimeUnixNano: "1782639000000000000",
+              endTimeUnixNano: "1782639001000000000",
+              attributes: attributes({
+                "gen_ai.operation.name": "invoke_agent",
+                "gen_ai.agent.name": "GitHub Copilot Chat",
+                "gen_ai.conversation.id": "session-history",
+                "gen_ai.request.model": "openai/OpenAI/gpt-5-nano",
+                "gen_ai.response.model": "gpt-5-nano",
+                "gen_ai.usage.input_tokens": 7,
+                "gen_ai.usage.output_tokens": 11,
+                "github.copilot.git.repository":
+                  "https://github.com/Antoni-Czaplicki/copilot-tracker.git",
+                "github.copilot.git.branch": "raw/otel-branch",
+              }),
+            },
+            {
+              traceId: "trace-history-clear",
+              spanId: "span-history-clear",
+              name: "invoke_agent copilot",
+              startTimeUnixNano: "1782639600000000000",
+              endTimeUnixNano: "1782639601000000000",
+              attributes: attributes({
+                "gen_ai.operation.name": "invoke_agent",
+                "gen_ai.agent.name": "GitHub Copilot Chat",
+                "gen_ai.conversation.id": "session-history",
+                "gen_ai.request.model": "openai/OpenAI/gpt-5-nano",
+                "gen_ai.response.model": "gpt-5-nano",
+                "gen_ai.usage.input_tokens": 13,
+                "gen_ai.usage.output_tokens": 17,
+                "github.copilot.git.repository":
+                  "https://github.com/Antoni-Czaplicki/copilot-tracker.git",
+                "github.copilot.git.branch": "raw/otel-branch",
+              }),
+            },
+          ]),
+        )}\n`,
+      );
+
+      const workspaceContext = createWorkspaceContext();
+      const requests = await readCopilotOtelRequests(
+        workspaceContext,
+        otelFilePath,
+        createTaskResolverFromHistory(
+          [
+            createTaskHistoryEntry({
+              timestamp: "2026-06-28T09:00:00.000Z",
+              branch: "feature/123-login",
+              defaultTask: "123",
+              selectedTask: "123",
+            }),
+            createTaskHistoryEntry({
+              timestamp: "2026-06-28T09:25:00.000Z",
+              branch: "feature/456-api",
+              defaultTask: "456",
+              selectedTask: "789",
+            }),
+            createTaskHistoryEntry({
+              timestamp: "2026-06-28T09:35:00.000Z",
+              branch: null,
+              defaultTask: null,
+              selectedTask: null,
+            }),
+          ],
+          workspaceContext,
+        ),
+      );
+
+      assert.deepStrictEqual(
+        requests.map((request) => ({
+          requestId: request.requestId,
+          branch: request.branch,
+          defaultTask: request.defaultTask,
+          selectedTask: request.selectedTask,
+          totalTokens: request.totalTokens,
+        })),
+        [
+          {
+            requestId: "trace-history-before-clear",
+            branch: "feature/123-login",
+            defaultTask: "123",
+            selectedTask: "123",
+            totalTokens: 8,
+          },
+          {
+            requestId: "trace-history-override",
+            branch: "feature/456-api",
+            defaultTask: "456",
+            selectedTask: "789",
+            totalTokens: 18,
+          },
+          {
+            requestId: "trace-history-clear",
+            branch: null,
+            defaultTask: null,
+            selectedTask: null,
+            totalTokens: 30,
+          },
+        ],
+      );
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
+    }
+  });
+
   test("Falls back to summing Copilot OTel chat spans", async () => {
     const tempDir = await mkdtemp(path.join(os.tmpdir(), "copilot-otel-"));
 

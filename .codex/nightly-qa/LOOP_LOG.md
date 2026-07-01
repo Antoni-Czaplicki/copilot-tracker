@@ -2428,4 +2428,20 @@
 - PASS: `pnpm -r lint`.
 - PASS: root `pnpm test` (11 smoke tests, 146 web tests, 34 extension tests).
 - PASS: strict `pnpm smoke:production -- --expect-sha 6ed152d`.
+- PUSHED: `2283a85 Cover extension OTel remote filtering`.
+- PASS: GitHub Actions `CI` completed successfully for `2283a85`.
+- PASS: GitHub Actions `Build extension` completed successfully for `2283a85`; VSIX packaging/upload succeeded.
+- NEXT: continue extension task/branch attribution QA, preferably by proving historical task resolution through full OTel ingestion.
+
+## 2026-07-01 15:30:42 CEST - Loop 62 Extension OTel Historical Task Attribution
+
+- IDENTIFIED: task history resolver had direct pure coverage, but full `readCopilotOtelRequests` ingestion did not prove historical task attribution by request timestamp.
+- ADDED: multi-request OTel fixture with branch default, manual override, and explicit no-task clear history entries.
+- PASS: `readCopilotOtelRequests` returns historical task/branch/default state by timestamp for all three parsed requests.
+- PASS: `pnpm --filter ./apps/extension compile`.
+- PASS: `pnpm --filter ./apps/extension test` (35 tests).
+- PASS: `pnpm -r typecheck`.
+- PASS: `pnpm -r lint`.
+- PASS: root `pnpm test` (11 smoke tests, 146 web tests, 35 extension tests).
+- PASS: strict `pnpm smoke:production -- --expect-sha 6ed152d`.
 - NEXT: run diff check, commit/push, and verify CI/package workflow.

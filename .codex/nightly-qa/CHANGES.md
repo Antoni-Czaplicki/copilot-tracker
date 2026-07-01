@@ -1453,3 +1453,20 @@
 - PASS: `pnpm -r lint`
 - PASS: `pnpm test` (11 smoke tests + 146 web tests + 34 extension tests)
 - PASS: strict `pnpm smoke:production -- --expect-sha 6ed152d`
+- PASS: GitHub Actions `CI` for `2283a85`
+- PASS: GitHub Actions `Build extension` for `2283a85`
+
+## 2026-07-01 - Extension OTel Historical Task Attribution Coverage
+
+- Added a full `readCopilotOtelRequests` regression for timestamp-based task history attribution.
+- The test feeds three parsed OTel requests through the real reader and `createTaskResolverFromHistory`.
+- It verifies historical branch default, manual override, and explicit no-task clear states are assigned by request time.
+
+## Checks
+
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS: `pnpm --filter ./apps/extension test` (35 tests)
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm test` (11 smoke tests + 146 web tests + 35 extension tests)
+- PASS: strict `pnpm smoke:production -- --expect-sha 6ed152d`

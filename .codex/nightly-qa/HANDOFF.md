@@ -373,7 +373,8 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - `9d298f5`: fixed extension task clear attribution.
 - `25da717`: scoped branch task prompt de-duplication by workspace.
 - `0416c27`: normalized extension repository remotes for GitHub and Azure DevOps SSH/HTTPS workspace matching.
-- Local pending: added a full `readCopilotOtelRequests` regression proving Azure DevOps SSH telemetry matches an HTTPS workspace remote and unrelated repos in the same OTel file are filtered out.
+- `2283a85`: added a full `readCopilotOtelRequests` regression proving Azure DevOps SSH telemetry matches an HTTPS workspace remote and unrelated repos in the same OTel file are filtered out.
+- Local pending: added a full `readCopilotOtelRequests` regression proving branch default, manual override, and explicit no-task clear history are applied to OTel requests by request timestamp.
 
 ### Validation Already Run Recently
 
@@ -385,6 +386,8 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - PASS: GitHub Actions `CI` and `Build extension` for `9d298f5`, `25da717`, and `0416c27`.
 - PASS: strict production smoke for deployed web SHA `6ed152d`.
 - PASS: after the local pending OTel ingestion regression, `pnpm --filter ./apps/extension test` is 34 tests, root `pnpm test` passes, and strict production smoke for `6ed152d` passes.
+- PASS: GitHub Actions `CI` and `Build extension` for `2283a85`.
+- PASS: after the local pending historical-attribution regression, `pnpm --filter ./apps/extension test` is 35 tests, root `pnpm test` passes, and strict production smoke for `6ed152d` passes.
 
 ### Highest-Value Next Work
 
