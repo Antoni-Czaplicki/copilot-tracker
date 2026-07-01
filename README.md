@@ -111,6 +111,11 @@ COPILOT_TRACKER_BUILD_SHA=$(git rev-parse --short HEAD)
 COPILOT_TRACKER_BUILD_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 ```
 
+Docker builds also generate `apps/web/build-info.json` from explicit metadata,
+common source metadata variables, or minimal `.git` refs. Runtime environment
+variables still win when set, and the final image does not keep the full `.git`
+directory.
+
 See [docs/deployment.md](./docs/deployment.md) for the full deployment
 environment contract, Azure app registration checklist, and production smoke
 checks.

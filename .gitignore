@@ -7,6 +7,8 @@ node_modules
 .data
 .turbo
 *.tsbuildinfo
+build-info.json
+apps/web/build-info.json
 .env
 .env.local
 .env.*.local

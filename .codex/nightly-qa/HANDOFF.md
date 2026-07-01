@@ -271,3 +271,11 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - Live production smoke passes hard gates with `pnpm smoke:production -- --allow-known-stale --expect-sha ae3d4e4`.
 - The remaining warning is unchanged: `/api/health` still reports unknown SHA/build time, so strict exact-SHA production proof needs Dokploy build metadata configuration.
 - Current practical status: Azure web auth works, the requested admin access is active, real VS Code sign-in/sync/task assignment/status/click-through works, and the reliability bug found during real VS Code testing is fixed and pushed.
+
+## 2026-07-01 13:35 CEST Docker Build Metadata Fallback Ready
+
+- Added a source-side fallback for the remaining exact-SHA proof gap: Docker builds now generate `apps/web/build-info.json` from explicit metadata, common source env names, or minimal `.git` refs.
+- `/api/health` now reads that generated file only after explicit runtime env and common env fallbacks, so operator-provided metadata still wins.
+- Local validation passed: smoke/script tests, web tests, lint/typecheck, repo lint/typecheck, production-style web build, extension compile/test, root tests, compose config, and diff check.
+- Full local Docker image build remains unverified because Docker Desktop/daemon is not reachable from this machine.
+- Next: commit/push, wait for CI/Dokploy, then run `pnpm smoke:production -- --expect-sha <latest-sha>` without known-stale mode.

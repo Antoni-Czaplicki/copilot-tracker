@@ -1,5 +1,30 @@
 # Nightly QA Changes
 
+## 2026-07-01 - Docker Build Metadata Fallback
+
+- Added `scripts/write-build-info.mjs` to generate non-secret build metadata from explicit Copilot Tracker env, common source metadata env names, or minimal `.git` `HEAD`/ref metadata.
+- Updated Docker builds to write `apps/web/build-info.json` during the build stage, then remove `.git` before the final image is copied.
+- Changed `.dockerignore` to include only the minimal Git metadata required for SHA resolution instead of the full `.git` directory.
+- Updated `/api/health` build metadata lookup to use the generated file as a fallback after explicit runtime env and common source env names.
+- Documented the generated build-info safety net in README and deployment docs while keeping explicit runtime env as the preferred override.
+- Added tests for branch-ref metadata, packed-ref metadata, explicit metadata precedence, generated-file fallback, and env-over-file precedence.
+
+## Checks
+
+- PASS: `pnpm test:smoke` (10 tests)
+- PASS: `pnpm --filter @copilot-tracker/web test` (139 tests)
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm -r typecheck`
+- PASS: `pnpm -r lint`
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env and no Turbopack broad-tracing warning
+- PASS: `pnpm --filter ./apps/extension compile`
+- PASS: `pnpm --filter ./apps/extension test` (30 tests)
+- PASS: `pnpm test` (10 smoke/script tests + 139 web tests + 30 extension tests)
+- PASS: `docker compose config`
+- PASS: `git diff --check`
+- BLOCKED: full Docker image build could not run because the local Docker daemon socket is unavailable
+
 ## 2026-07-01 - Extension OTel Lifecycle Stability
 
 - Added a single-flight queue around extension OTel lifecycle rebuilds so overlapping rebuild requests collapse into one active run and, at most, one queued rerun.

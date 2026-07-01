@@ -2221,3 +2221,22 @@
 - WARN: production still reports `/api/health` `version.sha="unknown"` and `builtAt="unknown"`, so exact deployed commit proof remains blocked until build metadata is configured.
 - PASS: working tree was clean after push before this log-only closeout update.
 - NEXT: configure build metadata for strict exact-SHA production smoke; otherwise the real VS Code/admin/auth path is verified for this loop.
+
+## 2026-07-01 13:26:58 CEST - Loop 55 Start: Docker Build Metadata Fallback
+
+- PASS: repository was clean on `main` at `5b5b4c4`.
+- PASS: GitHub Actions `CI` and `Build extension` completed successfully for `5b5b4c4`.
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 5b5b4c4` passed all hard gates; warnings remain limited to `/api/health` unknown SHA/build time.
+- FOCUS: remove the manual deployment metadata gap by making Dockerfile builds stamp a generated non-secret build-info file from explicit args, common source env, or minimal `.git` refs.
+
+## 2026-07-01 13:35:08 CEST - Loop 55 Local Validation
+
+- IMPLEMENTED: added `scripts/write-build-info.mjs` to generate build metadata from explicit env, common source env names, or minimal `.git` `HEAD`/refs/packed-refs.
+- IMPLEMENTED: Dockerfile now writes `apps/web/build-info.json` during the build stage and removes `.git` before the final image copy.
+- IMPLEMENTED: `.dockerignore` now includes only minimal Git metadata needed for SHA resolution rather than the full `.git` directory.
+- IMPLEMENTED: `/api/health` build metadata now falls back to the generated build-info file after explicit env and common env fallbacks.
+- PASS: generated build-info script read the current local Git SHA into a temporary build-info file.
+- PASS: `pnpm test:smoke` (10 tests), `pnpm --filter @copilot-tracker/web test` (139 tests), `pnpm --filter @copilot-tracker/web typecheck`, `pnpm --filter @copilot-tracker/web lint`, `pnpm -r typecheck`, `pnpm -r lint`, production-style web build, extension compile/test, root `pnpm test`, `docker compose config`, and `git diff --check`.
+- PASS: production-style web build no longer emits the Turbopack broad-tracing warning after marking dynamic build-info file paths for bundler ignore.
+- BLOCKED: full Docker image build cannot run locally because Docker cannot connect to the local daemon socket.
+- NEXT: commit/push the build-info fallback, poll CI/deploy, then rerun production smoke and strict exact-SHA smoke when the new Docker image is live.

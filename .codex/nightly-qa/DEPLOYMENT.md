@@ -268,6 +268,16 @@
 - PASS/WARN: live production smoke passed all hard gates with `pnpm smoke:production -- --allow-known-stale --expect-sha ae3d4e4`.
 - LIMITATION: production `/api/health` still reports `version.sha="unknown"` and `builtAt="unknown"`, so exact deployed commit proof still depends on configuring build metadata in Dokploy/build env.
 
+## 2026-07-01 13:35 CEST Build Metadata Fallback Ready
+
+- LOCAL: Docker builds now generate `apps/web/build-info.json` from explicit build metadata, common source metadata env names, or minimal `.git` `HEAD`/ref metadata.
+- LOCAL: `/api/health` uses the generated build-info file after explicit runtime env and common env fallbacks, preserving env override precedence.
+- LOCAL: `.dockerignore` includes only minimal Git metadata for SHA resolution, and Dockerfile removes `.git` before final image copy.
+- PASS: production-style Next build passed without the previous broad Turbopack tracing warning.
+- PASS: `docker compose config` passed.
+- BLOCKED: full Docker image build could not be run locally because Docker cannot connect to the local daemon socket.
+- EXPECTED: production will continue to warn on unknown SHA/build time until this change is pushed and Dokploy builds a new image.
+
 ## 2026-07-01 04:43 CEST Production Poll
 
 - PUSHED: `97ce2f9 Harden Azure token responses`.

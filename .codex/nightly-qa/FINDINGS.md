@@ -74,7 +74,7 @@
 4. [FIXED in `f6346a9`] Local compose only starts Postgres; app service/health/restart behavior is not modeled.
 5. [FIXED in `03c390b`] README references missing `apps/web/.env.example`.
 6. [FIXED in `03c390b` and documented in `2ea2641`] No health/readiness endpoint or build SHA exposure for deployed stale-build detection.
-7. [PARTIAL] `/api/health` now normalizes blank/`unknown` build metadata and supports common source env fallbacks, but exact deployed commit is still unprovable until production passes build metadata.
+7. [PARTIAL] `/api/health` now normalizes blank/`unknown` build metadata, supports common source env fallbacks, and locally falls back to generated Docker build-info from minimal Git refs. Exact deployed commit remains unproven until this Docker fallback is deployed and strict production smoke passes.
 8. [FIXED] Extension VSIX packaging passed but `vsce` warned that the extension package had no LICENSE file in its package context.
 9. [FIXED] `apps/web/.env.example` omitted the build metadata variables and deployment smoke docs did not mention the health no-store header.
 10. [FIXED] `pnpm audit --prod --audit-level moderate` reported vulnerable `postcss <8.5.10` through Next; existing package-level overrides were ignored by pnpm 11. Security overrides now live in `pnpm-workspace.yaml`, the lockfile resolves Next to `postcss@8.5.15`, and audit passes.

@@ -43,6 +43,8 @@ ENV COPILOT_TRACKER_TOKEN_ENCRYPTION_KEY=$COPILOT_TRACKER_TOKEN_ENCRYPTION_KEY
 ENV COPILOT_TRACKER_BUILD_SHA=$COPILOT_TRACKER_BUILD_SHA
 ENV COPILOT_TRACKER_BUILD_TIME=$COPILOT_TRACKER_BUILD_TIME
 
+RUN node scripts/write-build-info.mjs apps/web/build-info.json
+RUN rm -rf .git
 RUN pnpm --filter @copilot-tracker/shared build
 RUN pnpm --filter @copilot-tracker/web build
 
