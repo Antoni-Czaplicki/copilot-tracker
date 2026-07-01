@@ -128,7 +128,7 @@ Status legend: `PENDING`, `PASS`, `FAIL`, `BLOCKED`, `N/A`.
 | UI-120 | Web | PENDING | WorkItemPicker debounce prevents extra calls and Enter selects highlighted item | Component | |
 | UI-121 | Web | PENDING | WorkItemPicker Escape and arrow keys preserve listbox semantics | Component | |
 | UI-122 | Web | PASS | TaskEditor/GitHubLoginEditor idle/saving/saved/error transitions | Component | TaskEditor now handles saving/saved/error and clears status on edits; build/lint/typecheck passed |
-| UI-123 | Web | PENDING | Admin export link changes with selected view | Automated | |
+| UI-123 | Web | PASS | Admin export link changes with selected view and billing sync uses in-page action state | Automated | Admin billing sync button implemented; build/lint/typecheck passed |
 | UI-124 | Web | PENDING | Request grid pagination and empty messages render correctly | Automated | |
 | UI-125 | Web | PENDING | Token display differentiates missing vs partial Copilot OTel data | Automated | |
 | DEP-126 | Deployment | PENDING | Docker build runs shared then web build and includes runtime assets | Container build | |

@@ -109,3 +109,10 @@
 
 - Starting from clean worktree at `815ae6f`.
 - Next actions: poll CI/production, keep investigating deployment freshness, and continue reducing remaining findings.
+
+## 2026-07-01 02:31:13 CEST - Loop 2 Progress
+
+- Implemented admin billing sync UX: client-side POST button with loading/success/error states and page refresh after success.
+- Validated with web typecheck, lint, and placeholder production build.
+- Production still lacked `/api/health` at last poll; GitHub CI/builds were green or in progress.
+- Next: commit/push admin billing sync UX and poll CI/production.

@@ -37,6 +37,17 @@
 
 - PASS: `pnpm --filter ./apps/extension test`
 
+## 2026-07-01 - Admin Billing Sync UX
+
+- Replaced the admin GitHub billing sync raw endpoint link with an in-page client action.
+- Added loading, success, and error states and refresh the admin data after a successful sync.
+
+## Checks
+
+- PASS: `pnpm --filter @copilot-tracker/web typecheck`
+- PASS: `pnpm --filter @copilot-tracker/web lint`
+- PASS: `pnpm --filter @copilot-tracker/web build` with safe placeholder production env and build metadata
+
 ## 2026-07-01 - Extension Workspace Task Isolation
 
 - Removed the deprecated global selected-task fallback from workspace context resolution so manual task overrides cannot leak into unrelated workspaces.

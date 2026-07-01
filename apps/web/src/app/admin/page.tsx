@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation";
 
 import { GithubLoginEditor } from "@/components/github-login-editor";
+import { GithubBillingSyncButton } from "@/components/github-billing-sync-button";
 import { RequestSessionsGrid } from "@/components/request-sessions-grid";
 import { Badge } from "@/components/ui/badge";
-import { AnchorButton, LinkButton } from "@/components/ui/button";
+import { LinkButton } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -417,9 +418,7 @@ function GithubBilling({
       </CardHeader>
       <CardContent className="grid gap-4">
         <section className="flex flex-wrap items-center gap-2">
-          <AnchorButton href="/api/admin/github-billing/sync" variant="secondary">
-            Sync now
-          </AnchorButton>
+          <GithubBillingSyncButton />
         </section>
         <div className="overflow-x-auto">
           <Table>
