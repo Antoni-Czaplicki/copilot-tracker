@@ -604,4 +604,6 @@
 - [x] Commit, push, and verify CI/package workflow
 - [x] Verify production web remains healthy on prior deployed app build
 - [x] Extract and test workspace-scoped branch task prompt de-duplication
-- [ ] Commit, push, and verify branch prompt hardening
+- [x] Commit, push, and verify branch prompt hardening
+- [x] Harden and test GitHub/Azure DevOps SSH-vs-HTTPS repository remote normalization
+- [ ] Commit, push, and verify remote normalization hardening

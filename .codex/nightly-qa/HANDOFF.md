@@ -336,4 +336,6 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - `9d298f5 Fix extension task clear attribution` is pushed and GitHub Actions CI/Build extension are green.
 - Production web still serves `6ed152d` and strict smoke passes; this commit is extension-only, so no Dokploy Reload was forced.
 - Added a second extension hardening slice locally: branch-change prompt de-duplication is now workspace-scoped and tested, preventing one workspace from suppressing a prompt in another workspace with the same branch transition.
-- Next: commit/push the branch prompt hardening and verify GitHub Actions.
+- `25da717 Scope branch task prompts by workspace` is pushed and GitHub Actions CI/Build extension are green.
+- Added local remote-normalization hardening so OTel workspace matching accepts GitHub and Azure DevOps SSH/HTTPS forms consistently; extension tests are up to 33 and pass with repo typecheck/lint/root tests.
+- Next: commit/push the remote normalization hardening and verify GitHub Actions.

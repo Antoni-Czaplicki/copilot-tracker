@@ -2389,3 +2389,17 @@
 - PASS: `pnpm -r lint`.
 - PASS: root `pnpm test`.
 - NEXT: run diff check, commit/push branch prompt hardening, and verify CI/package workflow.
+
+## 2026-07-01 15:15:48 CEST - Loop 60 Branch Prompt Closeout
+
+- PUSHED: `25da717 Scope branch task prompts by workspace`.
+- PASS: GitHub Actions `CI` completed successfully for `25da717`.
+- PASS: GitHub Actions `Build extension` completed successfully for `25da717`; VSIX packaging/upload succeeded.
+- FOUND: OTel repository matching only normalized GitHub scp-like remotes, so SSH-vs-HTTPS forms for GitHub or Azure DevOps could cause valid Copilot requests to be dropped from a workspace.
+- IMPLEMENTED: exported/tested repository remote normalization that handles generic scp-like SSH remotes, strips `.git`, removes HTTPS username noise, and maps Azure DevOps SSH `/v3/org/project/repo` remotes to `dev.azure.com/org/project/_git/repo`.
+- PASS: `pnpm --filter ./apps/extension compile`.
+- PASS: `pnpm --filter ./apps/extension test` (33 tests).
+- PASS: `pnpm -r typecheck`.
+- PASS: `pnpm -r lint`.
+- PASS: root `pnpm test`.
+- NEXT: run diff check, commit/push remote normalization hardening, and verify CI/package workflow.

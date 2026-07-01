@@ -7,7 +7,10 @@ import * as vscode from "vscode";
 import { branchTaskSwitchPrompt } from "../branchTaskPrompt";
 import { trackerDashboardUrl } from "../dashboardUrl";
 import { formatLogDetails } from "../logger";
-import { readCopilotOtelRequests } from "../otel";
+import {
+  normalizeRepositoryRemoteUrl,
+  readCopilotOtelRequests,
+} from "../otel";
 import { estimateRequestsCostUsd } from "../pricing";
 import {
   planRequestUpload,
@@ -355,6 +358,29 @@ suite("Extension Test Suite", () => {
         undefined,
       ),
       null,
+    );
+  });
+
+  test("Normalizes repository remotes across HTTPS and SSH forms", () => {
+    assert.strictEqual(
+      normalizeRepositoryRemoteUrl("git@github.com:Owner/Repo.git"),
+      "https://github.com/owner/repo",
+    );
+    assert.strictEqual(
+      normalizeRepositoryRemoteUrl("https://github.com/owner/repo"),
+      "https://github.com/owner/repo",
+    );
+    assert.strictEqual(
+      normalizeRepositoryRemoteUrl(
+        "git@ssh.dev.azure.com:v3/Org/Project/Repo.git",
+      ),
+      "https://dev.azure.com/org/project/_git/repo",
+    );
+    assert.strictEqual(
+      normalizeRepositoryRemoteUrl(
+        "https://Org@dev.azure.com/Org/Project/_git/Repo.git",
+      ),
+      "https://dev.azure.com/org/project/_git/repo",
     );
   });
 

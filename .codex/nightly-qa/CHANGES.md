@@ -1421,3 +1421,8 @@
 - Added `branchTaskSwitchPrompt` so branch-change prompt de-duplication is tested and scoped by workspace id.
 - PASS: `pnpm --filter ./apps/extension test` (32 tests)
 - PASS: `pnpm -r typecheck`, `pnpm -r lint`, and root `pnpm test`
+- PASS: GitHub Actions `CI` for `25da717`
+- PASS: GitHub Actions `Build extension` for `25da717`
+- Hardened extension repository remote normalization for OTel workspace filtering across GitHub SSH/HTTPS and Azure DevOps SSH/HTTPS forms.
+- PASS: `pnpm --filter ./apps/extension test` (33 tests)
+- PASS: `pnpm -r typecheck`, `pnpm -r lint`, and root `pnpm test`

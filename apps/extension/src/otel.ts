@@ -713,17 +713,38 @@ function belongsToWorkspace(
   }
 
   return (
-    normalizeRemoteUrl(request.repositoryRemoteUrl) ===
-    normalizeRemoteUrl(workspaceContext.repositoryRemoteUrl)
+    normalizeRepositoryRemoteUrl(request.repositoryRemoteUrl) ===
+    normalizeRepositoryRemoteUrl(workspaceContext.repositoryRemoteUrl)
   );
 }
 
-function normalizeRemoteUrl(value: string) {
-  return value
-    .trim()
-    .replace(/^git@github\.com:/, "https://github.com/")
-    .replace(/\.git$/i, "")
-    .toLowerCase();
+export function normalizeRepositoryRemoteUrl(value: string) {
+  const trimmed = value.trim();
+  const scpLike = /^[a-z][a-z0-9+.-]*:\/\//iu.test(trimmed)
+    ? null
+    : trimmed.match(/^(?:[^@\s]+@)?([^:\s]+):(.+)$/u);
+  const urlLike = scpLike ? `https://${scpLike[1]}/${scpLike[2]}` : trimmed;
+
+  try {
+    const url = new URL(urlLike);
+    const hostname = url.hostname.toLowerCase();
+    const pathname = url.pathname
+      .replace(/\/+$/u, "")
+      .replace(/\.git$/iu, "");
+    const azureSshPath = pathname.match(/^\/v3\/([^/]+)\/([^/]+)\/([^/]+)$/u);
+    if (hostname === "ssh.dev.azure.com" && azureSshPath) {
+      const [, org, project, repo] = azureSshPath;
+      return `https://dev.azure.com/${org}/${project}/_git/${repo}`.toLowerCase();
+    }
+
+    const port = url.port ? `:${url.port}` : "";
+    return `${url.protocol}//${hostname}${port}${pathname}`.toLowerCase();
+  } catch {
+    return urlLike
+      .replace(/\/+$/u, "")
+      .replace(/\.git$/iu, "")
+      .toLowerCase();
+  }
 }
 
 function buildOtelSessionTitle(
