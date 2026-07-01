@@ -689,3 +689,10 @@
 - PASS: production auth failure HTML includes `role="alert"` and safe `invalid_client` copy without matching `AADSTS`, `error_description`, or `client_secret`.
 - LIMITATION: strict `pnpm smoke:production` still fails because `/api/health` reports `sha="unknown"` and `builtAt="unknown"`.
 - ADDED: `pnpm smoke:production -- --expect-sha "$(git rev-parse --short HEAD)"` can now prove exact deployed SHA once metadata is configured.
+
+## 2026-07-01 09:04 CEST Production Poll
+
+- PUSHED: `d948d06 Verify deployed commit in production smoke`.
+- PASS: GitHub Actions CI and Build extension workflows completed successfully for `d948d06`.
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha d948d06` passed against production.
+- LIMITATION: production smoke warnings are now limited to unknown build metadata and expected-SHA mismatch caused by `version.sha="unknown"`.

@@ -145,3 +145,9 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - Remaining production proof gap: `/api/health` still reports `sha="unknown"` and `builtAt="unknown"`.
 - Added `--expect-sha` to production smoke so the next metadata fix can be verified with `pnpm smoke:production -- --expect-sha "$(git rev-parse --short HEAD)"`.
 - Broad validation passed after the verifier change: typecheck, lint, root tests, placeholder-env web build, extension compile, production known-stale exact-SHA smoke, and diff check.
+
+## 2026-07-01 09:04 CEST Exact Smoke Poll
+
+- `d948d06 Verify deployed commit in production smoke` passed both GitHub Actions workflows.
+- Post-CI production smoke with `--expect-sha d948d06` passes in known-stale mode; only build metadata/SHA checks warn because production still reports `version.sha="unknown"` and `builtAt="unknown"`.
+- Next high-value pass: use Chrome's existing session to verify signed-in production dashboard/Azure work-item flows, then set Dokploy/runtime build metadata and rerun strict exact-SHA smoke.

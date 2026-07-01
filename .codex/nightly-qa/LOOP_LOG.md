@@ -1975,3 +1975,12 @@
 - PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha 0bc8f68`
 - PASS: `git diff --check`
 - Next: commit and push exact-SHA smoke verifier and poll CI.
+
+## 2026-07-01 09:04:54 CEST - Loop 44 Poll
+
+- PUSHED: `d948d06 Verify deployed commit in production smoke`.
+- PASS: GitHub Actions CI for `d948d06` completed successfully.
+- PASS: GitHub Actions Build extension for `d948d06` completed successfully.
+- PASS/WARN: `pnpm smoke:production -- --allow-known-stale --expect-sha d948d06` passed against production.
+- LIMITATION: production still reports unknown health build metadata, so exact deployed commit proof remains unavailable until Dokploy/runtime metadata is configured.
+- Next: continue with Chrome signed-in production E2E and/or Termius/Dokploy metadata configuration.

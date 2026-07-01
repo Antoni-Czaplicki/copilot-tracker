@@ -410,4 +410,4 @@
 - [x] Add smoke verifier coverage for expected SHA match, prefix match, mismatch failure, known-stale warning, and forwarded `--` separator
 - [x] Document exact deployed SHA smoke usage
 - [x] Run broad validation
-- [ ] Commit, push, smoke production, and poll CI
+- [x] Commit, push, smoke production, and poll CI
