@@ -548,9 +548,14 @@
 
 - [x] Re-sync repo state and confirm only QA logs are dirty
 - [x] Re-check Dokploy MCP availability; no callable Dokploy MCP is exposed in this session, so continue with Dokploy UI and production smoke fallback
-- [ ] Commit and push durable QA log updates for exact-SHA deployment proof
-- [ ] Poll GitHub Actions for the log commit
-- [ ] Verify Dokploy deploys the log commit or record any expected lag
-- [ ] Run production smoke against the latest head
-- [ ] Test visible dashboard work-item search with a known matching query
+- [x] Commit and push durable QA log updates for exact-SHA deployment proof
+- [x] Poll GitHub Actions for the log commit
+- [x] Verify Dokploy deploy lag for the log commit via production smoke still serving previous code SHA
+- [x] Run production smoke against the latest head and record the expected stale-SHA failure
+- [x] Test visible dashboard work-item search with live signed-in session and safe queries
+- [x] Implement backend substring fallback after empty words-search results
+- [x] Improve numeric work-item empty-state wording
+- [x] Run web tests, typecheck, lint, production-style build, repo typecheck/lint, smoke tests, extension tests, root tests, and diff check
+- [ ] Commit/push the work-item search UX/API change
+- [ ] Poll CI, Dokploy, production smoke, and live dashboard search after deploy
 - [ ] Update logs, findings, test cases, and handoff

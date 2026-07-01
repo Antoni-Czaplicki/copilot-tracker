@@ -6,6 +6,7 @@ import { useEffect, useId, useMemo, useState } from "react";
 import type { WorkItemSearchItem } from "@/lib/workItemPicker";
 import {
   canSearchWorkItems,
+  emptyWorkItemSearchMessage,
   workItemsFromSearchPayload,
   workItemSearchErrorMessage,
 } from "@/lib/workItemPicker";
@@ -95,11 +96,17 @@ export function WorkItemPicker({
     }
 
     if (visibleWorkItems.length === 0 && canSearch) {
-      return "No matches";
+      return emptyWorkItemSearchMessage(normalizedValue);
     }
 
     return null;
-  }, [canSearch, errorMessage, visibleState, visibleWorkItems.length]);
+  }, [
+    canSearch,
+    errorMessage,
+    normalizedValue,
+    visibleState,
+    visibleWorkItems.length,
+  ]);
 
   function selectWorkItem(item: WorkItemSearchItem) {
     onChange(String(item.id));

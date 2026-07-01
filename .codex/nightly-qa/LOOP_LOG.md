@@ -2271,3 +2271,16 @@
 - PASS: latest code commit remains `23e4df9 Compile Docker build metadata`.
 - INFO: tool discovery for Dokploy still did not expose a callable Dokploy MCP in this Codex session; continue using Dokploy UI evidence and production smoke until a Dokploy tool appears.
 - FOCUS: commit and push the durable exact-SHA proof logs, verify the new head through CI/Dokploy/smoke, then continue visible dashboard work-item search E2E.
+
+## 2026-07-01 14:06:32 CEST - Loop 56 Work-Item Search Improvement
+
+- PUSHED: `f90a5b0 Record exact deploy proof verification`.
+- PASS: GitHub Actions `CI` and `Build extension` completed successfully for `f90a5b0`.
+- PASS/WARN: production smoke against expected `f90a5b0` failed only because production still served the previous verified `23e4df9` build; all health/auth/provider-error gates passed.
+- PASS: signed-in production dashboard showed the real VS Code session, task `124`, 321 input tokens, 123 output tokens, 444 total tokens, and `$0.0001`.
+- PASS/DATA: live signed-in work-item search endpoint returned HTTP 200 and zero matches for safe probe queries, including the synthetic task id used by the VS Code fixture.
+- FOUND: the picker empty state was too vague for typed numeric IDs, and backend text search did not try the substring WIQL fallback when the words query returned a successful empty result set.
+- IMPLEMENTED: text work-item search now falls back to the substring WIQL query after empty words-query results.
+- IMPLEMENTED: numeric empty-state copy now says there is no Azure DevOps match for the ID instead of the generic "No matches".
+- PASS: `pnpm --filter @copilot-tracker/web test` (142 tests), web typecheck, web lint, production-style web build, `pnpm test:smoke`, repo typecheck/lint, extension tests, root `pnpm test`, and `git diff --check`.
+- NEXT: commit/push the work-item search change, poll CI/Dokploy, and verify the deployed dashboard search status.

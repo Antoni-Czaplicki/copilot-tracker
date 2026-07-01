@@ -166,6 +166,65 @@ void test("searchAzureDevOpsWorkItems falls back to contains query after unsafe 
   );
 });
 
+void test("searchAzureDevOpsWorkItems falls back to contains query after empty words results", async (context) => {
+  const requests = mockFetch(context, [
+    Response.json({ workItems: [] }),
+    Response.json({ workItems: [{ id: 321 }] }),
+    Response.json({
+      value: [
+        {
+          id: 321,
+          fields: {
+            "System.Title": "Substring result",
+          },
+        },
+      ],
+    }),
+  ]);
+
+  const items = await searchAzureDevOpsWorkItems({
+    accessToken: "access-token",
+    query: "substring",
+    limit: 10,
+  });
+
+  assert.equal(items[0]?.id, 321);
+  assert.equal(items.length, 1);
+  assert.equal(requests.length, 3);
+  const wordsQuery = requestJson(requests[0]).query;
+  const containsQuery = requestJson(requests[1]).query;
+  if (typeof wordsQuery !== "string") {
+    assert.fail("words query should be a string");
+  }
+  if (typeof containsQuery !== "string") {
+    assert.fail("contains query should be a string");
+  }
+  assert.match(
+    wordsQuery,
+    /CONTAINS WORDS 'substring'/,
+  );
+  assert.match(
+    containsQuery,
+    /CONTAINS 'substring'/,
+  );
+  assert.deepEqual(requestJson(requests[2]).ids, [321]);
+});
+
+void test("searchAzureDevOpsWorkItems returns empty after all successful text queries are empty", async (context) => {
+  const requests = mockFetch(context, [
+    Response.json({ workItems: [] }),
+    Response.json({ workItems: [] }),
+  ]);
+
+  const items = await searchAzureDevOpsWorkItems({
+    accessToken: "access-token",
+    query: "missing",
+  });
+
+  assert.deepEqual(items, []);
+  assert.equal(requests.length, 2);
+});
+
 void test("searchAzureDevOpsWorkItems maps malformed successful WIQL JSON to a typed error", async (context) => {
   const requests = mockFetch(context, [
     new Response("{", {
@@ -210,6 +269,7 @@ void test("searchAzureDevOpsWorkItems maps malformed successful batch JSON to a 
 void test("searchAzureDevOpsWorkItems tolerates missing successful upstream result arrays", async (context) => {
   const requests = mockFetch(context, [
     Response.json({ workItems: null }),
+    Response.json({ workItems: null }),
   ]);
 
   const items = await searchAzureDevOpsWorkItems({
@@ -218,7 +278,7 @@ void test("searchAzureDevOpsWorkItems tolerates missing successful upstream resu
   });
 
   assert.deepEqual(items, []);
-  assert.equal(requests.length, 1);
+  assert.equal(requests.length, 2);
 });
 
 void test("searchAzureDevOpsWorkItems maps repeated rate limits to a typed error", async (context) => {

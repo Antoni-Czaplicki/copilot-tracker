@@ -18,6 +18,12 @@ export function canSearchWorkItems(value: string) {
   return normalizedValue.length >= 2 || /^\d+$/u.test(normalizedValue);
 }
 
+export function emptyWorkItemSearchMessage(value: string) {
+  return /^\d+$/u.test(value.trim())
+    ? "No Azure DevOps match for this ID"
+    : "No Azure DevOps matches";
+}
+
 export function workItemsFromSearchPayload(
   payload: unknown,
 ): WorkItemSearchItem[] {

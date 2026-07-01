@@ -286,3 +286,10 @@ Nightly QA started at 2026-07-01 01:50:33 CEST. Baseline inspection, subagent re
 - Strict production smoke now passes without known-stale mode: `pnpm smoke:production -- --expect-sha 23e4df9`.
 - `/api/health` reports the exact deployed SHA and a non-unknown build time, so the prior deployment-freshness proof gap is closed.
 - The earlier generated JSON file fallback was deployed first but did not affect health metadata; the working fix is the generated TypeScript module compiled before `next build`.
+
+## 2026-07-01 14:06 CEST Work-Item Search UX/API
+
+- `f90a5b0 Record exact deploy proof verification` is pushed and CI-green; production was still serving the previous verified `23e4df9` build when checked.
+- Live signed-in dashboard search returned HTTP 200 with zero matches for safe probe queries, so a true Azure DevOps matching-result test is data-blocked for now.
+- Implemented and locally verified a focused improvement: text search now falls back from empty words-query results to substring WIQL, and numeric empty states identify that Azure DevOps has no match for the ID.
+- Next: commit/push this work-item search change, then verify CI, Dokploy, strict production smoke, and the deployed dashboard picker status.

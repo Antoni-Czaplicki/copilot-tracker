@@ -88,7 +88,13 @@ async function queryWorkItemIds(
       throw toAzureDevOpsError(response);
     }
 
-    return workItemIdsFromWiqlPayload(await readAzureDevOpsJson(response), limit);
+    const ids = workItemIdsFromWiqlPayload(
+      await readAzureDevOpsJson(response),
+      limit,
+    );
+    if (ids.length > 0) {
+      return ids;
+    }
   }
 
   return [];

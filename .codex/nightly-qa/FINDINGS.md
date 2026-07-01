@@ -46,6 +46,8 @@
 17. [FIXED] Homepage auth failure notices had safe text but lacked alert semantics and stronger visual emphasis for blocked login states.
 18. [FIXED] Admin billing sync treated malformed or empty successful JSON responses as failures; success count parsing now falls back to a generic success message and shares tested behavior with request-session mutation counts.
 19. [FIXED] WorkItemPicker trusted successful Azure DevOps search payload shape and could try to render malformed options from a bad 200 response; successful payloads are now normalized and filtered before display.
+20. [FIXED] Azure DevOps text work-item search stopped after a successful empty `CONTAINS WORDS` result and never tried the broader substring WIQL fallback, reducing match quality for partial-title searches.
+21. [FIXED] WorkItemPicker displayed a generic "No matches" state for numeric task IDs, making a valid manual assignment look invalid when the Azure DevOps org has no matching work item.
 
 ## API / Backend
 

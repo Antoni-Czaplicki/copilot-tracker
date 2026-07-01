@@ -288,6 +288,13 @@
 - PASS: strict `pnpm smoke:production -- --expect-sha 23e4df9` passed without `--allow-known-stale`.
 - PASS: production `/api/health` now reports the exact deployed SHA `23e4df9d0ca6018a04bafee3d1cff9f7b3c0c3cb` and a non-unknown build time.
 
+## 2026-07-01 14:06 CEST Log Commit CI And Deploy Lag
+
+- PUSHED: `f90a5b0 Record exact deploy proof verification`.
+- PASS: GitHub Actions `CI` and `Build extension` completed successfully for `f90a5b0`.
+- PASS/WARN: strict production smoke against `f90a5b0` failed only the expected SHA check because production still served the previous verified `23e4df9` build; health, database, auth redirect, PKCE, scopes, provider-error handling, and cache headers still passed.
+- NEXT: the next code-bearing deploy should supersede this log-only lag and be verified by strict production smoke.
+
 ## 2026-07-01 04:43 CEST Production Poll
 
 - PUSHED: `97ce2f9 Harden Azure token responses`.

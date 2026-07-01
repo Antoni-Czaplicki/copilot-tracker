@@ -1,5 +1,12 @@
 # Nightly QA Changes
 
+## 2026-07-01 - Work-Item Search Fallback And Empty State
+
+- Changed Azure DevOps text work-item search to continue from a successful empty `CONTAINS WORDS` query to the broader substring WIQL fallback.
+- Changed numeric WorkItemPicker empty-state copy from a generic "No matches" to an ID-specific Azure DevOps no-match message.
+- Added tests for empty-result fallback, all-empty text search, and numeric/text empty-state messages.
+- PASS: web tests, web typecheck, web lint, production-style web build, smoke tests, repo typecheck/lint, extension tests, root tests, and diff check.
+
 ## 2026-07-01 - Docker Build Metadata Fallback
 
 - Added `scripts/write-build-info.mjs` to generate non-secret build metadata from explicit Copilot Tracker env, common source metadata env names, or minimal `.git` `HEAD`/ref metadata.

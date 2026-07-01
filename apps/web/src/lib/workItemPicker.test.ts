@@ -3,6 +3,7 @@ import { test } from "node:test";
 
 import {
   canSearchWorkItems,
+  emptyWorkItemSearchMessage,
   workItemsFromSearchPayload,
   workItemSearchErrorMessage,
 } from "./workItemPicker";
@@ -16,6 +17,17 @@ void test("canSearchWorkItems allows multi-character text and digit-only ids", (
 void test("canSearchWorkItems blocks one-character non-id searches", () => {
   assert.equal(canSearchWorkItems("l"), false);
   assert.equal(canSearchWorkItems(" "), false);
+});
+
+void test("emptyWorkItemSearchMessage distinguishes numeric ids from text queries", () => {
+  assert.equal(
+    emptyWorkItemSearchMessage("  124  "),
+    "No Azure DevOps match for this ID",
+  );
+  assert.equal(
+    emptyWorkItemSearchMessage("login"),
+    "No Azure DevOps matches",
+  );
 });
 
 void test("workItemsFromSearchPayload maps valid work-item search results", () => {
