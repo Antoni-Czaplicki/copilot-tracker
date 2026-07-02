@@ -7,12 +7,15 @@ import { logDebug, logInfo, logWarn } from "./logger";
 import type { OtelSessionResolver } from "./otel";
 import type { WorkspaceContext } from "./types";
 
-const matchWindowMs = 10 * 60 * 1000;
-
 interface WorkspaceStorageMatch {
   storagePath: string;
   chatSessionsPath: string;
   stateDbPath: string;
+}
+
+interface ScoredWorkspaceStorageMatch extends WorkspaceStorageMatch {
+  score: number;
+  reasons: string[];
 }
 
 interface WorkspaceStorageNeedles {
@@ -24,7 +27,6 @@ interface SessionIndexEntry {
   sessionId: string;
   title: string | null;
   createdAtMs: number | null;
-  lastMessageDateMs: number | null;
   isEmpty: boolean;
 }
 
@@ -32,11 +34,8 @@ interface SessionRequestTitleCandidate {
   sessionId: string;
   title: string;
   sessionCreatedAt: string | null;
-  timestampsMs: number[];
-}
-
-interface MutableChatRequest {
-  timestampsMs: number[];
+  storagePath: string;
+  storageScore: number;
 }
 
 export function getDefaultWorkspaceStorageRoot(): string {
@@ -70,20 +69,42 @@ export function getDefaultWorkspaceStorageRoot(): string {
 export async function createChatSessionTitleResolver(
   workspaceContext: WorkspaceContext,
   storageRoot = getDefaultWorkspaceStorageRoot(),
+  currentExtensionStoragePath?: string | null,
 ): Promise<OtelSessionResolver> {
-  const storage = await findWorkspaceStorage(storageRoot, workspaceContext);
-  if (!storage) {
+  const storages = await findWorkspaceStorages(
+    storageRoot,
+    workspaceContext,
+    currentExtensionStoragePath,
+  );
+  if (storages.length === 0) {
     return () => null;
   }
 
-  const index = await readSessionIndex(storage.stateDbPath);
-  const candidates = await readChatSessionTitleCandidates(
-    storage.chatSessionsPath,
-    index,
-  );
+  const candidates: SessionRequestTitleCandidate[] = [];
+  let indexedSessionCount = 0;
+  for (const storage of storages) {
+    const index = await readSessionIndex(storage.stateDbPath);
+    indexedSessionCount += index.size;
+    candidates.push(
+      ...(await readChatSessionTitleCandidates(
+        storage.chatSessionsPath,
+        index,
+        storage.storagePath,
+        storage.score,
+      )),
+    );
+  }
+  candidates.sort(compareTitleCandidates);
+
   logInfo("Loaded VS Code chat session titles", {
-    storagePath: storage.storagePath,
-    indexedSessionCount: index.size,
+    storageRoot,
+    storageCount: storages.length,
+    storagePaths: storages.map((storage) => ({
+      storagePath: storage.storagePath,
+      score: storage.score,
+      reasons: storage.reasons,
+    })),
+    indexedSessionCount,
     titleCandidateCount: candidates.length,
   });
 
@@ -93,21 +114,55 @@ export async function createChatSessionTitleResolver(
 export async function findWorkspaceStorage(
   storageRoot: string,
   workspaceContext: WorkspaceContext,
+  currentExtensionStoragePath?: string | null,
 ): Promise<WorkspaceStorageMatch | null> {
+  const matches = await findWorkspaceStorages(
+    storageRoot,
+    workspaceContext,
+    currentExtensionStoragePath,
+  );
+  const first = matches[0];
+  if (!first) {
+    return null;
+  }
+
+  const second = matches[1];
+  if (second && second.score === first.score) {
+    logWarn("Multiple VS Code workspace storage matches have the same rank", {
+      storageRoot,
+      matches: matches.slice(0, 5).map((match) => ({
+        storagePath: match.storagePath,
+        score: match.score,
+        reasons: match.reasons,
+      })),
+    });
+  }
+
+  return first;
+}
+
+export async function findWorkspaceStorages(
+  storageRoot: string,
+  workspaceContext: WorkspaceContext,
+  currentExtensionStoragePath?: string | null,
+): Promise<ScoredWorkspaceStorageMatch[]> {
   if (!existsSync(storageRoot)) {
     logWarn("VS Code workspace storage root does not exist", { storageRoot });
-    return null;
+    return [];
   }
 
   const directMatch = getDirectStorageMatch(storageRoot);
   if (directMatch) {
     logInfo("Using direct VS Code workspace storage match", directMatch);
-    return directMatch;
+    return [{ ...directMatch, score: 10_000, reasons: ["direct-storage-root"] }];
   }
 
   const candidates = await readdir(storageRoot, { withFileTypes: true });
   const needles = createWorkspaceStorageNeedles(workspaceContext);
-  const folderNameMatches: WorkspaceStorageMatch[] = [];
+  const preferredStoragePaths = preferredWorkspaceStoragePaths(
+    currentExtensionStoragePath,
+  );
+  const matches: ScoredWorkspaceStorageMatch[] = [];
 
   for (const candidate of candidates) {
     if (!candidate.isDirectory()) {
@@ -115,38 +170,32 @@ export async function findWorkspaceStorage(
     }
 
     const storagePath = path.join(storageRoot, candidate.name);
-    const workspaceJsonPath = path.join(storagePath, "workspace.json");
-    try {
-      const workspaceJson = await readFile(workspaceJsonPath, "utf8");
-      const workspaceJsonStrings = collectJsonStrings(workspaceJson);
-      const match = {
-        storagePath,
-        chatSessionsPath: path.join(storagePath, "chatSessions"),
-        stateDbPath: path.join(storagePath, "state.vscdb"),
-      };
-      if (
-        includesAnyNeedle(
-          [workspaceJson, ...workspaceJsonStrings],
-          needles.exact,
-        )
-      ) {
-        return match;
-      }
-
-      if (hasWorkspaceFolderNameMatch(workspaceJsonStrings, needles)) {
-        folderNameMatches.push(match);
-      }
-    } catch {
-      // Not a workspace storage directory.
+    const metadataStrings = await readWorkspaceStorageMetadataStrings(
+      storagePath,
+    );
+    const match = scoreWorkspaceStorageMatch(
+      storagePath,
+      metadataStrings,
+      needles,
+      preferredStoragePaths,
+    );
+    if (match) {
+      matches.push(match);
     }
   }
 
-  if (folderNameMatches.length === 1) {
-    logInfo("Using VS Code workspace storage match by workspace folder name", {
-      ...folderNameMatches[0],
-      folderNames: needles.folderNames,
+  matches.sort((first, second) => second.score - first.score);
+  if (matches.length > 0) {
+    logInfo("Found VS Code workspace storage matches", {
+      storageRoot,
+      matchCount: matches.length,
+      matches: matches.slice(0, 10).map((match) => ({
+        storagePath: match.storagePath,
+        score: match.score,
+        reasons: match.reasons,
+      })),
     });
-    return folderNameMatches[0] ?? null;
+    return matches;
   }
 
   logWarn("Scanned VS Code storage root without finding workspace match", {
@@ -154,9 +203,9 @@ export async function findWorkspaceStorage(
     candidateCount: candidates.length,
     exactNeedles: needles.exact,
     folderNames: needles.folderNames,
-    folderNameMatchCount: folderNameMatches.length,
+    preferredStoragePaths,
   });
-  return null;
+  return [];
 }
 
 function createWorkspaceStorageNeedles(
@@ -249,6 +298,121 @@ function hasWorkspaceFolderNameMatch(
       )
     );
   });
+}
+
+async function readWorkspaceStorageMetadataStrings(
+  storagePath: string,
+): Promise<string[]> {
+  const metadataStrings: string[] = [];
+  for (const fileName of ["workspace.json", "meta.json"]) {
+    try {
+      const metadata = await readFile(path.join(storagePath, fileName), "utf8");
+      metadataStrings.push(metadata, ...collectJsonStrings(metadata));
+    } catch {
+      // VS Code storage folders do not always contain both metadata files.
+    }
+  }
+  return metadataStrings;
+}
+
+function scoreWorkspaceStorageMatch(
+  storagePath: string,
+  metadataStrings: string[],
+  needles: WorkspaceStorageNeedles,
+  preferredStoragePaths: string[],
+): ScoredWorkspaceStorageMatch | null {
+  const reasons: string[] = [];
+  let score = 0;
+  const normalizedStoragePath = normalizePathForCompare(storagePath);
+  const hasStateDb = existsSync(path.join(storagePath, "state.vscdb"));
+  const hasChatSessions = existsSync(path.join(storagePath, "chatSessions"));
+
+  if (
+    normalizedStoragePath &&
+    preferredStoragePaths.includes(normalizedStoragePath)
+  ) {
+    score += 1000;
+    reasons.push("current-extension-storage");
+  }
+
+  if (includesAnyNeedle(metadataStrings, needles.exact)) {
+    score += 500;
+    reasons.push("workspace-metadata-exact");
+  }
+
+  if (hasWorkspaceFolderNameMatch(metadataStrings, needles)) {
+    score += 100;
+    reasons.push("workspace-folder-name");
+  }
+
+  if (hasChatSessions) {
+    score += 25;
+    reasons.push("has-chatSessions");
+  }
+
+  if (hasStateDb) {
+    score += 25;
+    reasons.push("has-state-db");
+  }
+
+  if (metadataStrings.length > 0) {
+    score += 5;
+    reasons.push("has-metadata");
+  }
+
+  if (score === 0) {
+    return null;
+  }
+
+  return {
+    storagePath,
+    chatSessionsPath: path.join(storagePath, "chatSessions"),
+    stateDbPath: path.join(storagePath, "state.vscdb"),
+    score,
+    reasons,
+  };
+}
+
+function preferredWorkspaceStoragePaths(
+  currentExtensionStoragePath: string | null | undefined,
+) {
+  if (!currentExtensionStoragePath) {
+    return [];
+  }
+
+  const directStoragePath =
+    path.basename(currentExtensionStoragePath) === "chatSessions" ||
+    existsSync(path.join(currentExtensionStoragePath, "state.vscdb")) ||
+    existsSync(path.join(currentExtensionStoragePath, "chatSessions"))
+      ? currentExtensionStoragePath
+      : path.dirname(currentExtensionStoragePath);
+  return uniqueStrings([
+    normalizePathForCompare(directStoragePath),
+    normalizePathForCompare(removeStorageLockSuffix(directStoragePath)),
+  ]);
+}
+
+function removeStorageLockSuffix(storagePath: string | null): string | null {
+  if (!storagePath) {
+    return null;
+  }
+
+  const basename = path.basename(storagePath);
+  const suffixMatch = basename.match(/^(.+)-\d+$/u);
+  if (!suffixMatch?.[1]) {
+    return storagePath;
+  }
+
+  return path.join(path.dirname(storagePath), suffixMatch[1]);
+}
+
+function normalizePathForCompare(value: string | null): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const normalized = path.resolve(value).replace(/\\/gu, "/");
+  return process.platform === "linux" ? normalized : normalized.toLowerCase();
 }
 
 function collectJsonStrings(json: string): string[] {
@@ -400,13 +564,6 @@ function readSessionIndexEntries(
         ["creationDate"],
         ["created"],
       ]),
-      lastMessageDateMs: readFirstTimestamp(rawEntry, [
-        ["lastMessageDate"],
-        ["timing", "lastRequestEnded"],
-        ["timing", "lastRequestStarted"],
-        ["updatedAt"],
-        ["modifiedAt"],
-      ]),
       isEmpty: rawEntry.isEmpty === true,
     });
   }
@@ -415,6 +572,8 @@ function readSessionIndexEntries(
 async function readChatSessionTitleCandidates(
   chatSessionsPath: string,
   index: Map<string, SessionIndexEntry>,
+  storagePath: string,
+  storageScore: number,
 ): Promise<SessionRequestTitleCandidate[]> {
   const files = await findChatSessionFiles(chatSessionsPath);
   const candidates: SessionRequestTitleCandidate[] = [];
@@ -429,6 +588,8 @@ async function readChatSessionTitleCandidates(
         file,
         sessionIdFromFile,
         index,
+        storagePath,
+        storageScore,
       );
       for (const candidate of fileCandidates) {
         sessionIdsWithFiles.add(candidate.sessionId);
@@ -454,11 +615,12 @@ async function readChatSessionTitleCandidates(
       sessionId: entry.sessionId,
       title: entry.title,
       sessionCreatedAt: toIsoDate(entry.createdAtMs),
-      timestampsMs: uniqueNumbers([entry.lastMessageDateMs, entry.createdAtMs]),
+      storagePath,
+      storageScore,
     });
   }
 
-  return candidates.filter((candidate) => candidate.timestampsMs.length > 0);
+  return candidates;
 }
 
 async function findChatSessionFiles(root: string): Promise<string[]> {
@@ -487,6 +649,8 @@ async function readChatSessionFileCandidates(
   file: string,
   sessionIdFromFile: string,
   index: Map<string, SessionIndexEntry>,
+  storagePath: string,
+  storageScore: number,
 ): Promise<SessionRequestTitleCandidate[]> {
   const text = await readFile(file, "utf8");
   const records = file.endsWith(".jsonl")
@@ -502,7 +666,6 @@ async function readChatSessionFileCandidates(
   let sessionId = sessionIdFromFile;
   let createdAtMs: number | null = null;
   let fileTitle: string | null = null;
-  const requests = new Map<number, MutableChatRequest>();
 
   for (const record of records) {
     if (!isRecord(record)) {
@@ -520,7 +683,6 @@ async function readChatSessionFileCandidates(
           ["created"],
         ]) ?? createdAtMs;
       fileTitle = readSessionTitle(value) ?? fileTitle;
-      readRequestArray(value.requests, requests);
     } else if (kind === null && isChatSessionRecord(record)) {
       sessionId = readString(record, "sessionId") ?? sessionId;
       createdAtMs =
@@ -530,12 +692,8 @@ async function readChatSessionFileCandidates(
           ["created"],
         ]) ?? createdAtMs;
       fileTitle = readSessionTitle(record) ?? fileTitle;
-      readRequestArray(record.requests, requests);
     } else if (kind === 1) {
       fileTitle = readTitlePatch(record) ?? fileTitle;
-      readRequestPatch(record, requests);
-    } else if (kind === 2) {
-      readRequestArray(value, requests);
     }
   }
 
@@ -546,143 +704,44 @@ async function readChatSessionFileCandidates(
   }
 
   const sessionCreatedAt = toIsoDate(indexEntry?.createdAtMs ?? createdAtMs);
-  const sessionTimes = [
-    indexEntry?.lastMessageDateMs ?? null,
-    indexEntry?.createdAtMs ?? null,
+  return [
+    {
+      sessionId,
+      title,
+      sessionCreatedAt,
+      storagePath,
+      storageScore,
+    },
   ];
-  const values = [...requests.values()];
-  if (values.length === 0) {
-    return [
-      {
-        sessionId,
-        title,
-        sessionCreatedAt,
-        timestampsMs: uniqueNumbers([...sessionTimes, createdAtMs]),
-      },
-    ];
-  }
-
-  return values.map((request) => ({
-    sessionId,
-    title,
-    sessionCreatedAt,
-    timestampsMs: uniqueNumbers([...request.timestampsMs, ...sessionTimes]),
-  }));
-}
-
-function readRequestArray(
-  value: unknown,
-  requests: Map<number, MutableChatRequest>,
-) {
-  if (!Array.isArray(value)) {
-    return;
-  }
-
-  value.forEach((request, index) => {
-    if (!isRecord(request)) {
-      return;
-    }
-    const mutable = getMutableRequest(requests, index);
-    pushTimestamp(mutable, request.timestamp);
-    pushTimestamp(mutable, readUnknown(request, ["modelState", "completedAt"]));
-    pushTimestamp(mutable, readUnknown(request, ["result", "completedAt"]));
-  });
-}
-
-function readRequestPatch(
-  record: Record<string, unknown>,
-  requests: Map<number, MutableChatRequest>,
-) {
-  const key = record.k;
-  if (
-    !Array.isArray(key) ||
-    key[0] !== "requests" ||
-    typeof key[1] !== "number"
-  ) {
-    return;
-  }
-
-  const mutable = getMutableRequest(requests, key[1]);
-  const field = key[2];
-  if (field === "timestamp") {
-    pushTimestamp(mutable, record.v);
-  } else if (field === "modelState" || field === "result") {
-    pushTimestamp(mutable, readUnknown(record.v, ["completedAt"]));
-  }
-}
-
-function getMutableRequest(
-  requests: Map<number, MutableChatRequest>,
-  index: number,
-) {
-  const existing = requests.get(index);
-  if (existing) {
-    return existing;
-  }
-
-  const created = { timestampsMs: [] };
-  requests.set(index, created);
-  return created;
-}
-
-function pushTimestamp(request: MutableChatRequest, value: unknown) {
-  const timestamp = readTimestamp(value);
-  if (timestamp !== null) {
-    request.timestampsMs.push(timestamp);
-  }
 }
 
 function matchChatSessionTitle(
   request: Parameters<OtelSessionResolver>[0],
   candidates: SessionRequestTitleCandidate[],
 ) {
-  if (request.conversationId) {
-    const exactMatch = candidates.find(
-      (candidate) => candidate.sessionId === request.conversationId,
-    );
-    if (exactMatch) {
-      return {
-        sessionId: exactMatch.sessionId,
-        sessionTitle: exactMatch.title,
-        sessionCreatedAt: exactMatch.sessionCreatedAt,
-      };
-    }
-  }
-
-  const requestTimes = uniqueNumbers([
-    toTimestampMs(request.requestCompletedAt),
-    toTimestampMs(request.requestStartedAt),
-    toTimestampMs(request.sessionCreatedAt),
-  ]);
-  if (requestTimes.length === 0) {
+  if (!request.conversationId) {
     return null;
   }
 
-  let best: {
-    candidate: SessionRequestTitleCandidate;
-    distanceMs: number;
-  } | null = null;
-
-  for (const candidate of candidates) {
-    for (const requestTime of requestTimes) {
-      for (const sessionTime of candidate.timestampsMs) {
-        const distanceMs = Math.abs(requestTime - sessionTime);
-        if (!best || distanceMs < best.distanceMs) {
-          best = { candidate, distanceMs };
-        }
-      }
-    }
-  }
-
-  if (!best || best.distanceMs > matchWindowMs) {
+  const exactMatch = candidates.find(
+    (candidate) => candidate.sessionId === request.conversationId,
+  );
+  if (!exactMatch) {
     return null;
   }
 
   return {
-    sessionId: best.candidate.sessionId,
-    sessionTitle: best.candidate.title,
-    sessionCreatedAt: best.candidate.sessionCreatedAt,
+    sessionId: exactMatch.sessionId,
+    sessionTitle: exactMatch.title,
+    sessionCreatedAt: exactMatch.sessionCreatedAt,
   };
+}
+
+function compareTitleCandidates(
+  first: SessionRequestTitleCandidate,
+  second: SessionRequestTitleCandidate,
+) {
+  return second.storageScore - first.storageScore;
 }
 
 function cleanSessionTitle(value: string | null) {
@@ -730,12 +789,6 @@ function readTitlePatch(record: Record<string, unknown>): string | null {
 
 function isChatSessionRecord(value: Record<string, unknown>) {
   return "sessionId" in value || "requests" in value || "creationDate" in value;
-}
-
-function uniqueNumbers(values: (number | null)[]) {
-  return [
-    ...new Set(values.filter((value): value is number => value !== null)),
-  ];
 }
 
 function safeJsonParse(value: string): unknown | null {
@@ -808,15 +861,6 @@ function readTimestamp(value: unknown): number | null {
 
 function toIsoDate(value: number | null) {
   return value === null ? null : new Date(value).toISOString();
-}
-
-function toTimestampMs(value: string | null) {
-  if (!value) {
-    return null;
-  }
-
-  const timestamp = Date.parse(value);
-  return Number.isNaN(timestamp) ? null : timestamp;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

@@ -10,7 +10,7 @@ Copilot Tracker server, and verify that GitHub Copilot Chat usage is syncing.
 - Access to a Copilot Tracker server, for example
   `https://copilot-tracker.antek.page`.
 - A packaged extension file, for example
-  `apps/extension/copilot-tracker-0.0.1.vsix`.
+  `apps/extension/copilot-tracker-0.0.2.vsix`.
 
 The extension uses GitHub Copilot Chat OpenTelemetry as its only usage source.
 By default it runs a loopback OTLP/HTTP receiver, configures Copilot to send
@@ -23,14 +23,14 @@ available when needed.
 From the repository root, install the packaged VSIX:
 
 ```sh
-code --install-extension apps/extension/copilot-tracker-0.0.1.vsix --force
+code --install-extension apps/extension/copilot-tracker-0.0.2.vsix --force
 ```
 
 On macOS, if `code` is not available in your shell, use the VS Code app binary:
 
 ```sh
 /Applications/Visual\ Studio\ Code.app/Contents/Resources/app/bin/code \
-  --install-extension apps/extension/copilot-tracker-0.0.1.vsix \
+  --install-extension apps/extension/copilot-tracker-0.0.2.vsix \
   --force
 ```
 
@@ -182,15 +182,14 @@ From the repository root:
 
 ```sh
 pnpm install
-pnpm --filter ./apps/extension compile
-cd apps/extension
-npx --yes @vscode/vsce package --out copilot-tracker-0.0.1.vsix
+pnpm package:extension
 ```
 
-The package is written to:
+The package script reads `apps/extension/package.json` and writes a versioned
+VSIX file:
 
 ```text
-apps/extension/copilot-tracker-0.0.1.vsix
+apps/extension/copilot-tracker-0.0.2.vsix
 ```
 
 Install it with the `code --install-extension` command from the first section.

@@ -1130,8 +1130,11 @@ async function performCopilotSessionSync(
       otlpEndpoint: activeOtlpHttpEndpoint ?? null,
       bufferedOtlpRecordCount: bufferedOtlpRecords.length,
     });
-    const sessionResolver =
-      await createChatSessionTitleResolver(workspaceContext);
+    const sessionResolver = await createChatSessionTitleResolver(
+      workspaceContext,
+      undefined,
+      context.storageUri?.fsPath,
+    );
     const taskResolver = createTaskResolver(context, workspaceContext);
     const requests =
       config.otelCollectionMode === "file"

@@ -8,6 +8,7 @@ import { branchTaskSwitchPrompt } from "../branchTaskPrompt";
 import {
   createChatSessionTitleResolver,
   findWorkspaceStorage,
+  findWorkspaceStorages,
 } from "../chatSessionTitles";
 import { trackerDashboardUrl } from "../dashboardUrl";
 import { formatLogDetails } from "../logger";
@@ -479,7 +480,7 @@ suite("Extension Test Suite", () => {
           sessionCreatedAt: "2026-07-01T15:10:00.000Z",
         },
       );
-      assert.deepStrictEqual(
+      assert.strictEqual(
         resolveSession({
           traceId: "trace-chat-title-sqlite-session-time",
           conversationId: "otel-chat-session-1",
@@ -491,10 +492,96 @@ suite("Extension Test Suite", () => {
           inputTokens: null,
           outputTokens: null,
         }),
+        null,
+      );
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  test("Resolves chat title from exact session id across ranked storage matches", async () => {
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "vscode-storage-"));
+
+    try {
+      const olderStoragePath = path.join(tempDir, "older-workspace");
+      const currentStoragePath = path.join(tempDir, "current-workspace");
+      await mkdir(path.join(olderStoragePath, "chatSessions"), {
+        recursive: true,
+      });
+      await mkdir(path.join(currentStoragePath, "chatSessions"), {
+        recursive: true,
+      });
+      await writeFile(
+        path.join(olderStoragePath, "workspace.json"),
+        JSON.stringify({
+          folder: "file:///c%3A/Users/old/source/copilot-tracker",
+        }),
+      );
+      await writeFile(
+        path.join(currentStoragePath, "workspace.json"),
+        JSON.stringify({
+          folder: "file:///d%3A/dev/copilot-tracker",
+        }),
+      );
+      await writeStateDb(path.join(olderStoragePath, "state.vscdb"), {
+        entries: {
+          "older-chat-session": {
+            sessionId: "older-chat-session",
+            title: "Wrong storage title",
+            timing: { created: 1782918561664 },
+            isEmpty: false,
+          },
+        },
+      });
+      await writeStateDb(path.join(currentStoragePath, "state.vscdb"), {
+        entries: {
+          "current-chat-session": {
+            sessionId: "current-chat-session",
+            title: "Correct storage title",
+            timing: { created: 1782918600000 },
+            isEmpty: false,
+          },
+        },
+      });
+
+      const workspaceContext = createWorkspaceContext({
+        workspacePath: "D:\\dev\\copilot-tracker",
+        repositoryRoot: "D:\\dev\\copilot-tracker",
+      });
+      const currentExtensionStoragePath = path.join(
+        currentStoragePath,
+        "antoni-czaplicki.copilot-tracker",
+      );
+
+      const matches = await findWorkspaceStorages(
+        tempDir,
+        workspaceContext,
+        currentExtensionStoragePath,
+      );
+      assert.strictEqual(matches[0]?.storagePath, currentStoragePath);
+
+      const resolveSession = await createChatSessionTitleResolver(
+        workspaceContext,
+        tempDir,
+        currentExtensionStoragePath,
+      );
+
+      assert.deepStrictEqual(
+        resolveSession({
+          traceId: "trace-ranked-storage",
+          conversationId: "current-chat-session",
+          requestStartedAt: null,
+          requestCompletedAt: null,
+          sessionCreatedAt: null,
+          modelId: null,
+          resolvedModel: null,
+          inputTokens: null,
+          outputTokens: null,
+        }),
         {
-          sessionId: "vscode-chat-session-1",
-          sessionTitle: "Investigate Windows storage matching",
-          sessionCreatedAt: "2026-07-01T15:09:21.664Z",
+          sessionId: "current-chat-session",
+          sessionTitle: "Correct storage title",
+          sessionCreatedAt: "2026-07-01T15:10:00.000Z",
         },
       );
     } finally {

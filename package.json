@@ -12,6 +12,7 @@
     "dev:web": "pnpm --filter @copilot-tracker/web dev",
     "format": "prettier . --write",
     "lint": "pnpm -r lint",
+    "package:extension": "pnpm --filter ./apps/extension package",
     "smoke:production": "node scripts/smoke-production.mjs",
     "test": "pnpm test:smoke && pnpm test:web && pnpm --filter ./apps/extension test",
     "test:smoke": "node --test scripts/*.test.mjs",

@@ -1,7 +1,7 @@
 {
   "name": "copilot-tracker",
   "displayName": "Copilot tracker",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Track your copilot tokens per branch or assign them manually",
   "categories": [
     "Other"
@@ -22,7 +22,7 @@
     "build": "pnpm run compile",
     "compile": "tsc -p ./",
     "lint": "eslint src",
-    "package": "vsce package --no-dependencies",
+    "package": "node ../../scripts/package-extension.mjs",
     "pretest": "pnpm run compile && pnpm run lint",
     "test": "vscode-test",
     "typecheck": "tsc -p ./ --noEmit",
