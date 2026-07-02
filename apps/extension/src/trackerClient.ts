@@ -17,10 +17,14 @@ const trackerAuthStateSecretKey = "trackerAuthState";
 const requestTimeoutMs = 15_000;
 const maxRequestAttempts = 3;
 const maxAzureDevOpsWorkItemId = 2_147_483_647;
+const defaultOtelMaxFileSizeMb = 25;
+const defaultOtelRetainedLineCount = 5000;
 
 export interface TrackerConfig {
   serverUrl: string;
   otelFilePath: string;
+  otelMaxFileSizeMb: number;
+  otelRetainedLineCount: number;
   syncIntervalSeconds: number;
   showCurrentSessionTokensInStatusBar: boolean;
   taskBranchBaseBranches: string[];
@@ -69,6 +73,21 @@ export function getTrackerConfigFromConfiguration(
   return {
     serverUrl,
     otelFilePath,
+    otelMaxFileSizeMb: normalizeNumberSetting(
+      config.get<number>("otelMaxFileSizeMb", defaultOtelMaxFileSizeMb),
+      defaultOtelMaxFileSizeMb,
+      0,
+    ),
+    otelRetainedLineCount: Math.floor(
+      normalizeNumberSetting(
+        config.get<number>(
+          "otelRetainedLineCount",
+          defaultOtelRetainedLineCount,
+        ),
+        defaultOtelRetainedLineCount,
+        100,
+      ),
+    ),
     syncIntervalSeconds: Math.max(
       5,
       config.get<number>("syncIntervalSeconds", 15),
@@ -87,6 +106,14 @@ export function getTrackerConfigFromConfiguration(
       config.get<unknown>("taskBranchNamePrefix", defaultTaskBranchNamePrefix),
     ),
   };
+}
+
+function normalizeNumberSetting(
+  value: number,
+  fallback: number,
+  minimum: number,
+) {
+  return Number.isFinite(value) ? Math.max(minimum, value) : fallback;
 }
 
 export class TrackerClientError extends Error {

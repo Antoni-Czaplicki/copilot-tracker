@@ -393,9 +393,20 @@ function readSessionIndexEntries(
     const entrySessionId = readString(rawEntry, "sessionId") ?? sessionId;
     entries.set(entrySessionId, {
       sessionId: entrySessionId,
-      title: cleanSessionTitle(readString(rawEntry, "title")),
-      createdAtMs: readNumber(readUnknown(rawEntry, ["timing", "created"])),
-      lastMessageDateMs: readNumber(rawEntry.lastMessageDate),
+      title: readSessionTitle(rawEntry),
+      createdAtMs: readFirstTimestamp(rawEntry, [
+        ["timing", "created"],
+        ["createdAt"],
+        ["creationDate"],
+        ["created"],
+      ]),
+      lastMessageDateMs: readFirstTimestamp(rawEntry, [
+        ["lastMessageDate"],
+        ["timing", "lastRequestEnded"],
+        ["timing", "lastRequestStarted"],
+        ["updatedAt"],
+        ["modifiedAt"],
+      ]),
       isEmpty: rawEntry.isEmpty === true,
     });
   }
@@ -490,6 +501,7 @@ async function readChatSessionFileCandidates(
 
   let sessionId = sessionIdFromFile;
   let createdAtMs: number | null = null;
+  let fileTitle: string | null = null;
   const requests = new Map<number, MutableChatRequest>();
 
   for (const record of records) {
@@ -501,9 +513,26 @@ async function readChatSessionFileCandidates(
     const value = record.v;
     if (kind === 0 && isRecord(value)) {
       sessionId = readString(value, "sessionId") ?? sessionId;
-      createdAtMs = readNumber(value.creationDate) ?? createdAtMs;
+      createdAtMs =
+        readFirstTimestamp(value, [
+          ["creationDate"],
+          ["createdAt"],
+          ["created"],
+        ]) ?? createdAtMs;
+      fileTitle = readSessionTitle(value) ?? fileTitle;
       readRequestArray(value.requests, requests);
+    } else if (kind === null && isChatSessionRecord(record)) {
+      sessionId = readString(record, "sessionId") ?? sessionId;
+      createdAtMs =
+        readFirstTimestamp(record, [
+          ["creationDate"],
+          ["createdAt"],
+          ["created"],
+        ]) ?? createdAtMs;
+      fileTitle = readSessionTitle(record) ?? fileTitle;
+      readRequestArray(record.requests, requests);
     } else if (kind === 1) {
+      fileTitle = readTitlePatch(record) ?? fileTitle;
       readRequestPatch(record, requests);
     } else if (kind === 2) {
       readRequestArray(value, requests);
@@ -511,13 +540,16 @@ async function readChatSessionFileCandidates(
   }
 
   const indexEntry = index.get(sessionId) ?? index.get(sessionIdFromFile);
-  const title = indexEntry?.title;
+  const title = indexEntry?.title ?? fileTitle;
   if (!title || indexEntry?.isEmpty) {
     return [];
   }
 
-  const sessionCreatedAt = toIsoDate(indexEntry.createdAtMs ?? createdAtMs);
-  const sessionTimes = [indexEntry.lastMessageDateMs, indexEntry.createdAtMs];
+  const sessionCreatedAt = toIsoDate(indexEntry?.createdAtMs ?? createdAtMs);
+  const sessionTimes = [
+    indexEntry?.lastMessageDateMs ?? null,
+    indexEntry?.createdAtMs ?? null,
+  ];
   const values = [...requests.values()];
   if (values.length === 0) {
     return [
@@ -594,7 +626,7 @@ function getMutableRequest(
 }
 
 function pushTimestamp(request: MutableChatRequest, value: unknown) {
-  const timestamp = readNumber(value);
+  const timestamp = readTimestamp(value);
   if (timestamp !== null) {
     request.timestampsMs.push(timestamp);
   }
@@ -662,6 +694,44 @@ function cleanSessionTitle(value: string | null) {
   return title;
 }
 
+function readSessionTitle(value: unknown): string | null {
+  if (!isRecord(value)) {
+    return typeof value === "string" ? cleanSessionTitle(value) : null;
+  }
+
+  return cleanSessionTitle(
+    readString(value, "customTitle") ??
+      readString(value, "title") ??
+      readString(value, "name") ??
+      readString(value, "label") ??
+      readString(value, "displayName") ??
+      readString(readUnknown(value, ["metadata"]), "title") ??
+      readString(readUnknown(value, ["metadata"]), "customTitle") ??
+      readString(readUnknown(value, ["v"]), "customTitle") ??
+      readString(readUnknown(value, ["v"]), "title"),
+  );
+}
+
+function readTitlePatch(record: Record<string, unknown>): string | null {
+  const key = record.k;
+  if (key === "customTitle" || key === "title") {
+    return readSessionTitle(record.v);
+  }
+
+  if (
+    Array.isArray(key) &&
+    key.some((part) => part === "customTitle" || part === "title")
+  ) {
+    return readSessionTitle(record.v);
+  }
+
+  return readSessionTitle(record);
+}
+
+function isChatSessionRecord(value: Record<string, unknown>) {
+  return "sessionId" in value || "requests" in value || "creationDate" in value;
+}
+
 function uniqueNumbers(values: (number | null)[]) {
   return [
     ...new Set(values.filter((value): value is number => value !== null)),
@@ -688,16 +758,52 @@ function readUnknown(source: unknown, pathParts: string[]): unknown {
   return current;
 }
 
-function readString(
+function readFirstTimestamp(
   source: Record<string, unknown>,
+  paths: string[][],
+): number | null {
+  for (const pathParts of paths) {
+    const value = readTimestamp(readUnknown(source, pathParts));
+    if (value !== null) {
+      return value;
+    }
+  }
+
+  return null;
+}
+
+function readString(
+  source: unknown,
   key: string,
 ): string | null {
+  if (!isRecord(source)) {
+    return null;
+  }
+
   const value = source[key];
   return typeof value === "string" && value.length > 0 ? value : null;
 }
 
 function readNumber(value: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function readTimestamp(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === "string" && value.trim().length > 0) {
+    const numeric = Number(value);
+    if (Number.isFinite(numeric)) {
+      return numeric;
+    }
+
+    const timestamp = Date.parse(value);
+    return Number.isNaN(timestamp) ? null : timestamp;
+  }
+
+  return null;
 }
 
 function toIsoDate(value: number | null) {

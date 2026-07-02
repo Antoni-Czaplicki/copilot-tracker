@@ -15,6 +15,7 @@ import {
 } from "./logger";
 import {
   type RequestTaskResolver,
+  compactCopilotOtelFile,
   createOtelFileWatcher,
   ensureCopilotOtelConfiguration,
   getLastCopilotOtelConfigurationWriteAt,
@@ -56,6 +57,7 @@ import {
   shouldRecordTaskHistoryEntry,
 } from "./taskHistory";
 import {
+  type TrackerConfig,
   TrackerClient,
   getTrackerConfig,
   parseTrackerServerUrl,
@@ -1122,6 +1124,7 @@ async function performCopilotSessionSync(
       uploadPlan.nextState,
       uploadScope,
     );
+    await compactOtelFileIfNeeded(otelFilePath, config);
     lastSessionStats = currentSessionTokenStats(requests);
     lastSyncStats = {
       requestCount: requests.length,
@@ -1145,6 +1148,25 @@ async function performCopilotSessionSync(
       message: lastSyncError,
     });
   }
+}
+
+async function compactOtelFileIfNeeded(
+  otelFilePath: string,
+  config: TrackerConfig,
+) {
+  const result = await compactCopilotOtelFile(otelFilePath, {
+    maxBytes: config.otelMaxFileSizeMb * 1024 * 1024,
+    retainedLineCount: config.otelRetainedLineCount,
+  });
+  if (!result) {
+    return;
+  }
+
+  lastOtelSignature = await getOtelFileSignature(otelFilePath);
+  logInfo("Compacted Copilot OTel file after successful sync", {
+    otelFilePath,
+    ...result,
+  });
 }
 
 function requestUploadScope(serverUrl: string) {

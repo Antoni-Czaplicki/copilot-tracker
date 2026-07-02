@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { mkdir, readFile, stat } from "node:fs/promises";
+import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import * as path from "node:path";
 import * as vscode from "vscode";
 
@@ -100,6 +100,13 @@ export type OtelSessionResolver = (
   request: OtelSessionLookupRequest,
 ) => OtelSessionLookupResult | null | undefined;
 
+export interface OtelFileCompactionResult {
+  originalBytes: number;
+  compactedBytes: number;
+  originalLineCount: number;
+  retainedLineCount: number;
+}
+
 let lastCopilotOtelConfigurationWriteAt = 0;
 
 export function getLastCopilotOtelConfigurationWriteAt() {
@@ -165,6 +172,49 @@ export async function getOtelFileSignature(otelFilePath: string) {
 
   const fileStat = await stat(otelFilePath);
   return `${fileStat.size}:${fileStat.mtimeMs}`;
+}
+
+export async function compactCopilotOtelFile(
+  otelFilePath: string,
+  {
+    maxBytes,
+    retainedLineCount,
+  }: { maxBytes: number; retainedLineCount: number },
+): Promise<OtelFileCompactionResult | null> {
+  if (maxBytes <= 0 || retainedLineCount <= 0 || !existsSync(otelFilePath)) {
+    return null;
+  }
+
+  const fileStat = await stat(otelFilePath);
+  if (fileStat.size <= maxBytes) {
+    return null;
+  }
+
+  const text = await readFile(otelFilePath, "utf8");
+  const lines = text.split(/\r?\n/).filter(Boolean);
+  let retainedLines = lines.slice(-retainedLineCount);
+  let compactedText = `${retainedLines.join("\n")}\n`;
+  while (
+    retainedLines.length > 1 &&
+    Buffer.byteLength(compactedText) > maxBytes
+  ) {
+    retainedLines = retainedLines.slice(1);
+    compactedText = `${retainedLines.join("\n")}\n`;
+  }
+
+  const compactedBytes = Buffer.byteLength(compactedText);
+  if (retainedLines.length === lines.length && compactedBytes >= fileStat.size) {
+    return null;
+  }
+
+  await writeFile(otelFilePath, compactedText, "utf8");
+
+  return {
+    originalBytes: fileStat.size,
+    compactedBytes,
+    originalLineCount: lines.length,
+    retainedLineCount: retainedLines.length,
+  };
 }
 
 export function createOtelFileWatcher(

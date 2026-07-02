@@ -11,7 +11,11 @@ import {
 } from "../chatSessionTitles";
 import { trackerDashboardUrl } from "../dashboardUrl";
 import { formatLogDetails } from "../logger";
-import { normalizeRepositoryRemoteUrl, readCopilotOtelRequests } from "../otel";
+import {
+  compactCopilotOtelFile,
+  normalizeRepositoryRemoteUrl,
+  readCopilotOtelRequests,
+} from "../otel";
 import { estimateRequestsCostUsd } from "../pricing";
 import {
   planRequestUpload,
@@ -179,6 +183,29 @@ suite("Extension Test Suite", () => {
     assert.strictEqual(
       getTrackerConfigFromConfiguration(config).taskBranchNamePrefix,
       defaultTaskBranchNamePrefix,
+    );
+    assert.strictEqual(
+      getTrackerConfigFromConfiguration(config).otelMaxFileSizeMb,
+      25,
+    );
+    assert.strictEqual(
+      getTrackerConfigFromConfiguration(config).otelRetainedLineCount,
+      5000,
+    );
+
+    const compactionConfig = createTrackerConfigurationSource({
+      globalValues: {
+        otelMaxFileSizeMb: 0,
+        otelRetainedLineCount: 250,
+      },
+    });
+    assert.strictEqual(
+      getTrackerConfigFromConfiguration(compactionConfig).otelMaxFileSizeMb,
+      0,
+    );
+    assert.strictEqual(
+      getTrackerConfigFromConfiguration(compactionConfig).otelRetainedLineCount,
+      250,
     );
 
     const ticketPrefixConfig = createTrackerConfigurationSource({
@@ -355,6 +382,13 @@ suite("Extension Test Suite", () => {
             lastMessageDate: 1782918567664,
             isEmpty: false,
           },
+          "vscode-chat-session-custom-title": {
+            sessionId: "vscode-chat-session-custom-title",
+            title: "New Chat",
+            timing: { created: 1782918600000 },
+            lastMessageDate: 1782918605000,
+            isEmpty: false,
+          },
         },
       });
       await writeFile(
@@ -367,6 +401,26 @@ suite("Extension Test Suite", () => {
             requests: [{ timestamp: 1782918567664 }],
           },
         }),
+      );
+      await writeFile(
+        path.join(chatSessionsPath, "vscode-chat-session-custom-title.jsonl"),
+        [
+          {
+            kind: 0,
+            v: {
+              sessionId: "vscode-chat-session-custom-title",
+              creationDate: 1782918600000,
+              requests: [{ timestamp: 1782918605000 }],
+            },
+          },
+          {
+            kind: 1,
+            k: "customTitle",
+            v: "GREETING MESSAGE",
+          },
+        ]
+          .map((record) => JSON.stringify(record))
+          .join("\n"),
       );
 
       const resolveSession = await createChatSessionTitleResolver(
@@ -390,6 +444,24 @@ suite("Extension Test Suite", () => {
           sessionId: "vscode-chat-session-1",
           sessionTitle: "Investigate Windows storage matching",
           sessionCreatedAt: "2026-07-01T15:09:21.664Z",
+        },
+      );
+      assert.deepStrictEqual(
+        resolveSession({
+          traceId: "trace-chat-title-custom",
+          conversationId: "vscode-chat-session-custom-title",
+          requestStartedAt: null,
+          requestCompletedAt: null,
+          sessionCreatedAt: null,
+          modelId: null,
+          resolvedModel: null,
+          inputTokens: null,
+          outputTokens: null,
+        }),
+        {
+          sessionId: "vscode-chat-session-custom-title",
+          sessionTitle: "GREETING MESSAGE",
+          sessionCreatedAt: "2026-07-01T15:10:00.000Z",
         },
       );
       assert.deepStrictEqual(
@@ -810,6 +882,73 @@ suite("Extension Test Suite", () => {
       assert.strictEqual(requests[0]?.inputTokens, 11);
       assert.strictEqual(requests[0]?.outputTokens, 13);
       assert.strictEqual(requests[0]?.totalTokens, 24);
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  test("Compacts Copilot OTel JSONL files to the retained tail", async () => {
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "copilot-otel-"));
+
+    try {
+      const otelFilePath = path.join(tempDir, "copilot-otel.jsonl");
+      await writeFile(
+        otelFilePath,
+        Array.from({ length: 10 }, (_, index) =>
+          JSON.stringify({ line: index + 1 }),
+        ).join("\n"),
+      );
+
+      const result = await compactCopilotOtelFile(otelFilePath, {
+        maxBytes: 40,
+        retainedLineCount: 3,
+      });
+      const text = await readFile(otelFilePath, "utf8");
+
+      assert.deepStrictEqual(
+        text
+          .trim()
+          .split(/\r?\n/)
+          .map((line) => JSON.parse(line) as { line: number }),
+        [{ line: 8 }, { line: 9 }, { line: 10 }],
+      );
+      assert.strictEqual(result?.originalLineCount, 10);
+      assert.strictEqual(result?.retainedLineCount, 3);
+      assert.ok((result?.originalBytes ?? 0) > (result?.compactedBytes ?? 0));
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  test("Compacts Copilot OTel JSONL files to the byte cap", async () => {
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "copilot-otel-"));
+
+    try {
+      const otelFilePath = path.join(tempDir, "copilot-otel.jsonl");
+      await writeFile(
+        otelFilePath,
+        Array.from({ length: 4 }, (_, index) =>
+          JSON.stringify({ line: index + 1, payload: "x".repeat(80) }),
+        ).join("\n"),
+      );
+
+      const result = await compactCopilotOtelFile(otelFilePath, {
+        maxBytes: 120,
+        retainedLineCount: 10,
+      });
+      const text = await readFile(otelFilePath, "utf8");
+      const retained = text
+        .trim()
+        .split(/\r?\n/)
+        .map((line) => JSON.parse(line) as { line: number });
+
+      assert.ok(Buffer.byteLength(text) <= 120);
+      assert.deepStrictEqual(
+        retained.map((line) => line.line),
+        [4],
+      );
+      assert.strictEqual(result?.originalLineCount, 4);
+      assert.strictEqual(result?.retainedLineCount, 1);
     } finally {
       await rm(tempDir, { recursive: true, force: true });
     }

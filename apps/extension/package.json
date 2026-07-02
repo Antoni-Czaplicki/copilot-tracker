@@ -80,6 +80,18 @@
           "default": "",
           "description": "Optional path for the Copilot Chat OTel JSONL file. Set this in user settings; workspace values are ignored because Copilot's OTel exporter is global. Leave empty to use extension global storage."
         },
+        "copilot-tracker.otelMaxFileSizeMb": {
+          "type": "number",
+          "default": 25,
+          "minimum": 0,
+          "description": "Maximum Copilot OTel JSONL file size before Copilot Tracker compacts it after a successful sync. Set to 0 to disable compaction."
+        },
+        "copilot-tracker.otelRetainedLineCount": {
+          "type": "number",
+          "default": 5000,
+          "minimum": 100,
+          "description": "Number of most recent Copilot OTel JSONL lines to retain when compacting the file."
+        },
         "copilot-tracker.syncIntervalSeconds": {
           "type": "number",
           "default": 15,
