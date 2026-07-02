@@ -1,15 +1,12 @@
-import { execFile } from "node:child_process";
 import { existsSync } from "node:fs";
 import { readFile, readdir } from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { promisify } from "node:util";
 
 import { logDebug, logInfo, logWarn } from "./logger";
 import type { OtelSessionResolver } from "./otel";
 import type { WorkspaceContext } from "./types";
 
-const execFileAsync = promisify(execFile);
 const matchWindowMs = 10 * 60 * 1000;
 
 interface WorkspaceStorageMatch {
@@ -346,27 +343,8 @@ async function readSessionIndex(
   }
 
   try {
-    const { stdout } = await execFileAsync("sqlite3", [
-      "-readonly",
-      stateDbPath,
-      "SELECT value FROM ItemTable WHERE key = 'chat.ChatSessionStore.index';",
-    ]);
-    const parsed = JSON.parse(stdout.trim()) as {
-      entries?: Record<string, unknown>;
-    };
-    for (const [sessionId, rawEntry] of Object.entries(parsed.entries ?? {})) {
-      if (!isRecord(rawEntry)) {
-        continue;
-      }
-      const entrySessionId = readString(rawEntry, "sessionId") ?? sessionId;
-      entries.set(entrySessionId, {
-        sessionId: entrySessionId,
-        title: cleanSessionTitle(readString(rawEntry, "title")),
-        createdAtMs: readNumber(readUnknown(rawEntry, ["timing", "created"])),
-        lastMessageDateMs: readNumber(rawEntry.lastMessageDate),
-        isEmpty: rawEntry.isEmpty === true,
-      });
-    }
+    const indexValue = await readSessionIndexValue(stateDbPath);
+    readSessionIndexEntries(indexValue, entries);
   } catch (error) {
     logWarn("Could not read VS Code chat session index", {
       stateDbPath,
@@ -375,6 +353,50 @@ async function readSessionIndex(
   }
 
   return entries;
+}
+
+async function readSessionIndexValue(stateDbPath: string): Promise<string> {
+  const { DatabaseSync } = await import("node:sqlite");
+  const database = new DatabaseSync(stateDbPath, { readOnly: true });
+  try {
+    const row = database
+      .prepare(
+        "SELECT value FROM ItemTable WHERE key = 'chat.ChatSessionStore.index';",
+      )
+      .get();
+    const value = row?.value;
+    if (typeof value === "string") {
+      return value;
+    }
+    if (value instanceof Uint8Array) {
+      return new TextDecoder().decode(value);
+    }
+    return "";
+  } finally {
+    database.close();
+  }
+}
+
+function readSessionIndexEntries(
+  indexValue: string,
+  entries: Map<string, SessionIndexEntry>,
+) {
+  const parsed = JSON.parse(indexValue.trim()) as {
+    entries?: Record<string, unknown>;
+  };
+  for (const [sessionId, rawEntry] of Object.entries(parsed.entries ?? {})) {
+    if (!isRecord(rawEntry)) {
+      continue;
+    }
+    const entrySessionId = readString(rawEntry, "sessionId") ?? sessionId;
+    entries.set(entrySessionId, {
+      sessionId: entrySessionId,
+      title: cleanSessionTitle(readString(rawEntry, "title")),
+      createdAtMs: readNumber(readUnknown(rawEntry, ["timing", "created"])),
+      lastMessageDateMs: readNumber(rawEntry.lastMessageDate),
+      isEmpty: rawEntry.isEmpty === true,
+    });
+  }
 }
 
 async function readChatSessionTitleCandidates(

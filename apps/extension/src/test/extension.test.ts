@@ -5,7 +5,10 @@ import * as path from "node:path";
 import * as vscode from "vscode";
 
 import { branchTaskSwitchPrompt } from "../branchTaskPrompt";
-import { findWorkspaceStorage } from "../chatSessionTitles";
+import {
+  createChatSessionTitleResolver,
+  findWorkspaceStorage,
+} from "../chatSessionTitles";
 import { trackerDashboardUrl } from "../dashboardUrl";
 import { formatLogDetails } from "../logger";
 import { normalizeRepositoryRemoteUrl, readCopilotOtelRequests } from "../otel";
@@ -236,6 +239,63 @@ suite("Extension Test Suite", () => {
       );
 
       assert.strictEqual(match?.storagePath, storagePath);
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  test("Reads VS Code chat session index with built-in SQLite", async () => {
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "vscode-storage-"));
+
+    try {
+      const chatSessionsPath = path.join(tempDir, "chatSessions");
+      await mkdir(chatSessionsPath, { recursive: true });
+      await writeStateDb(path.join(tempDir, "state.vscdb"), {
+        entries: {
+          "vscode-chat-session-1": {
+            sessionId: "vscode-chat-session-1",
+            title: "Investigate Windows storage matching",
+            timing: { created: 1782918561664 },
+            lastMessageDate: 1782918567664,
+            isEmpty: false,
+          },
+        },
+      });
+      await writeFile(
+        path.join(chatSessionsPath, "vscode-chat-session-1.json"),
+        JSON.stringify({
+          kind: 0,
+          v: {
+            sessionId: "vscode-chat-session-1",
+            creationDate: 1782918561664,
+            requests: [{ timestamp: 1782918567664 }],
+          },
+        }),
+      );
+
+      const resolveSession = await createChatSessionTitleResolver(
+        createWorkspaceContext(),
+        tempDir,
+      );
+
+      assert.deepStrictEqual(
+        resolveSession({
+          traceId: "trace-chat-title-sqlite",
+          conversationId: "vscode-chat-session-1",
+          requestStartedAt: null,
+          requestCompletedAt: null,
+          sessionCreatedAt: null,
+          modelId: null,
+          resolvedModel: null,
+          inputTokens: null,
+          outputTokens: null,
+        }),
+        {
+          sessionId: "vscode-chat-session-1",
+          sessionTitle: "Investigate Windows storage matching",
+          sessionCreatedAt: "2026-07-01T15:09:21.664Z",
+        },
+      );
     } finally {
       await rm(tempDir, { recursive: true, force: true });
     }
@@ -1903,6 +1963,19 @@ function createWorkspaceContext(
     selectedTask: null,
     ...overrides,
   };
+}
+
+async function writeStateDb(pathValue: string, indexValue: unknown) {
+  const { DatabaseSync } = await import("node:sqlite");
+  const database = new DatabaseSync(pathValue);
+  try {
+    database.exec("CREATE TABLE ItemTable (key TEXT PRIMARY KEY, value TEXT);");
+    database
+      .prepare("INSERT INTO ItemTable (key, value) VALUES (?, ?);")
+      .run("chat.ChatSessionStore.index", JSON.stringify(indexValue));
+  } finally {
+    database.close();
+  }
 }
 
 function createTaskHistoryEntry(
