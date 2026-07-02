@@ -618,6 +618,7 @@ function matchChatSessionTitle(
   const requestTimes = uniqueNumbers([
     toTimestampMs(request.requestCompletedAt),
     toTimestampMs(request.requestStartedAt),
+    toTimestampMs(request.sessionCreatedAt),
   ]);
   if (requestTimes.length === 0) {
     return null;

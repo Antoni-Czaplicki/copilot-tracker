@@ -313,6 +313,24 @@ suite("Extension Test Suite", () => {
           sessionCreatedAt: "2026-07-01T15:09:21.664Z",
         },
       );
+      assert.deepStrictEqual(
+        resolveSession({
+          traceId: "trace-chat-title-sqlite-session-time",
+          conversationId: "otel-chat-session-1",
+          requestStartedAt: null,
+          requestCompletedAt: null,
+          sessionCreatedAt: "2026-07-01T15:09:21.664Z",
+          modelId: null,
+          resolvedModel: null,
+          inputTokens: null,
+          outputTokens: null,
+        }),
+        {
+          sessionId: "vscode-chat-session-1",
+          sessionTitle: "Investigate Windows storage matching",
+          sessionCreatedAt: "2026-07-01T15:09:21.664Z",
+        },
+      );
     } finally {
       await rm(tempDir, { recursive: true, force: true });
     }
@@ -1911,6 +1929,74 @@ suite("Extension Test Suite", () => {
       );
 
       assert.strictEqual(requests.length, 0);
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  test("Accepts repo-less Copilot Chat session logs without a title match", async () => {
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "copilot-otel-"));
+
+    try {
+      const otelFilePath = path.join(tempDir, "copilot-otel.jsonl");
+      await writeFile(
+        otelFilePath,
+        [
+          createPlainLogRecord({
+            traceId: "trace-repoless-copilot-session",
+            spanId: "span-repoless-copilot-session",
+            hrTime: [1782919311, 505000000],
+            body: "copilot_chat.session.start",
+            resourceSessionId: "otel-window-session",
+            includeRepository: false,
+            attributes: {
+              "event.name": "copilot_chat.session.start",
+              "session.id": "windows-chat-session",
+              "gen_ai.request.model": "gpt-5-nano",
+              "gen_ai.agent.name": "GitHub Copilot Chat",
+            },
+          }),
+          createPlainLogRecord({
+            traceId: "trace-repoless-copilot-session",
+            spanId: "span-repoless-copilot-session",
+            hrTime: [1782919315, 664000000],
+            body: "GenAI inference: gpt-5-nano",
+            resourceSessionId: "otel-window-session",
+            includeRepository: false,
+            attributes: {
+              "event.name": "gen_ai.client.inference.operation.details",
+              "gen_ai.operation.name": "chat",
+              "gen_ai.request.model": "gpt-5-nano",
+              "gen_ai.response.model": "gpt-5-nano-2025-08-07",
+              "gen_ai.response.id": "response-repoless-copilot-session",
+              "gen_ai.usage.input_tokens": 1100,
+              "gen_ai.usage.output_tokens": 300,
+            },
+          }),
+        ]
+          .map((record) => JSON.stringify(record))
+          .join("\n"),
+      );
+
+      const requests = await readCopilotOtelRequests(
+        createWorkspaceContext(),
+        otelFilePath,
+      );
+
+      assert.strictEqual(requests.length, 1);
+      assert.strictEqual(
+        requests[0]?.requestRecordId,
+        "otel-log:trace-repoless-copilot-session:response-repoless-copilot-session",
+      );
+      assert.strictEqual(requests[0]?.sessionId, "windows-chat-session");
+      assert.strictEqual(
+        requests[0]?.sessionTitle,
+        "copilot-tracker - main - gpt-5-nano",
+      );
+      assert.strictEqual(requests[0]?.inputTokens, 1100);
+      assert.strictEqual(requests[0]?.outputTokens, 300);
+      assert.strictEqual(requests[0]?.totalTokens, 1400);
+      assert.strictEqual(requests[0]?.branch, "main");
     } finally {
       await rm(tempDir, { recursive: true, force: true });
     }

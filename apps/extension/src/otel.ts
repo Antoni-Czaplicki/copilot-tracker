@@ -17,6 +17,7 @@ interface ParsedOtelRequest {
   spanId: string | null;
   conversationId: string | null;
   agentName: string | null;
+  hasCopilotChatSessionStart: boolean;
   repositoryRemoteUrl: string | null;
   branch: string | null;
   sessionCreatedAt: string | null;
@@ -329,6 +330,7 @@ function traceToRequest(trace: TraceGroup): ParsedOtelRequest | null {
       readString(attributes, "gen_ai.conversation.id") ??
       readString(attributes, "session.id"),
     agentName: readString(attributes, "gen_ai.agent.name"),
+    hasCopilotChatSessionStart: false,
     repositoryRemoteUrl:
       readString(attributes, "github.copilot.git.repository") ??
       readString(attributes, "copilot_chat.repo.remote_url"),
@@ -418,6 +420,7 @@ function logRecordToRequest(
     readString(record.resourceAttributes, "session.id");
   const timestamp = record.timestamp ?? matchingTurn?.timestamp ?? null;
   const fallbackRecordId = `${record.spanId ?? "record"}:${index}`;
+  const agentName = readString(attributes, "gen_ai.agent.name");
 
   return {
     recordId: `otel-log:${record.traceId}:${
@@ -426,7 +429,10 @@ function logRecordToRequest(
     traceId: record.traceId,
     spanId: spanOrResponseId,
     conversationId: sessionId,
-    agentName: readString(attributes, "gen_ai.agent.name"),
+    agentName,
+    hasCopilotChatSessionStart:
+      isCopilotChatSessionStart(group.sessionStart) &&
+      normalizeAgentName(agentName) === "GitHub Copilot Chat",
     repositoryRemoteUrl:
       readString(attributes, "github.copilot.git.repository") ??
       readString(attributes, "copilot_chat.repo.remote_url"),
@@ -704,14 +710,17 @@ function belongsToWorkspace(
   }
 
   if (!request.repositoryRemoteUrl) {
-    if (hasWorkspaceSessionMatch(request, sessionMatch)) {
+    if (canAcceptRepositorylessRequest(request, sessionMatch)) {
       logDebug(
-        "Accepted OTel request without repository metadata by matched chat session",
+        "Accepted OTel request without repository metadata by chat session",
         {
           traceId: request.traceId,
           conversationId: request.conversationId,
-          sessionId: sessionMatch.sessionId,
-          exactSessionMatch: request.conversationId === sessionMatch.sessionId,
+          sessionId: sessionMatch?.sessionId ?? null,
+          exactSessionMatch:
+            request.conversationId !== null &&
+            request.conversationId === sessionMatch?.sessionId,
+          hasCopilotChatSessionStart: request.hasCopilotChatSessionStart,
         },
       );
       return true;
@@ -730,19 +739,23 @@ function belongsToWorkspace(
   );
 }
 
-function hasWorkspaceSessionMatch(
+function canAcceptRepositorylessRequest(
   request: ParsedOtelRequest,
   sessionMatch: OtelSessionLookupResult | null,
-): sessionMatch is OtelSessionLookupResult {
-  if (!request.conversationId || !sessionMatch?.sessionId) {
+): boolean {
+  if (!request.conversationId) {
     return false;
   }
 
-  if (request.conversationId === sessionMatch.sessionId) {
-    return true;
+  if (sessionMatch?.sessionId) {
+    if (request.conversationId === sessionMatch.sessionId) {
+      return true;
+    }
+
+    return normalizeAgentName(request.agentName) === "GitHub Copilot Chat";
   }
 
-  return normalizeAgentName(request.agentName) === "GitHub Copilot Chat";
+  return request.hasCopilotChatSessionStart;
 }
 
 export function normalizeRepositoryRemoteUrl(value: string) {
@@ -823,6 +836,18 @@ function normalizeAgentName(agentName: string | null) {
   }
 
   return agentName.replace(/\s+OTel$/iu, "").trim() || null;
+}
+
+function isCopilotChatSessionStart(record: OtelLogRecord | null) {
+  if (!record) {
+    return false;
+  }
+
+  const attributes = mergeAttributes(record.resourceAttributes, record.attributes);
+  return (
+    normalizeAgentName(readString(attributes, "gen_ai.agent.name")) ===
+    "GitHub Copilot Chat"
+  );
 }
 
 function getRepositoryNameFromRemote(remoteUrl: string | null) {
