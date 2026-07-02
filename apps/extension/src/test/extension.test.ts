@@ -5,18 +5,19 @@ import * as path from "node:path";
 import * as vscode from "vscode";
 
 import { branchTaskSwitchPrompt } from "../branchTaskPrompt";
+import { findWorkspaceStorage } from "../chatSessionTitles";
 import { trackerDashboardUrl } from "../dashboardUrl";
 import { formatLogDetails } from "../logger";
-import {
-  normalizeRepositoryRemoteUrl,
-  readCopilotOtelRequests,
-} from "../otel";
+import { normalizeRepositoryRemoteUrl, readCopilotOtelRequests } from "../otel";
 import { estimateRequestsCostUsd } from "../pricing";
 import {
   planRequestUpload,
   readRequestUploadState,
   writeRequestUploadState,
 } from "../requestUploadCache";
+import type { SessionTokenStats } from "../sessionTokenStats";
+import { currentSessionTokenStats } from "../sessionTokenStats";
+import { SingleFlightTaskQueue } from "../singleFlightTaskQueue";
 import {
   compactStatusText,
   formatCompactNumber,
@@ -24,27 +25,24 @@ import {
   formatEstimatedSessionCost,
   formatNumber,
 } from "../statusFormatting";
-import { SingleFlightTaskQueue } from "../singleFlightTaskQueue";
 import {
   createTaskResolverFromHistory,
   latestTaskHistoryForWorkspace,
   readTaskHistoryFromValue,
   shouldRecordTaskHistoryEntry,
 } from "../taskHistory";
+import type { TaskHistoryEntry } from "../taskHistory";
 import {
   type AzureDevOpsWorkItem,
   TrackerClient,
   TrackerClientError,
+  type TrackerConfigurationInspect,
+  type TrackerConfigurationSource,
   extensionSignInUrl,
   getTrackerConfigFromConfiguration,
   parseTrackerServerUrl,
-  type TrackerConfigurationInspect,
-  type TrackerConfigurationSource,
 } from "../trackerClient";
 import type { CopilotChatRequest, WorkspaceContext } from "../types";
-import type { SessionTokenStats } from "../sessionTokenStats";
-import type { TaskHistoryEntry } from "../taskHistory";
-import { currentSessionTokenStats } from "../sessionTokenStats";
 import {
   azureDevOpsProjectFromRemoteUrl,
   isTerminalWorkItemState,
@@ -171,6 +169,76 @@ suite("Extension Test Suite", () => {
 
     assert.ok(manifest.activationEvents?.includes("*"));
     assert.ok(!manifest.activationEvents?.includes("onStartupFinished"));
+  });
+
+  test("Matches VS Code workspace storage written with a Windows file URI", async () => {
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "vscode-storage-"));
+
+    try {
+      const storagePath = path.join(tempDir, "windows-workspace");
+      await mkdir(storagePath, { recursive: true });
+      await writeFile(
+        path.join(storagePath, "workspace.json"),
+        JSON.stringify({
+          folder: "file:///c%3A/Users/example/source/copilot-tracker",
+        }),
+      );
+
+      const match = await findWorkspaceStorage(
+        tempDir,
+        createWorkspaceContext({
+          workspacePath: "C:\\Users\\example\\source\\copilot-tracker",
+          repositoryRoot: "C:\\Users\\example\\source\\copilot-tracker",
+        }),
+      );
+
+      assert.strictEqual(match?.storagePath, storagePath);
+      assert.strictEqual(
+        match?.chatSessionsPath,
+        path.join(storagePath, "chatSessions"),
+      );
+      assert.strictEqual(
+        match?.stateDbPath,
+        path.join(storagePath, "state.vscdb"),
+      );
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  test("Matches moved VS Code workspace storage by a single folder-name match", async () => {
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "vscode-storage-"));
+
+    try {
+      const storagePath = path.join(tempDir, "moved-workspace");
+      const otherStoragePath = path.join(tempDir, "other-workspace");
+      await mkdir(storagePath, { recursive: true });
+      await mkdir(otherStoragePath, { recursive: true });
+      await writeFile(
+        path.join(storagePath, "workspace.json"),
+        JSON.stringify({
+          folder: "file:///c%3A/Users/old-pc/source/copilot-tracker",
+        }),
+      );
+      await writeFile(
+        path.join(otherStoragePath, "workspace.json"),
+        JSON.stringify({
+          folder: "file:///c%3A/Users/old-pc/source/other-project",
+        }),
+      );
+
+      const match = await findWorkspaceStorage(
+        tempDir,
+        createWorkspaceContext({
+          workspacePath: "D:\\dev\\copilot-tracker",
+          repositoryRoot: "D:\\dev\\copilot-tracker",
+        }),
+      );
+
+      assert.strictEqual(match?.storagePath, storagePath);
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
+    }
   });
 
   test("Detects Azure DevOps numeric task ids from branches", () => {
@@ -497,7 +565,7 @@ suite("Extension Test Suite", () => {
     }
   });
 
-  test("Redacts local paths, repository remotes, and tokens from structured logs", () => {
+  test("Preserves diagnostic paths while redacting credentials from structured logs", () => {
     const formatted = formatLogDetails({
       workspacePath: "/Users/example/private-project",
       repositoryRoot: "/Users/example/private-project",
@@ -512,16 +580,31 @@ suite("Extension Test Suite", () => {
       },
     });
 
-    assert.match(formatted, /"workspacePath": "\[redacted\]"/);
-    assert.match(formatted, /"repositoryRoot": "\[redacted\]"/);
-    assert.match(formatted, /"repositoryRemoteUrl": "\[redacted\]"/);
-    assert.match(formatted, /"file": "\[redacted\]"/);
-    assert.match(formatted, /"storagePath": "\[redacted\]"/);
+    assert.match(
+      formatted,
+      /"workspacePath": "\/Users\/example\/private-project"/,
+    );
+    assert.match(
+      formatted,
+      /"repositoryRoot": "\/Users\/example\/private-project"/,
+    );
+    assert.match(
+      formatted,
+      /"repositoryRemoteUrl": "https:\/\/example\.com\/private-org\/private-project\.git"/,
+    );
+    assert.match(
+      formatted,
+      /"file": "\/Users\/example\/private-project\/\.vscode\/state\.json"/,
+    );
+    assert.match(
+      formatted,
+      /"storagePath": "\/Users\/example\/Library\/Application Support\/Code"/,
+    );
     assert.match(formatted, /"accessToken": "\[redacted\]"/);
     assert.match(formatted, /"branch": "feature\/123-login"/);
     assert.match(formatted, /"requestCount": 3/);
-    assert.doesNotMatch(formatted, /\/Users\/example/);
-    assert.doesNotMatch(formatted, /private-org/);
+    assert.match(formatted, /\/Users\/example/);
+    assert.match(formatted, /private-org/);
     assert.doesNotMatch(formatted, /secret-token-value/);
   });
 

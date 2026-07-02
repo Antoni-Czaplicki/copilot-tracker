@@ -18,6 +18,11 @@ interface WorkspaceStorageMatch {
   stateDbPath: string;
 }
 
+interface WorkspaceStorageNeedles {
+  exact: string[];
+  folderNames: string[];
+}
+
 interface SessionIndexEntry {
   sessionId: string;
   title: string | null;
@@ -88,7 +93,7 @@ export async function createChatSessionTitleResolver(
   return (request) => matchChatSessionTitle(request, candidates);
 }
 
-async function findWorkspaceStorage(
+export async function findWorkspaceStorage(
   storageRoot: string,
   workspaceContext: WorkspaceContext,
 ): Promise<WorkspaceStorageMatch | null> {
@@ -104,10 +109,8 @@ async function findWorkspaceStorage(
   }
 
   const candidates = await readdir(storageRoot, { withFileTypes: true });
-  const needles = [
-    workspaceContext.workspacePath,
-    workspaceContext.repositoryRoot,
-  ].filter((value): value is string => Boolean(value));
+  const needles = createWorkspaceStorageNeedles(workspaceContext);
+  const folderNameMatches: WorkspaceStorageMatch[] = [];
 
   for (const candidate of candidates) {
     if (!candidate.isDirectory()) {
@@ -118,30 +121,196 @@ async function findWorkspaceStorage(
     const workspaceJsonPath = path.join(storagePath, "workspace.json");
     try {
       const workspaceJson = await readFile(workspaceJsonPath, "utf8");
+      const workspaceJsonStrings = collectJsonStrings(workspaceJson);
+      const match = {
+        storagePath,
+        chatSessionsPath: path.join(storagePath, "chatSessions"),
+        stateDbPath: path.join(storagePath, "state.vscdb"),
+      };
       if (
-        needles.some(
-          (needle) =>
-            workspaceJson.includes(needle) ||
-            workspaceJson.includes(encodeURI(needle)),
+        includesAnyNeedle(
+          [workspaceJson, ...workspaceJsonStrings],
+          needles.exact,
         )
       ) {
-        return {
-          storagePath,
-          chatSessionsPath: path.join(storagePath, "chatSessions"),
-          stateDbPath: path.join(storagePath, "state.vscdb"),
-        };
+        return match;
+      }
+
+      if (hasWorkspaceFolderNameMatch(workspaceJsonStrings, needles)) {
+        folderNameMatches.push(match);
       }
     } catch {
       // Not a workspace storage directory.
     }
   }
 
+  if (folderNameMatches.length === 1) {
+    logInfo("Using VS Code workspace storage match by workspace folder name", {
+      ...folderNameMatches[0],
+      folderNames: needles.folderNames,
+    });
+    return folderNameMatches[0] ?? null;
+  }
+
   logWarn("Scanned VS Code storage root without finding workspace match", {
     storageRoot,
     candidateCount: candidates.length,
-    needles,
+    exactNeedles: needles.exact,
+    folderNames: needles.folderNames,
+    folderNameMatchCount: folderNameMatches.length,
   });
   return null;
+}
+
+function createWorkspaceStorageNeedles(
+  workspaceContext: WorkspaceContext,
+): WorkspaceStorageNeedles {
+  const workspacePaths = uniqueStrings([
+    workspaceContext.workspacePath,
+    workspaceContext.repositoryRoot,
+  ]);
+
+  return {
+    exact: uniqueStrings(workspacePaths.flatMap(workspacePathNeedles)),
+    folderNames: uniqueStrings([
+      ...workspacePaths.map(workspaceFolderName).filter(isNonEmptyString),
+      workspaceContext.workspaceName,
+    ]),
+  };
+}
+
+function workspacePathNeedles(workspacePath: string): string[] {
+  const trimmed = workspacePath.trim();
+  if (!trimmed) {
+    return [];
+  }
+
+  const slashPath = trimmed.replace(/\\/gu, "/");
+  return uniqueStrings([
+    trimmed,
+    slashPath,
+    encodeURI(trimmed),
+    encodeURI(slashPath),
+    ...fileUriNeedles(slashPath),
+  ]);
+}
+
+function fileUriNeedles(slashPath: string): string[] {
+  const windowsPath = slashPath.match(/^([A-Za-z]):\/(.+)$/u);
+  if (windowsPath) {
+    const drive = windowsPath[1];
+    const rest = windowsPath[2];
+    if (!drive || !rest) {
+      return [];
+    }
+
+    const encodedRest = encodePathSegments(rest);
+    return [
+      `file:///${drive}:/${rest}`,
+      `file:///${drive}:/${encodedRest}`,
+      `file:///${drive.toLowerCase()}%3A/${encodedRest}`,
+      `file:///${drive.toUpperCase()}%3A/${encodedRest}`,
+    ];
+  }
+
+  if (slashPath.startsWith("/")) {
+    return [`file://${slashPath}`, `file://${encodePathSegments(slashPath)}`];
+  }
+
+  return [];
+}
+
+function encodePathSegments(pathValue: string): string {
+  return pathValue.split("/").map(encodeURIComponent).join("/");
+}
+
+function includesAnyNeedle(haystacks: string[], needles: string[]): boolean {
+  return haystacks.some((haystack) =>
+    needles.some((needle) => includesNeedle(haystack, needle)),
+  );
+}
+
+function includesNeedle(haystack: string, needle: string): boolean {
+  return (
+    haystack.includes(needle) ||
+    haystack.toLowerCase().includes(needle.toLowerCase())
+  );
+}
+
+function hasWorkspaceFolderNameMatch(
+  workspaceJsonStrings: string[],
+  needles: WorkspaceStorageNeedles,
+) {
+  return workspaceJsonStrings.some((value) => {
+    const folderName = workspaceFolderName(value);
+    return (
+      folderName !== null &&
+      needles.folderNames.some(
+        (needle) => needle.toLowerCase() === folderName.toLowerCase(),
+      )
+    );
+  });
+}
+
+function collectJsonStrings(json: string): string[] {
+  const parsed = safeJsonParse(json);
+  const strings: string[] = [];
+  collectStrings(parsed, strings);
+  return strings;
+}
+
+function collectStrings(value: unknown, strings: string[]) {
+  if (typeof value === "string") {
+    strings.push(value);
+    return;
+  }
+
+  if (Array.isArray(value)) {
+    value.forEach((nestedValue) => collectStrings(nestedValue, strings));
+    return;
+  }
+
+  if (!isRecord(value)) {
+    return;
+  }
+
+  Object.values(value).forEach((nestedValue) =>
+    collectStrings(nestedValue, strings),
+  );
+}
+
+function workspaceFolderName(value: string): string | null {
+  let pathLike = value.trim();
+  if (!pathLike) {
+    return null;
+  }
+
+  try {
+    const uri = new URL(pathLike);
+    pathLike = decodeURIComponent(uri.pathname || uri.hostname || pathLike);
+  } catch {
+    try {
+      pathLike = decodeURIComponent(pathLike);
+    } catch {
+      // Keep the original value.
+    }
+  }
+
+  pathLike = pathLike.replace(/^\/([A-Za-z]:\/)/u, "$1");
+  const segments = pathLike
+    .replace(/\\/gu, "/")
+    .replace(/\/+$/u, "")
+    .split("/")
+    .filter(Boolean);
+  return segments.at(-1) ?? null;
+}
+
+function uniqueStrings(values: (string | null)[]): string[] {
+  return [...new Set(values.filter(isNonEmptyString))];
+}
+
+function isNonEmptyString(value: string | null): value is string {
+  return value !== null && value.trim().length > 0;
 }
 
 function getDirectStorageMatch(

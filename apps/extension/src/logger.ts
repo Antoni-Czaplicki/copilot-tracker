@@ -58,15 +58,15 @@ export function formatLogDetails(details: unknown): string {
   }
 
   try {
-    return JSON.stringify(redact(details), null, 2);
+    return JSON.stringify(redactSecrets(details), null, 2);
   } catch {
     return String(details);
   }
 }
 
-function redact(value: unknown): unknown {
+function redactSecrets(value: unknown): unknown {
   if (Array.isArray(value)) {
-    return value.map(redact);
+    return value.map(redactSecrets);
   }
 
   if (!value || typeof value !== "object") {
@@ -76,7 +76,9 @@ function redact(value: unknown): unknown {
   return Object.fromEntries(
     Object.entries(value).map(([key, nestedValue]) => [
       key,
-      isSensitiveKey(key, nestedValue) ? "[redacted]" : redact(nestedValue),
+      isSensitiveKey(key, nestedValue)
+        ? "[redacted]"
+        : redactSecrets(nestedValue),
     ]),
   );
 }
@@ -84,26 +86,8 @@ function redact(value: unknown): unknown {
 function isSensitiveKey(key: string, value: unknown): boolean {
   const normalized = key.toLowerCase().replace(/[-_]/g, "");
   if (
-    [
-      "workspacefolders",
-      "workspacepath",
-      "repositoryroot",
-      "repositoryremoteurl",
-      "otelfilepath",
-      "storageroot",
-      "storagepath",
-      "statedbpath",
-      "chatsessionspath",
-      "workspacejsonpath",
-      "file",
-      "needles",
-    ].includes(normalized)
-  ) {
-    return true;
-  }
-
-  if (
     normalized.includes("authorization") ||
+    normalized.includes("apikey") ||
     normalized.includes("password") ||
     normalized.includes("secret")
   ) {
