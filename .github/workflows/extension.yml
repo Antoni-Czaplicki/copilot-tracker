@@ -37,15 +37,26 @@ jobs:
       - name: Compile extension
         run: pnpm --filter copilot-tracker compile
 
+      - name: Resolve VSIX metadata
+        id: vsix
+        run: |
+          node - <<'NODE' >> "$GITHUB_OUTPUT"
+          const manifest = require("./apps/extension/package.json");
+          const name = String(manifest.name);
+          const version = String(manifest.version);
+          console.log(`name=${name}`);
+          console.log(`version=${version}`);
+          console.log(`path=apps/extension/${name}-${version}.vsix`);
+          NODE
+
       - name: Package VSIX
-        working-directory: apps/extension
-        run: pnpm exec vsce package --no-dependencies --out copilot-tracker.vsix
+        run: pnpm package:extension
 
       - name: Upload VSIX artifact
         uses: actions/upload-artifact@v7
         with:
-          name: copilot-tracker-vsix
-          path: apps/extension/copilot-tracker.vsix
+          name: ${{ steps.vsix.outputs.name }}-${{ steps.vsix.outputs.version }}-vsix
+          path: ${{ steps.vsix.outputs.path }}
           if-no-files-found: error
 
       # On a version tag, attach the VSIX to a GitHub Release and, if a
@@ -54,7 +65,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v3
         with:
-          files: apps/extension/copilot-tracker.vsix
+          files: ${{ steps.vsix.outputs.path }}
           generate_release_notes: true
 
       # Marketplace publishing is intentionally disabled for now. To enable it,
@@ -65,4 +76,4 @@ jobs:
       #   working-directory: apps/extension
       #   env:
       #     VSCE_PAT: ${{ secrets.VSCE_PAT }}
-      #   run: pnpm exec vsce publish --no-dependencies --packagePath copilot-tracker.vsix
+      #   run: pnpm exec vsce publish --no-dependencies --packagePath ../../${{ steps.vsix.outputs.path }}
