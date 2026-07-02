@@ -8,7 +8,7 @@ const execFileAsync = promisify(execFile);
 const remoteFetchTimeoutMs = 10_000;
 
 export const defaultTaskBranchBaseBranches = ["main", "dev", "beta"];
-export const defaultTaskBranchNamePrefix = "task/";
+export const defaultTaskBranchNamePrefix = "";
 
 export interface TaskBranchRef {
   branchName: string;
@@ -42,6 +42,15 @@ export function isTaskBranchBaseBranch(
       (baseBranch) => baseBranch.trim().toLowerCase() === normalizedBranch,
     )
   );
+}
+
+export function normalizeTaskBranchNamePrefix(value: unknown) {
+  if (typeof value !== "string") {
+    return defaultTaskBranchNamePrefix;
+  }
+
+  const prefix = value.trim();
+  return prefix.toLowerCase() === "ticket/" ? "" : prefix;
 }
 
 export async function findTaskBranches(

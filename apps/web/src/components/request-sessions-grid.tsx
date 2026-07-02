@@ -39,6 +39,7 @@ import {
   getCommonTask,
   getCurrentTask,
   groupRequestsBySession,
+  isGeneratedSessionTitle,
   sessionAnchor,
 } from "@/lib/requestSessionsGridModel";
 import { estimateRequestsCost, formatCurrency } from "@/lib/pricing";
@@ -314,10 +315,10 @@ export function RequestSessionsGrid({
   }
 
   return (
-    <div className="grid gap-4">
+    <div className="grid min-w-0 gap-4 overflow-hidden">
       {selectedRequests.length > 0 ? (
-        <section className="border-border bg-muted/30 flex flex-col gap-3 border p-3 md:flex-row md:items-end md:justify-between">
-          <div>
+        <section className="border-border bg-muted/30 flex min-w-0 flex-col gap-3 overflow-hidden border p-3 md:flex-row md:items-end md:justify-between">
+          <div className="min-w-0">
             <div className="text-sm font-semibold">
               {formatNumber(selectedRequests.length)} selected requests
             </div>
@@ -325,7 +326,7 @@ export function RequestSessionsGrid({
               Apply one Azure DevOps task to only the selected request rows.
             </p>
           </div>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
+          <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-start md:justify-end">
             <WorkItemPicker value={bulkTask} onChange={setBulkTask} />
             <Button
               disabled={selectedSaving}
@@ -365,8 +366,8 @@ export function RequestSessionsGrid({
         </p>
       ) : null}
 
-      <section className="border-border bg-muted/20 grid gap-3 border p-3">
-        <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+      <section className="border-border bg-muted/20 grid min-w-0 gap-3 overflow-hidden border p-3">
+        <div className="grid min-w-0 gap-2 lg:grid-cols-[minmax(14rem,1fr)_minmax(0,auto)] lg:items-center">
           <div className="relative min-w-0 lg:max-w-sm lg:flex-1">
             <Filter className="text-muted-foreground pointer-events-none absolute top-2 left-2 size-3.5" />
             <Input
@@ -379,7 +380,7 @@ export function RequestSessionsGrid({
               }}
             />
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex min-w-0 flex-wrap items-center gap-2 lg:justify-end">
             <label className="text-muted-foreground flex items-center gap-1 text-xs">
               <ListFilter aria-hidden="true" className="size-3.5" />
               <select
@@ -459,22 +460,28 @@ export function RequestSessionsGrid({
           savingKey === sessionKey || savingKey === `${sessionKey}:clear`;
         const expanded = expandedSessionIds.has(group.sessionId);
         const sessionTaskInfo = sessionTask ? workItemForTask(sessionTask) : null;
+        const rawSessionTitle = group.sessionTitle ?? group.sessionId;
+        const generatedTitle = isGeneratedSessionTitle(group);
+        const displaySessionTitle =
+          generatedTitle && sessionTask && sessionTaskInfo?.title
+            ? `Task ${sessionTask} ${sessionTaskInfo.title}`
+            : rawSessionTitle;
 
         return (
           <section
             key={group.sessionId}
             id={sessionAnchor(group.sessionId)}
             className={cn(
-              "border-border grid gap-3 border p-3",
+              "border-border grid min-w-0 gap-3 overflow-hidden border p-3",
               focusedSessionId === group.sessionId && "ring-ring ring-1",
             )}
           >
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div className="grid min-w-0 gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(20rem,34rem)] xl:items-start">
               <div className="flex min-w-0 items-start gap-3">
                 <Button
                   aria-expanded={expanded}
                   aria-label={`${expanded ? "Collapse" : "Expand"} ${
-                    group.sessionTitle ?? group.sessionId
+                    displaySessionTitle
                   }`}
                   className="mt-0.5"
                   size="icon-xs"
@@ -500,16 +507,23 @@ export function RequestSessionsGrid({
                 </Button>
                 <SessionSelectionCheckbox
                   allSelected={allSelected}
-                  label={`Select ${group.sessionTitle ?? group.sessionId} session requests`}
+                  label={`Select ${displaySessionTitle} session requests`}
                   someSelected={someSelected}
                   onChange={(checked) => {
                     toggleSession(group, checked);
                   }}
                 />
-                <div className="min-w-0">
+                <div className="min-w-0 overflow-hidden">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="truncate text-sm font-semibold">
-                      {group.sessionTitle ?? group.sessionId}
+                    <h3
+                      className="min-w-0 max-w-full truncate text-sm font-semibold"
+                      title={
+                        displaySessionTitle === rawSessionTitle
+                          ? rawSessionTitle
+                          : `${displaySessionTitle} (${rawSessionTitle})`
+                      }
+                    >
+                      {displaySessionTitle}
                     </h3>
                     <Badge>{formatNumber(group.requests.length)} requests</Badge>
                   </div>
@@ -531,8 +545,9 @@ export function RequestSessionsGrid({
               </div>
 
               {expanded ? (
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
+                <div className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-start xl:justify-self-end">
                   <WorkItemPicker
+                    className="sm:min-w-0"
                     knownWorkItem={sessionTaskInfo}
                     value={sessionTask}
                     onChange={(value) => {
@@ -543,6 +558,7 @@ export function RequestSessionsGrid({
                     }}
                   />
                   <Button
+                    className="w-full sm:w-auto"
                     disabled={sessionSaving}
                     type="button"
                     variant="secondary"
@@ -557,6 +573,7 @@ export function RequestSessionsGrid({
                     {savingKey === sessionKey ? "Applying" : "Apply to session"}
                   </Button>
                   <Button
+                    className="w-full sm:w-auto"
                     disabled={sessionSaving}
                     type="button"
                     variant="outline"
@@ -821,8 +838,8 @@ function SessionRequestTable({
   });
 
   return (
-    <div className="grid gap-2">
-      <div className="overflow-x-auto">
+    <div className="grid min-w-0 gap-2 overflow-hidden">
+      <div className="min-w-0 overflow-x-auto">
         <DataGrid table={table} emptyMessage="No captured requests" />
       </div>
       {requests.length > 25 ? (

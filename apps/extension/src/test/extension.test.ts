@@ -32,6 +32,7 @@ import {
   defaultTaskBranchBaseBranches,
   defaultTaskBranchNamePrefix,
   isTaskBranchBaseBranch,
+  normalizeTaskBranchNamePrefix,
   normalizeTaskBranchBaseBranches,
   parseGitBranchRefs,
   suggestedTaskBranchName,
@@ -178,6 +179,16 @@ suite("Extension Test Suite", () => {
     assert.strictEqual(
       getTrackerConfigFromConfiguration(config).taskBranchNamePrefix,
       defaultTaskBranchNamePrefix,
+    );
+
+    const ticketPrefixConfig = createTrackerConfigurationSource({
+      globalValues: {
+        taskBranchNamePrefix: "ticket/",
+      },
+    });
+    assert.strictEqual(
+      getTrackerConfigFromConfiguration(ticketPrefixConfig).taskBranchNamePrefix,
+      "",
     );
   });
 
@@ -647,6 +658,8 @@ suite("Extension Test Suite", () => {
       isTaskBranchBaseBranch("feature/123-login", ["main", "dev", "beta"]),
       false,
     );
+    assert.strictEqual(normalizeTaskBranchNamePrefix("ticket/"), "");
+    assert.strictEqual(normalizeTaskBranchNamePrefix(" feature/ "), "feature/");
   });
 
   test("Task branch switch parses and ranks local and remote refs for task lookup", () => {
@@ -688,6 +701,10 @@ suite("Extension Test Suite", () => {
   });
 
   test("Task branch switch suggests and validates branch names", () => {
+    assert.strictEqual(
+      suggestedTaskBranchName("16648", defaultTaskBranchNamePrefix),
+      "16648",
+    );
     assert.strictEqual(suggestedTaskBranchName("16648", "task/"), "task/16648");
     assert.strictEqual(
       suggestedTaskBranchName("ABC 123: Fix Login", "feature/"),

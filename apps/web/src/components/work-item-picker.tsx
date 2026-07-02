@@ -37,9 +37,11 @@ interface WorkItemPickerProps {
   onChange: (value: string) => void;
   knownWorkItem?: WorkItemSearchItem | null;
   placeholder?: string;
+  className?: string;
 }
 
 export function WorkItemPicker({
+  className,
   value,
   onChange,
   knownWorkItem = null,
@@ -160,7 +162,7 @@ export function WorkItemPicker({
 
   return (
     <div
-      className="grid w-full min-w-0 gap-1.5 sm:min-w-[260px]"
+      className={cn("grid w-full min-w-0 gap-1.5 sm:min-w-[260px]", className)}
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget)) {
           setFocused(false);

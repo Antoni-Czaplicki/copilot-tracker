@@ -76,9 +76,10 @@ export function TaskEditor({
   }
 
   return (
-    <form className="grid min-w-[280px] gap-1.5" onSubmit={submit}>
-      <div className="flex items-start gap-2">
+    <form className="grid w-full min-w-0 gap-1.5" onSubmit={submit}>
+      <div className="flex min-w-0 flex-wrap items-start gap-2">
         <WorkItemPicker
+          className="min-w-[14rem] flex-1 sm:min-w-[14rem]"
           knownWorkItem={knownWorkItem}
           value={task}
           onChange={(value) => {

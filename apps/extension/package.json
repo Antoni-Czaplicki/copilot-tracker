@@ -105,8 +105,8 @@
         },
         "copilot-tracker.taskBranchNamePrefix": {
           "type": "string",
-          "default": "task/",
-          "description": "Prefix used for suggested task branch names when creating a branch from the task switch prompt."
+          "default": "",
+          "description": "Optional prefix used for suggested task branch names when creating a branch from the task switch prompt."
         }
       }
     }

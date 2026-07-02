@@ -2,6 +2,7 @@ import type { CopilotChatRequest } from "@copilot-tracker/shared";
 
 import {
   formatNumber,
+  getRepositoryName,
   getRequestActivityTimestamp,
 } from "./analytics";
 import { estimateRequestsCost, formatCurrency } from "./pricing";
@@ -65,6 +66,15 @@ export function groupRequestsBySession(
     });
 }
 
+export function isGeneratedSessionTitle(group: SessionGroup) {
+  const title = group.sessionTitle?.trim();
+  if (!title) {
+    return false;
+  }
+
+  return group.requests.some((request) => generatedSessionTitle(request) === title);
+}
+
 export function getCommonTask(
   group: SessionGroup,
   taskOverrides: TaskOverrideMap,
@@ -118,4 +128,30 @@ export function formatTokenCaptureLabel(request: RequestGridRequest) {
 
 export function sessionAnchor(sessionId: string) {
   return `session-${sessionId.replaceAll(/[^a-zA-Z0-9_-]/g, "-")}`;
+}
+
+function generatedSessionTitle(request: RequestGridRequest) {
+  return [
+    getRepositoryName(request),
+    request.selectedTask ?? request.defaultTask ?? request.branch,
+    modelDisplayName(request.modelId ?? request.resolvedModel),
+  ]
+    .filter(Boolean)
+    .join(" - ");
+}
+
+function modelDisplayName(modelId: string | null) {
+  if (!modelId) {
+    return null;
+  }
+
+  const parts = modelId.split("/");
+  for (let index = parts.length - 1; index >= 0; index -= 1) {
+    const part = parts[index];
+    if (part) {
+      return part.replace(/-\d{4}-\d{2}-\d{2}$/u, "");
+    }
+  }
+
+  return modelId;
 }

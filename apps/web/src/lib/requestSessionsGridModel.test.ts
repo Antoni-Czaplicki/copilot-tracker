@@ -11,6 +11,7 @@ import {
   getCommonTask,
   getCurrentTask,
   groupRequestsBySession,
+  isGeneratedSessionTitle,
   sessionAnchor,
 } from "./requestSessionsGridModel";
 
@@ -66,6 +67,38 @@ void test("groupRequestsBySession otherwise sorts sessions by latest activity", 
   assert.deepEqual(
     groups.map((group) => group.sessionId),
     ["new-session", "old-session"],
+  );
+});
+
+void test("isGeneratedSessionTitle detects repo task model fallback titles", () => {
+  const [generatedGroup] = groupRequestsBySession(
+    [
+      createRequest({
+        repositoryRoot: "/tmp/SynapseCentralisV2.React.UI.antoni.czaplicki",
+        selectedTask: "17692",
+        modelId: "gpt-5.4",
+        sessionTitle:
+          "SynapseCentralisV2.React.UI.antoni.czaplicki - 17692 - gpt-5.4",
+      }),
+    ],
+    null,
+  );
+  const [realTitleGroup] = groupRequestsBySession(
+    [
+      createRequest({
+        sessionTitle: "Financial issues after refactor",
+      }),
+    ],
+    null,
+  );
+
+  assert.equal(
+    generatedGroup ? isGeneratedSessionTitle(generatedGroup) : false,
+    true,
+  );
+  assert.equal(
+    realTitleGroup ? isGeneratedSessionTitle(realTitleGroup) : true,
+    false,
   );
 });
 

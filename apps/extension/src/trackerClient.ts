@@ -4,6 +4,7 @@ import { logInfo, logWarn } from "./logger";
 import {
   defaultTaskBranchBaseBranches,
   defaultTaskBranchNamePrefix,
+  normalizeTaskBranchNamePrefix,
   normalizeTaskBranchBaseBranches,
 } from "./taskBranchSwitch";
 import { CopilotChatRequest, TrackerEvent } from "./types";
@@ -82,9 +83,8 @@ export function getTrackerConfigFromConfiguration(
         defaultTaskBranchBaseBranches,
       ),
     ),
-    taskBranchNamePrefix: config.get<string>(
-      "taskBranchNamePrefix",
-      defaultTaskBranchNamePrefix,
+    taskBranchNamePrefix: normalizeTaskBranchNamePrefix(
+      config.get<unknown>("taskBranchNamePrefix", defaultTaskBranchNamePrefix),
     ),
   };
 }
