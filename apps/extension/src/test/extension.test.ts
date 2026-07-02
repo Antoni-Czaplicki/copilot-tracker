@@ -1916,7 +1916,7 @@ suite("Extension Test Suite", () => {
     }
   });
 
-  test("Rejects repo-less OTel log records with only a different timestamp-matched chat session", async () => {
+  test("Accepts repo-less Copilot Chat logs with a timestamp-matched workspace session", async () => {
     const tempDir = await mkdtemp(path.join(os.tmpdir(), "copilot-otel-"));
 
     try {
@@ -1955,6 +1955,23 @@ suite("Extension Test Suite", () => {
               "gen_ai.usage.output_tokens": 305,
             },
           }),
+          createPlainLogRecord({
+            traceId: "trace-repoless-other-session",
+            spanId: "span-repoless-other-session",
+            hrTime: [1782919256, 664000000],
+            body: "GenAI inference: gpt-5-nano",
+            resourceSessionId: "otel-window-session",
+            includeRepository: false,
+            attributes: {
+              "event.name": "gen_ai.client.inference.operation.details",
+              "gen_ai.operation.name": "chat",
+              "gen_ai.request.model": "gpt-5-nano",
+              "gen_ai.response.model": "gpt-5-nano-2025-08-07",
+              "gen_ai.response.id": "response-repoless-other-session",
+              "gen_ai.usage.input_tokens": 900,
+              "gen_ai.usage.output_tokens": 305,
+            },
+          }),
         ]
           .map((record) => JSON.stringify(record))
           .join("\n"),
@@ -1966,12 +1983,23 @@ suite("Extension Test Suite", () => {
         undefined,
         () => ({
           sessionId: "workspace-b-chat-session",
-          sessionTitle: "Nearby request in another VS Code workspace",
+          sessionTitle: "Nearby request in this VS Code workspace",
           sessionCreatedAt: "2026-07-01T15:20:51.505Z",
         }),
       );
 
-      assert.strictEqual(requests.length, 0);
+      assert.strictEqual(requests.length, 1);
+      assert.strictEqual(
+        requests[0]?.requestRecordId,
+        "otel-log:trace-repoless-other-session:response-repoless-other-session",
+      );
+      assert.strictEqual(requests[0]?.sessionId, "workspace-a-chat-session");
+      assert.strictEqual(
+        requests[0]?.sessionTitle,
+        "Nearby request in this VS Code workspace",
+      );
+      assert.strictEqual(requests[0]?.inputTokens, 900);
+      assert.strictEqual(requests[0]?.outputTokens, 305);
     } finally {
       await rm(tempDir, { recursive: true, force: true });
     }

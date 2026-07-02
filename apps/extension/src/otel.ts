@@ -704,12 +704,16 @@ function belongsToWorkspace(
   }
 
   if (!request.repositoryRemoteUrl) {
-    if (hasStrongSessionMatch(request, sessionMatch)) {
-      logDebug("Accepted OTel request without repository metadata by matched chat session", {
-        traceId: request.traceId,
-        conversationId: request.conversationId,
-        sessionId: sessionMatch.sessionId,
-      });
+    if (hasWorkspaceSessionMatch(request, sessionMatch)) {
+      logDebug(
+        "Accepted OTel request without repository metadata by matched chat session",
+        {
+          traceId: request.traceId,
+          conversationId: request.conversationId,
+          sessionId: sessionMatch.sessionId,
+          exactSessionMatch: request.conversationId === sessionMatch.sessionId,
+        },
+      );
       return true;
     }
 
@@ -726,15 +730,19 @@ function belongsToWorkspace(
   );
 }
 
-function hasStrongSessionMatch(
+function hasWorkspaceSessionMatch(
   request: ParsedOtelRequest,
   sessionMatch: OtelSessionLookupResult | null,
 ): sessionMatch is OtelSessionLookupResult {
-  return Boolean(
-    request.conversationId &&
-      sessionMatch?.sessionId &&
-      request.conversationId === sessionMatch.sessionId,
-  );
+  if (!request.conversationId || !sessionMatch?.sessionId) {
+    return false;
+  }
+
+  if (request.conversationId === sessionMatch.sessionId) {
+    return true;
+  }
+
+  return normalizeAgentName(request.agentName) === "GitHub Copilot Chat";
 }
 
 export function normalizeRepositoryRemoteUrl(value: string) {
