@@ -10,27 +10,26 @@ Copilot Tracker server, and verify that GitHub Copilot Chat usage is syncing.
 - Access to a Copilot Tracker server, for example
   `https://copilot-tracker.antek.page`.
 - A packaged extension file, for example
-  `apps/extension/copilot-tracker-0.0.2.vsix`.
+  `apps/extension/copilot-tracker-0.0.3.vsix`.
 
 The extension uses GitHub Copilot Chat OpenTelemetry as its only usage source.
 By default it runs a loopback OTLP/HTTP receiver, configures Copilot to send
 local OTel logs/traces to it, and sends usage metadata to the tracker server.
-Prompt and response content is not captured. A JSONL file exporter fallback is
-available when needed.
+Prompt and response content is not captured.
 
 ## Install The Extension
 
 From the repository root, install the packaged VSIX:
 
 ```sh
-code --install-extension apps/extension/copilot-tracker-0.0.2.vsix --force
+code --install-extension apps/extension/copilot-tracker-0.0.3.vsix --force
 ```
 
 On macOS, if `code` is not available in your shell, use the VS Code app binary:
 
 ```sh
 /Applications/Visual\ Studio\ Code.app/Contents/Resources/app/bin/code \
-  --install-extension apps/extension/copilot-tracker-0.0.2.vsix \
+  --install-extension apps/extension/copilot-tracker-0.0.3.vsix \
   --force
 ```
 
@@ -46,9 +45,7 @@ Open VS Code user settings as JSON and set the tracker server URL:
 ```jsonc
 {
   "copilot-tracker.serverUrl": "https://copilot-tracker.antek.page",
-  "copilot-tracker.otelCollectionMode": "otlp-http",
-  "copilot-tracker.otelFilePath": "",
-  "copilot-tracker.syncIntervalSeconds": 15,
+  "copilot-tracker.otelHttpPort": 4318,
 }
 ```
 
@@ -66,15 +63,13 @@ The extension configures these Copilot Chat settings automatically:
 {
   "github.copilot.chat.otel.enabled": true,
   "github.copilot.chat.otel.exporterType": "otlp-http",
-  "github.copilot.chat.otel.otlpEndpoint": "http://127.0.0.1:<extension-managed-port>",
+  "github.copilot.chat.otel.otlpEndpoint": "http://127.0.0.1:4318",
   "github.copilot.chat.otel.captureContent": false,
 }
 ```
 
-Set `copilot-tracker.otelCollectionMode` to `file` only if you need the older
-JSONL fallback. In file mode, leave `copilot-tracker.otelFilePath` empty unless
-you need a fixed OTel file location. When it is empty, the extension stores the
-OTel file in VS Code global storage.
+It also removes `github.copilot.chat.otel.outfile` from user settings because
+Copilot treats that file path as an override that forces the `file` exporter.
 
 ## Verify Sync
 
@@ -86,8 +81,8 @@ In VS Code, run these commands from the Command Palette:
 - `Copilot Tracker: Show Logs`
 
 `Show Current Context` should display the workspace name, repository, remote,
-branch, selected task, server URL, OTel collection mode, active endpoint or file
-path, and last sync stats.
+branch, selected task, server URL, active OTLP HTTP endpoint, buffered record
+count, and last sync stats.
 
 To test end to end:
 
@@ -189,7 +184,7 @@ The package script reads `apps/extension/package.json` and writes a versioned
 VSIX file:
 
 ```text
-apps/extension/copilot-tracker-0.0.2.vsix
+apps/extension/copilot-tracker-0.0.3.vsix
 ```
 
 Install it with the `code --install-extension` command from the first section.

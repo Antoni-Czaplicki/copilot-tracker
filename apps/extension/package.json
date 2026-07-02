@@ -1,7 +1,7 @@
 {
   "name": "copilot-tracker",
   "displayName": "Copilot tracker",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Track your copilot tokens per branch or assign them manually",
   "categories": [
     "Other"
@@ -75,37 +75,12 @@
           "default": "http://localhost:3737",
           "description": "Copilot Tracker server URL. Set this in user settings; workspace values are ignored for token safety."
         },
-        "copilot-tracker.otelFilePath": {
-          "type": "string",
-          "default": "",
-          "description": "Optional path for the Copilot Chat OTel JSONL file. Set this in user settings; workspace values are ignored because Copilot's OTel exporter is global. Leave empty to use extension global storage."
-        },
-        "copilot-tracker.otelCollectionMode": {
-          "type": "string",
-          "default": "otlp-http",
-          "enum": [
-            "otlp-http",
-            "file"
-          ],
-          "description": "How Copilot Tracker collects Copilot Chat OpenTelemetry. otlp-http runs a local loopback OTLP receiver; file uses Copilot's JSONL file exporter fallback."
-        },
-        "copilot-tracker.otelMaxFileSizeMb": {
+        "copilot-tracker.otelHttpPort": {
           "type": "number",
-          "default": 25,
-          "minimum": 0,
-          "description": "Maximum Copilot OTel JSONL file size before Copilot Tracker compacts it after a successful sync. Set to 0 to disable compaction."
-        },
-        "copilot-tracker.otelRetainedLineCount": {
-          "type": "number",
-          "default": 5000,
-          "minimum": 100,
-          "description": "Number of most recent Copilot OTel JSONL lines to retain when compacting the file."
-        },
-        "copilot-tracker.syncIntervalSeconds": {
-          "type": "number",
-          "default": 15,
-          "minimum": 5,
-          "description": "Fallback polling interval for detecting Copilot OTel file changes."
+          "default": 4318,
+          "minimum": 1,
+          "maximum": 65535,
+          "description": "Local loopback OTLP/HTTP receiver port. GitHub Copilot Chat reads OTel settings on window reload, so this port stays stable across extension restarts."
         },
         "copilot-tracker.showCurrentSessionTokensInStatusBar": {
           "type": "boolean",

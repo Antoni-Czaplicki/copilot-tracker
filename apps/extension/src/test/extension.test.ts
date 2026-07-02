@@ -13,9 +13,7 @@ import {
 import { trackerDashboardUrl } from "../dashboardUrl";
 import { formatLogDetails } from "../logger";
 import {
-  compactCopilotOtelFile,
   normalizeRepositoryRemoteUrl,
-  readCopilotOtelRequests,
   readCopilotOtelRequestsFromRecords,
 } from "../otel";
 import { startOtlpHttpReceiver } from "../otlpHttpReceiver";
@@ -169,19 +167,19 @@ suite("Extension Test Suite", () => {
     );
   });
 
-  test("Ignores workspace OTel file paths because Copilot exporter is global", () => {
+  test("Reads tracker config defaults and normalizes the OTLP HTTP port", () => {
     const config = createTrackerConfigurationSource({
       globalValues: {
-        otelFilePath: "/tmp/copilot-tracker-global-otel.jsonl",
+        otelHttpPort: 12345,
       },
       workspaceValues: {
-        otelFilePath: "/tmp/copilot-tracker-workspace-otel.jsonl",
+        otelHttpPort: 23456,
       },
     });
 
     assert.strictEqual(
-      getTrackerConfigFromConfiguration(config).otelFilePath,
-      "/tmp/copilot-tracker-global-otel.jsonl",
+      getTrackerConfigFromConfiguration(config).otelHttpPort,
+      23456,
     );
     assert.deepStrictEqual(
       getTrackerConfigFromConfiguration(config).taskBranchBaseBranches,
@@ -191,37 +189,15 @@ suite("Extension Test Suite", () => {
       getTrackerConfigFromConfiguration(config).taskBranchNamePrefix,
       defaultTaskBranchNamePrefix,
     );
-    assert.strictEqual(
-      getTrackerConfigFromConfiguration(config).otelMaxFileSizeMb,
-      25,
-    );
-    assert.strictEqual(
-      getTrackerConfigFromConfiguration(config).otelCollectionMode,
-      "otlp-http",
-    );
-    assert.strictEqual(
-      getTrackerConfigFromConfiguration(config).otelRetainedLineCount,
-      5000,
-    );
 
-    const compactionConfig = createTrackerConfigurationSource({
+    const invalidPortConfig = createTrackerConfigurationSource({
       globalValues: {
-        otelMaxFileSizeMb: 0,
-        otelRetainedLineCount: 250,
-        otelCollectionMode: "file",
+        otelHttpPort: Number.NaN,
       },
     });
     assert.strictEqual(
-      getTrackerConfigFromConfiguration(compactionConfig).otelCollectionMode,
-      "file",
-    );
-    assert.strictEqual(
-      getTrackerConfigFromConfiguration(compactionConfig).otelMaxFileSizeMb,
-      0,
-    );
-    assert.strictEqual(
-      getTrackerConfigFromConfiguration(compactionConfig).otelRetainedLineCount,
-      250,
+      getTrackerConfigFromConfiguration(invalidPortConfig).otelHttpPort,
+      4318,
     );
 
     const ticketPrefixConfig = createTrackerConfigurationSource({
@@ -984,73 +960,6 @@ suite("Extension Test Suite", () => {
       assert.strictEqual(requests[0]?.inputTokens, 11);
       assert.strictEqual(requests[0]?.outputTokens, 13);
       assert.strictEqual(requests[0]?.totalTokens, 24);
-    } finally {
-      await rm(tempDir, { recursive: true, force: true });
-    }
-  });
-
-  test("Compacts Copilot OTel JSONL files to the retained tail", async () => {
-    const tempDir = await mkdtemp(path.join(os.tmpdir(), "copilot-otel-"));
-
-    try {
-      const otelFilePath = path.join(tempDir, "copilot-otel.jsonl");
-      await writeFile(
-        otelFilePath,
-        Array.from({ length: 10 }, (_, index) =>
-          JSON.stringify({ line: index + 1 }),
-        ).join("\n"),
-      );
-
-      const result = await compactCopilotOtelFile(otelFilePath, {
-        maxBytes: 40,
-        retainedLineCount: 3,
-      });
-      const text = await readFile(otelFilePath, "utf8");
-
-      assert.deepStrictEqual(
-        text
-          .trim()
-          .split(/\r?\n/)
-          .map((line) => JSON.parse(line) as { line: number }),
-        [{ line: 8 }, { line: 9 }, { line: 10 }],
-      );
-      assert.strictEqual(result?.originalLineCount, 10);
-      assert.strictEqual(result?.retainedLineCount, 3);
-      assert.ok((result?.originalBytes ?? 0) > (result?.compactedBytes ?? 0));
-    } finally {
-      await rm(tempDir, { recursive: true, force: true });
-    }
-  });
-
-  test("Compacts Copilot OTel JSONL files to the byte cap", async () => {
-    const tempDir = await mkdtemp(path.join(os.tmpdir(), "copilot-otel-"));
-
-    try {
-      const otelFilePath = path.join(tempDir, "copilot-otel.jsonl");
-      await writeFile(
-        otelFilePath,
-        Array.from({ length: 4 }, (_, index) =>
-          JSON.stringify({ line: index + 1, payload: "x".repeat(80) }),
-        ).join("\n"),
-      );
-
-      const result = await compactCopilotOtelFile(otelFilePath, {
-        maxBytes: 120,
-        retainedLineCount: 10,
-      });
-      const text = await readFile(otelFilePath, "utf8");
-      const retained = text
-        .trim()
-        .split(/\r?\n/)
-        .map((line) => JSON.parse(line) as { line: number });
-
-      assert.ok(Buffer.byteLength(text) <= 120);
-      assert.deepStrictEqual(
-        retained.map((line) => line.line),
-        [4],
-      );
-      assert.strictEqual(result?.originalLineCount, 4);
-      assert.strictEqual(result?.retainedLineCount, 1);
     } finally {
       await rm(tempDir, { recursive: true, force: true });
     }
@@ -2778,6 +2687,27 @@ function createTrackerConfigurationSource({
     get: <T>(section: string, defaultValue: T) =>
       (workspaceValues[section] ?? globalValues[section] ?? defaultValue) as T,
   };
+}
+
+async function readCopilotOtelRequests(
+  workspaceContext: Parameters<typeof readCopilotOtelRequestsFromRecords>[0],
+  otelFilePath: string,
+  resolveTaskForRequest?: Parameters<typeof readCopilotOtelRequestsFromRecords>[2],
+  resolveSessionForRequest?: Parameters<
+    typeof readCopilotOtelRequestsFromRecords
+  >[3],
+) {
+  const text = await readFile(otelFilePath, "utf8");
+  const records = text
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .map((line) => JSON.parse(line) as unknown);
+  return readCopilotOtelRequestsFromRecords(
+    workspaceContext,
+    records,
+    resolveTaskForRequest,
+    resolveSessionForRequest,
+  );
 }
 
 async function withTrackerServerUrl<T>(

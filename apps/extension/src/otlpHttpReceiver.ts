@@ -19,6 +19,7 @@ export interface OtlpHttpReceiver {
 
 export async function startOtlpHttpReceiver(
   onRecords: (records: unknown[], signal: OtlpHttpSignal) => void,
+  port = 0,
 ): Promise<OtlpHttpReceiver> {
   const server = http.createServer((request, response) => {
     void handleOtlpRequest(request, response, onRecords);
@@ -26,7 +27,7 @@ export async function startOtlpHttpReceiver(
 
   await new Promise<void>((resolve, reject) => {
     server.once("error", reject);
-    server.listen(0, "127.0.0.1", () => {
+    server.listen(port, "127.0.0.1", () => {
       server.off("error", reject);
       resolve();
     });
@@ -39,7 +40,10 @@ export async function startOtlpHttpReceiver(
   }
 
   const endpoint = `http://127.0.0.1:${address.port}`;
-  logInfo("Started local OTLP HTTP receiver", { endpoint });
+  logInfo("Started local OTLP HTTP receiver", {
+    endpoint,
+    configuredPort: port,
+  });
   return {
     endpoint,
     dispose: () => {

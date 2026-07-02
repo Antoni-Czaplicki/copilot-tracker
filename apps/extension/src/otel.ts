@@ -1,10 +1,6 @@
-import { existsSync } from "node:fs";
-import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
-import * as path from "node:path";
 import * as vscode from "vscode";
 
-import { logDebug, logInfo, logWarn } from "./logger";
-import { TrackerConfig } from "./trackerClient";
+import { logDebug, logInfo } from "./logger";
 import {
   CopilotChatRequest,
   PromptTokenDetail,
@@ -100,69 +96,10 @@ export type OtelSessionResolver = (
   request: OtelSessionLookupRequest,
 ) => OtelSessionLookupResult | null | undefined;
 
-export interface OtelFileCompactionResult {
-  originalBytes: number;
-  compactedBytes: number;
-  originalLineCount: number;
-  retainedLineCount: number;
-}
-
 let lastCopilotOtelConfigurationWriteAt = 0;
 
 export function getLastCopilotOtelConfigurationWriteAt() {
   return lastCopilotOtelConfigurationWriteAt;
-}
-
-export function getDefaultOtelFilePath(context: vscode.ExtensionContext) {
-  return path.join(context.globalStorageUri.fsPath, "copilot-otel.jsonl");
-}
-
-export function resolveOtelFilePath(
-  context: vscode.ExtensionContext,
-  config: TrackerConfig,
-) {
-  return config.otelFilePath || getDefaultOtelFilePath(context);
-}
-
-export async function ensureCopilotOtelFileConfiguration(
-  context: vscode.ExtensionContext,
-  config: TrackerConfig,
-): Promise<string> {
-  const otelFilePath = resolveOtelFilePath(context, config);
-  await mkdir(path.dirname(otelFilePath), { recursive: true });
-
-  const copilotConfig = vscode.workspace.getConfiguration(
-    "github.copilot.chat.otel",
-  );
-  const updatedSettings = [];
-  if (await updateConfigurationValue(copilotConfig, "enabled", true)) {
-    updatedSettings.push("enabled");
-  }
-  if (await updateConfigurationValue(copilotConfig, "exporterType", "file")) {
-    updatedSettings.push("exporterType");
-  }
-  if (await updateConfigurationValue(copilotConfig, "outfile", otelFilePath)) {
-    updatedSettings.push("outfile");
-  }
-  if (
-    await updateConfigurationValue(copilotConfig, "captureContent", false)
-  ) {
-    updatedSettings.push("captureContent");
-  }
-
-  if (updatedSettings.length > 0) {
-    logInfo("Copilot OTel file exporter configured", {
-      otelFilePath,
-      captureContent: false,
-      updatedSettingCount: updatedSettings.length,
-      updatedSettings,
-    });
-  } else {
-    logDebug("Copilot OTel file exporter already configured", {
-      otelFilePath,
-    });
-  }
-  return otelFilePath;
 }
 
 export async function ensureCopilotOtelHttpConfiguration(
@@ -185,6 +122,9 @@ export async function ensureCopilotOtelHttpConfiguration(
   ) {
     updatedSettings.push("otlpEndpoint");
   }
+  if (await clearConfigurationValue(copilotConfig, "outfile")) {
+    updatedSettings.push("outfile");
+  }
   if (
     await updateConfigurationValue(copilotConfig, "captureContent", false)
   ) {
@@ -198,6 +138,7 @@ export async function ensureCopilotOtelHttpConfiguration(
       updatedSettingCount: updatedSettings.length,
       updatedSettings,
     });
+    promptForCopilotOtelReload();
   } else {
     logDebug("Copilot OTel HTTP exporter already configured", {
       otlpEndpoint,
@@ -205,106 +146,17 @@ export async function ensureCopilotOtelHttpConfiguration(
   }
 }
 
-export async function getOtelFileSignature(otelFilePath: string) {
-  if (!existsSync(otelFilePath)) {
-    return "missing";
-  }
-
-  const fileStat = await stat(otelFilePath);
-  return `${fileStat.size}:${fileStat.mtimeMs}`;
-}
-
-export async function compactCopilotOtelFile(
-  otelFilePath: string,
-  {
-    maxBytes,
-    retainedLineCount,
-  }: { maxBytes: number; retainedLineCount: number },
-): Promise<OtelFileCompactionResult | null> {
-  if (maxBytes <= 0 || retainedLineCount <= 0 || !existsSync(otelFilePath)) {
-    return null;
-  }
-
-  const fileStat = await stat(otelFilePath);
-  if (fileStat.size <= maxBytes) {
-    return null;
-  }
-
-  const text = await readFile(otelFilePath, "utf8");
-  const lines = text.split(/\r?\n/).filter(Boolean);
-  let retainedLines = lines.slice(-retainedLineCount);
-  let compactedText = `${retainedLines.join("\n")}\n`;
-  while (
-    retainedLines.length > 1 &&
-    Buffer.byteLength(compactedText) > maxBytes
-  ) {
-    retainedLines = retainedLines.slice(1);
-    compactedText = `${retainedLines.join("\n")}\n`;
-  }
-
-  const compactedBytes = Buffer.byteLength(compactedText);
-  if (retainedLines.length === lines.length && compactedBytes >= fileStat.size) {
-    return null;
-  }
-
-  await writeFile(otelFilePath, compactedText, "utf8");
-
-  return {
-    originalBytes: fileStat.size,
-    compactedBytes,
-    originalLineCount: lines.length,
-    retainedLineCount: retainedLines.length,
-  };
-}
-
-export function createOtelFileWatcher(
-  otelFilePath: string,
-  onChanged: () => void,
-): vscode.Disposable[] {
-  const rootUri = vscode.Uri.file(path.dirname(otelFilePath));
-  const watcher = vscode.workspace.createFileSystemWatcher(
-    new vscode.RelativePattern(rootUri, path.basename(otelFilePath)),
-  );
-
-  return [
-    watcher,
-    watcher.onDidCreate(onChanged),
-    watcher.onDidChange(onChanged),
-    watcher.onDidDelete(onChanged),
-  ];
-}
-
-export async function readCopilotOtelRequests(
-  workspaceContext: WorkspaceContext,
-  otelFilePath: string,
-  resolveTaskForRequest?: RequestTaskResolver,
-  resolveSessionForRequest?: OtelSessionResolver,
-): Promise<CopilotChatRequest[]> {
-  if (!existsSync(otelFilePath)) {
-    logWarn("Copilot OTel file does not exist yet", { otelFilePath });
-    return [];
-  }
-
-  logInfo("Reading Copilot OTel requests", {
-    otelFilePath,
-    workspacePath: workspaceContext.workspacePath,
-    workspaceFolderPaths: workspaceContext.workspaceFolderPaths,
-    workspaceFilePath: workspaceContext.workspaceFilePath,
-    repositoryRoot: workspaceContext.repositoryRoot,
-    repositoryRemoteUrl: workspaceContext.repositoryRemoteUrl,
-  });
-  const text = await readFile(otelFilePath, "utf8");
-  const records = text
-    .split(/\r?\n/)
-    .filter(Boolean)
-    .map((line) => safeJsonParse(line))
-    .filter((record): record is unknown => Boolean(record));
-  return readCopilotOtelRequestsFromRecords(
-    workspaceContext,
-    records,
-    resolveTaskForRequest,
-    resolveSessionForRequest,
-  );
+function promptForCopilotOtelReload() {
+  void vscode.window
+    .showInformationMessage(
+      "Copilot Tracker updated Copilot Chat OTel settings. Reload VS Code so Copilot starts sending token telemetry over HTTP.",
+      "Reload",
+    )
+    .then((choice) => {
+      if (choice === "Reload") {
+        void vscode.commands.executeCommand("workbench.action.reloadWindow");
+      }
+    });
 }
 
 export function readCopilotOtelRequestsFromRecords(
@@ -1250,13 +1102,17 @@ async function updateConfigurationValue<T>(
   return true;
 }
 
-function safeJsonParse(value: string): unknown | null {
-  try {
-    return JSON.parse(value) as unknown;
-  } catch {
-    logDebug("Ignored invalid OTel JSON line");
-    return null;
+async function clearConfigurationValue(
+  config: vscode.WorkspaceConfiguration,
+  key: string,
+): Promise<boolean> {
+  if (config.inspect(key)?.globalValue === undefined) {
+    return false;
   }
+
+  lastCopilotOtelConfigurationWriteAt = Date.now();
+  await config.update(key, undefined, vscode.ConfigurationTarget.Global);
+  return true;
 }
 
 function readString(

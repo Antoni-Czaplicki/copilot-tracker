@@ -17,18 +17,11 @@ const trackerAuthStateSecretKey = "trackerAuthState";
 const requestTimeoutMs = 15_000;
 const maxRequestAttempts = 3;
 const maxAzureDevOpsWorkItemId = 2_147_483_647;
-const defaultOtelMaxFileSizeMb = 25;
-const defaultOtelRetainedLineCount = 5000;
-const defaultOtelCollectionMode: TrackerConfig["otelCollectionMode"] =
-  "otlp-http";
+const defaultOtelHttpPort = 4318;
 
 export interface TrackerConfig {
   serverUrl: string;
-  otelFilePath: string;
-  otelCollectionMode: "otlp-http" | "file";
-  otelMaxFileSizeMb: number;
-  otelRetainedLineCount: number;
-  syncIntervalSeconds: number;
+  otelHttpPort: number;
   showCurrentSessionTokensInStatusBar: boolean;
   taskBranchBaseBranches: string[];
   taskBranchNamePrefix: string;
@@ -71,32 +64,15 @@ export function getTrackerConfigFromConfiguration(
 ): TrackerConfig {
   const serverUrl =
     config.inspect<string>("serverUrl")?.globalValue ?? defaultServerUrl;
-  const otelFilePath =
-    config.inspect<string>("otelFilePath")?.globalValue ?? "";
   return {
     serverUrl,
-    otelFilePath,
-    otelCollectionMode: normalizeOtelCollectionMode(
-      config.get<unknown>("otelCollectionMode", defaultOtelCollectionMode),
-    ),
-    otelMaxFileSizeMb: normalizeNumberSetting(
-      config.get<number>("otelMaxFileSizeMb", defaultOtelMaxFileSizeMb),
-      defaultOtelMaxFileSizeMb,
-      0,
-    ),
-    otelRetainedLineCount: Math.floor(
+    otelHttpPort: Math.floor(
       normalizeNumberSetting(
-        config.get<number>(
-          "otelRetainedLineCount",
-          defaultOtelRetainedLineCount,
-        ),
-        defaultOtelRetainedLineCount,
-        100,
+        config.get<number>("otelHttpPort", defaultOtelHttpPort),
+        defaultOtelHttpPort,
+        1,
+        65_535,
       ),
-    ),
-    syncIntervalSeconds: Math.max(
-      5,
-      config.get<number>("syncIntervalSeconds", 15),
     ),
     showCurrentSessionTokensInStatusBar: config.get<boolean>(
       "showCurrentSessionTokensInStatusBar",
@@ -114,16 +90,16 @@ export function getTrackerConfigFromConfiguration(
   };
 }
 
-function normalizeOtelCollectionMode(value: unknown): "otlp-http" | "file" {
-  return value === "file" ? "file" : defaultOtelCollectionMode;
-}
-
 function normalizeNumberSetting(
-  value: number,
+  value: unknown,
   fallback: number,
   minimum: number,
+  maximum = Number.POSITIVE_INFINITY,
 ) {
-  return Number.isFinite(value) ? Math.max(minimum, value) : fallback;
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return fallback;
+  }
+  return Math.min(maximum, Math.max(minimum, value));
 }
 
 export class TrackerClientError extends Error {
