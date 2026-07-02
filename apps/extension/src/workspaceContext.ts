@@ -12,6 +12,10 @@ export async function buildWorkspaceContext(
   context: vscode.ExtensionContext,
 ): Promise<WorkspaceContext> {
   const workspaceFolder = getWorkspaceFolder();
+  const workspaceFolderPaths = uniqueStrings(
+    vscode.workspace.workspaceFolders?.map((folder) => folder.uri.fsPath) ?? [],
+  );
+  const workspaceFilePath = vscode.workspace.workspaceFile?.fsPath ?? null;
   const workspacePath = workspaceFolder?.uri.fsPath ?? null;
   const repositoryRoot = workspacePath
     ? await getRepositoryRoot(workspacePath)
@@ -29,6 +33,8 @@ export async function buildWorkspaceContext(
   return {
     workspaceId,
     workspacePath,
+    workspaceFolderPaths,
+    workspaceFilePath,
     workspaceName: workspaceFolder?.name ?? null,
     repositoryRoot,
     repositoryRemoteUrl,
@@ -140,4 +146,8 @@ function createWorkspaceId(
 
 function selectedTaskStorageKey(workspaceId: string) {
   return `${selectedTaskKey}:${workspaceId}`;
+}
+
+function uniqueStrings(values: string[]): string[] {
+  return [...new Set(values.filter((value) => value.trim().length > 0))];
 }

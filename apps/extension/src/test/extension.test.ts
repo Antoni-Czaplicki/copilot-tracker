@@ -261,6 +261,74 @@ suite("Extension Test Suite", () => {
     }
   });
 
+  test("Matches VS Code workspace storage from any multi-root folder", async () => {
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "vscode-storage-"));
+
+    try {
+      const storagePath = path.join(tempDir, "multi-root-workspace");
+      await mkdir(storagePath, { recursive: true });
+      await writeFile(
+        path.join(storagePath, "workspace.json"),
+        JSON.stringify({
+          folders: [
+            {
+              path: "file:///c%3A/projects/platform/frontend",
+            },
+            {
+              path: "file:///c%3A/projects/platform/backend",
+            },
+          ],
+        }),
+      );
+
+      const match = await findWorkspaceStorage(
+        tempDir,
+        createWorkspaceContext({
+          workspacePath: "C:\\projects\\platform\\backend",
+          repositoryRoot: "C:\\projects\\platform\\backend",
+          workspaceFolderPaths: [
+            "C:\\projects\\platform\\frontend",
+            "C:\\projects\\platform\\backend",
+          ],
+        }),
+      );
+
+      assert.strictEqual(match?.storagePath, storagePath);
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  test("Matches VS Code workspace storage from code-workspace file path", async () => {
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "vscode-storage-"));
+
+    try {
+      const storagePath = path.join(tempDir, "code-workspace");
+      await mkdir(storagePath, { recursive: true });
+      await writeFile(
+        path.join(storagePath, "workspace.json"),
+        JSON.stringify({
+          workspace:
+            "file:///c%3A/Users/example/source/product/product.code-workspace",
+        }),
+      );
+
+      const match = await findWorkspaceStorage(
+        tempDir,
+        createWorkspaceContext({
+          workspacePath: "C:\\Users\\example\\source\\product\\frontend",
+          repositoryRoot: "C:\\Users\\example\\source\\product\\frontend",
+          workspaceFilePath:
+            "C:\\Users\\example\\source\\product\\product.code-workspace",
+        }),
+      );
+
+      assert.strictEqual(match?.storagePath, storagePath);
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
+    }
+  });
+
   test("Reads VS Code chat session index with built-in SQLite", async () => {
     const tempDir = await mkdtemp(path.join(os.tmpdir(), "vscode-storage-"));
 
@@ -798,6 +866,27 @@ suite("Extension Test Suite", () => {
 
     assert.strictEqual(unchangedPlan.requestsToUpload.length, 0);
     assert.strictEqual(unchangedPlan.skippedUnchangedRequestCount, 1);
+
+    const localWorkspaceMetadataPlan = planRequestUpload(
+      [
+        createChatRequest({
+          requestRecordId: "otel:trace-cache-1",
+          capturedAt: "2026-07-01T00:06:00.000Z",
+          workspaceFolderPaths: [
+            "/tmp/copilot-tracker",
+            "/tmp/copilot-tracker-api",
+          ],
+          workspaceFilePath: "/tmp/copilot-tracker.code-workspace",
+        }),
+      ],
+      firstPlan.nextState,
+    );
+
+    assert.strictEqual(localWorkspaceMetadataPlan.requestsToUpload.length, 0);
+    assert.strictEqual(
+      localWorkspaceMetadataPlan.skippedUnchangedRequestCount,
+      1,
+    );
 
     const changedPlan = planRequestUpload(
       [
@@ -2155,6 +2244,8 @@ function createWorkspaceContext(
   return {
     workspaceId: "workspace-id",
     workspacePath: "/tmp/copilot-tracker",
+    workspaceFolderPaths: ["/tmp/copilot-tracker"],
+    workspaceFilePath: null,
     workspaceName: "copilot-tracker",
     repositoryRoot: "/tmp/copilot-tracker",
     repositoryRemoteUrl:

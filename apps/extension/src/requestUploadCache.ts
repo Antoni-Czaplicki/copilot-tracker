@@ -89,7 +89,14 @@ function requestUploadStateKey(
 
 function requestUploadSignature(request: CopilotChatRequest) {
   return createHash("sha256")
-    .update(JSON.stringify({ ...request, capturedAt: null }))
+    .update(
+      JSON.stringify({
+        ...request,
+        capturedAt: null,
+        workspaceFolderPaths: undefined,
+        workspaceFilePath: undefined,
+      }),
+    )
     .digest("hex");
 }
 

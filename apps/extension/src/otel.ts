@@ -198,6 +198,8 @@ export async function readCopilotOtelRequests(
   logInfo("Reading Copilot OTel requests", {
     otelFilePath,
     workspacePath: workspaceContext.workspacePath,
+    workspaceFolderPaths: workspaceContext.workspaceFolderPaths,
+    workspaceFilePath: workspaceContext.workspaceFilePath,
     repositoryRoot: workspaceContext.repositoryRoot,
     repositoryRemoteUrl: workspaceContext.repositoryRemoteUrl,
   });

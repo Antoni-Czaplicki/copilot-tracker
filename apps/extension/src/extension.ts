@@ -805,6 +805,8 @@ async function refreshContext(
     logInfo("Workspace context refreshed", {
       eventType,
       workspaceName: next.workspaceName,
+      workspaceFolderPaths: next.workspaceFolderPaths,
+      workspaceFilePath: next.workspaceFilePath,
       repositoryName: getRepositoryDisplayName(next),
       repositoryRoot: next.repositoryRoot,
       repositoryRemoteUrl: next.repositoryRemoteUrl,

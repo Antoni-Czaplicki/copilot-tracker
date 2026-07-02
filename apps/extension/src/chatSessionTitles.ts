@@ -165,6 +165,8 @@ function createWorkspaceStorageNeedles(
   const workspacePaths = uniqueStrings([
     workspaceContext.workspacePath,
     workspaceContext.repositoryRoot,
+    workspaceContext.workspaceFilePath,
+    ...workspaceContext.workspaceFolderPaths,
   ]);
 
   return {

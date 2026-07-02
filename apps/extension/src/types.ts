@@ -1,6 +1,8 @@
 export interface WorkspaceContext {
   workspaceId: string;
   workspacePath: string | null;
+  workspaceFolderPaths: string[];
+  workspaceFilePath: string | null;
   workspaceName: string | null;
   repositoryRoot: string | null;
   repositoryRemoteUrl: string | null;
