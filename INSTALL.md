@@ -13,9 +13,10 @@ Copilot Tracker server, and verify that GitHub Copilot Chat usage is syncing.
   `apps/extension/copilot-tracker-0.0.1.vsix`.
 
 The extension uses GitHub Copilot Chat OpenTelemetry as its only usage source.
-It configures Copilot to write local OTel JSONL records, reads those records,
-and sends usage metadata to the tracker server. Prompt and response content is
-not captured.
+By default it runs a loopback OTLP/HTTP receiver, configures Copilot to send
+local OTel logs/traces to it, and sends usage metadata to the tracker server.
+Prompt and response content is not captured. A JSONL file exporter fallback is
+available when needed.
 
 ## Install The Extension
 
@@ -45,6 +46,7 @@ Open VS Code user settings as JSON and set the tracker server URL:
 ```jsonc
 {
   "copilot-tracker.serverUrl": "https://copilot-tracker.antek.page",
+  "copilot-tracker.otelCollectionMode": "otlp-http",
   "copilot-tracker.otelFilePath": "",
   "copilot-tracker.syncIntervalSeconds": 15,
 }
@@ -63,15 +65,16 @@ The extension configures these Copilot Chat settings automatically:
 ```jsonc
 {
   "github.copilot.chat.otel.enabled": true,
-  "github.copilot.chat.otel.exporterType": "file",
-  "github.copilot.chat.otel.outfile": "/path/to/copilot-otel.jsonl",
+  "github.copilot.chat.otel.exporterType": "otlp-http",
+  "github.copilot.chat.otel.otlpEndpoint": "http://127.0.0.1:<extension-managed-port>",
   "github.copilot.chat.otel.captureContent": false,
 }
 ```
 
-Leave `copilot-tracker.otelFilePath` empty unless you need a fixed OTel file
-location. When it is empty, the extension stores the OTel file in VS Code global
-storage.
+Set `copilot-tracker.otelCollectionMode` to `file` only if you need the older
+JSONL fallback. In file mode, leave `copilot-tracker.otelFilePath` empty unless
+you need a fixed OTel file location. When it is empty, the extension stores the
+OTel file in VS Code global storage.
 
 ## Verify Sync
 
@@ -83,7 +86,8 @@ In VS Code, run these commands from the Command Palette:
 - `Copilot Tracker: Show Logs`
 
 `Show Current Context` should display the workspace name, repository, remote,
-branch, selected task, server URL, OTel file path, and last sync stats.
+branch, selected task, server URL, OTel collection mode, active endpoint or file
+path, and last sync stats.
 
 To test end to end:
 

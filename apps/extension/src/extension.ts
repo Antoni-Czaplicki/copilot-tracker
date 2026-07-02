@@ -17,12 +17,15 @@ import {
   type RequestTaskResolver,
   compactCopilotOtelFile,
   createOtelFileWatcher,
-  ensureCopilotOtelConfiguration,
+  ensureCopilotOtelFileConfiguration,
+  ensureCopilotOtelHttpConfiguration,
   getLastCopilotOtelConfigurationWriteAt,
   getOtelFileSignature,
   readCopilotOtelRequests,
+  readCopilotOtelRequestsFromRecords,
   resolveOtelFilePath,
 } from "./otel";
+import { startOtlpHttpReceiver } from "./otlpHttpReceiver";
 import {
   planRequestUpload,
   readRequestUploadState,
@@ -94,7 +97,10 @@ let syncInProgress = false;
 let syncQueued = false;
 let otelLifecycleDisposables: vscode.Disposable[] = [];
 let activeOtelFilePath: string | undefined;
+let activeOtlpHttpEndpoint: string | undefined;
+let bufferedOtlpRecords: unknown[] = [];
 const otelLifecycleRebuildQueue = new SingleFlightTaskQueue();
+const maxBufferedOtlpRecords = 5_000;
 
 export function activate(context: vscode.ExtensionContext) {
   const outputChannel = initializeLogger();
@@ -249,25 +255,49 @@ async function replaceOtelSyncLifecycle(
   disposeOtelSyncLifecycle();
   try {
     const config = getTrackerConfig();
-    const otelFilePath = await ensureCopilotOtelConfiguration(context, config);
-    activeOtelFilePath = otelFilePath;
+    activeOtelFilePath = undefined;
+    activeOtlpHttpEndpoint = undefined;
     lastOtelSignature = undefined;
-    logInfo("Creating Copilot OTel sync lifecycle", {
-      otelFilePath,
-      syncIntervalSeconds: config.syncIntervalSeconds,
-    });
-    otelLifecycleDisposables = [
-      ...createOtelFileWatcher(otelFilePath, () =>
-        scheduleSync(context, client, 350),
-      ),
-    ];
-    const syncPoller = setInterval(
-      () => void pollForOtelChanges(context, client),
-      config.syncIntervalSeconds * 1000,
-    );
-    otelLifecycleDisposables.push({
-      dispose: () => clearInterval(syncPoller),
-    });
+    bufferedOtlpRecords = [];
+    if (config.otelCollectionMode === "file") {
+      const otelFilePath = await ensureCopilotOtelFileConfiguration(
+        context,
+        config,
+      );
+      activeOtelFilePath = otelFilePath;
+      logInfo("Creating Copilot OTel file sync lifecycle", {
+        otelFilePath,
+        syncIntervalSeconds: config.syncIntervalSeconds,
+      });
+      otelLifecycleDisposables = [
+        ...createOtelFileWatcher(otelFilePath, () =>
+          scheduleSync(context, client, 350),
+        ),
+      ];
+      const syncPoller = setInterval(
+        () => void pollForOtelChanges(context, client),
+        config.syncIntervalSeconds * 1000,
+      );
+      otelLifecycleDisposables.push({
+        dispose: () => clearInterval(syncPoller),
+      });
+    } else {
+      const receiver = await startOtlpHttpReceiver((records, signal) => {
+        bufferOtlpRecords(records);
+        logInfo("Buffered OTLP HTTP records", {
+          signal,
+          receivedRecordCount: records.length,
+          bufferedRecordCount: bufferedOtlpRecords.length,
+        });
+        scheduleSync(context, client, 1_500);
+      });
+      activeOtlpHttpEndpoint = receiver.endpoint;
+      await ensureCopilotOtelHttpConfiguration(receiver.endpoint);
+      logInfo("Creating Copilot OTel HTTP sync lifecycle", {
+        otlpEndpoint: receiver.endpoint,
+      });
+      otelLifecycleDisposables = [receiver];
+    }
     lastSyncError = null;
   } catch (error) {
     lastSyncError = error instanceof Error ? error.message : String(error);
@@ -281,6 +311,12 @@ function disposeOtelSyncLifecycle() {
     disposable.dispose();
   }
   otelLifecycleDisposables = [];
+}
+
+function bufferOtlpRecords(records: unknown[]) {
+  bufferedOtlpRecords = [...bufferedOtlpRecords, ...records].slice(
+    -maxBufferedOtlpRecords,
+  );
 }
 
 async function signIn(
@@ -745,7 +781,16 @@ async function showContext(context: vscode.ExtensionContext) {
     `Default task: ${snapshot.defaultTask ?? "none"}`,
     `Selected task: ${snapshot.selectedTask ?? "none"}`,
     `Server: ${config.serverUrl}`,
-    `OTel file: ${config.otelFilePath ? "custom path configured" : "default extension storage"}`,
+    `OTel collection: ${config.otelCollectionMode}`,
+    `OTLP endpoint: ${activeOtlpHttpEndpoint ?? "none"}`,
+    `Buffered OTLP records: ${bufferedOtlpRecords.length}`,
+    `OTel file: ${
+      config.otelCollectionMode === "file"
+        ? config.otelFilePath
+          ? "custom path configured"
+          : "default extension storage"
+        : "disabled"
+    }`,
     `Chat title storage: default VS Code workspace storage`,
     `Last sync: ${lastSyncStats.requestCount} requests, ${lastSyncStats.tokenCount} tokens, ${lastSyncStats.missingTokenCount} missing token counts`,
     `Current session tokens: ${lastSessionStats ? `${lastSessionStats.totalTokens} total (${lastSessionStats.inputTokens} input / ${lastSessionStats.outputTokens} output)` : "none"}`,
@@ -1068,8 +1113,6 @@ async function performCopilotSessionSync(
 ) {
   try {
     const config = getTrackerConfig();
-    const otelFilePath =
-      activeOtelFilePath ?? resolveOtelFilePath(context, config);
     await refreshContext(context, client);
     await sendEvent(context, client, "session-sync-started");
 
@@ -1082,16 +1125,28 @@ async function performCopilotSessionSync(
       branch: workspaceContext.branch,
       selectedTask: workspaceContext.selectedTask,
       serverUrl: config.serverUrl,
-      otelFilePath,
+      otelCollectionMode: config.otelCollectionMode,
+      otelFilePath: activeOtelFilePath ?? null,
+      otlpEndpoint: activeOtlpHttpEndpoint ?? null,
+      bufferedOtlpRecordCount: bufferedOtlpRecords.length,
     });
     const sessionResolver =
       await createChatSessionTitleResolver(workspaceContext);
-    const requests = await readCopilotOtelRequests(
-      workspaceContext,
-      otelFilePath,
-      createTaskResolver(context, workspaceContext),
-      sessionResolver,
-    );
+    const taskResolver = createTaskResolver(context, workspaceContext);
+    const requests =
+      config.otelCollectionMode === "file"
+        ? await readCopilotOtelRequests(
+            workspaceContext,
+            activeOtelFilePath ?? resolveOtelFilePath(context, config),
+            taskResolver,
+            sessionResolver,
+          )
+        : readCopilotOtelRequestsFromRecords(
+            workspaceContext,
+            bufferedOtlpRecords,
+            taskResolver,
+            sessionResolver,
+          );
     logInfo("OTel session sync read completed", {
       requestCount: requests.length,
       tokenCount: requests.reduce(
@@ -1124,7 +1179,12 @@ async function performCopilotSessionSync(
       uploadPlan.nextState,
       uploadScope,
     );
-    await compactOtelFileIfNeeded(otelFilePath, config);
+    if (config.otelCollectionMode === "file") {
+      await compactOtelFileIfNeeded(
+        activeOtelFilePath ?? resolveOtelFilePath(context, config),
+        config,
+      );
+    }
     lastSessionStats = currentSessionTokenStats(requests);
     lastSyncStats = {
       requestCount: requests.length,

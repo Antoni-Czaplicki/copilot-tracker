@@ -16,9 +16,9 @@ VS Code does not expose a stable public event that lets another extension listen
 
 This extension uses GitHub Copilot Chat OpenTelemetry as the only capture source:
 
-1. Configure Copilot Chat OTel with the file exporter.
-2. Read the local OTel JSONL file.
-3. Group spans by trace and extract `invoke_agent` or `chat` span metadata.
+1. Configure Copilot Chat OTel with a local OTLP/HTTP receiver by default.
+2. Receive local OTLP logs/traces, or read the JSONL file exporter fallback.
+3. Group spans and log records by trace and extract Copilot request metadata.
 4. Send model, token, repository, branch, task, and timing metadata to the web server API.
 5. Summarize the data by user, workspace, repository, branch, task, session, and model.
 
@@ -174,6 +174,7 @@ The extension signs in by opening the tracker web app and receiving a tracker se
 ## Extension Settings
 
 - `copilot-tracker.serverUrl`
+- `copilot-tracker.otelCollectionMode`
 - `copilot-tracker.otelFilePath`
 - `copilot-tracker.syncIntervalSeconds`
 - `copilot-tracker.showCurrentSessionTokensInStatusBar`

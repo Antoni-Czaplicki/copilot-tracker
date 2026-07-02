@@ -4,13 +4,13 @@ VS Code extension that tracks GitHub Copilot Chat token usage and attributes it
 to your current workspace, repository, branch, and task.
 
 It configures GitHub Copilot Chat to emit OpenTelemetry metadata to a local
-JSONL file, reads that file, and forwards usage records to a
+OTLP/HTTP receiver by default, with a JSONL file fallback, and forwards usage records to a
 [Copilot Tracker server](https://github.com/Antoni-Czaplicki/copilot-tracker)
 where they can be explored on a dashboard and leaderboard.
 
 ## Features
 
-- Automatically configures Copilot Chat OTel file export.
+- Automatically configures local Copilot Chat OTel export.
 - Attributes usage to the active task or the current Git branch.
 - Syncs Copilot OTel sessions to your tracker server.
 
@@ -27,7 +27,8 @@ where they can be explored on a dashboard and leaderboard.
 ## Settings
 
 - `copilot-tracker.serverUrl` — Copilot Tracker server URL from user settings. Workspace values are ignored for token safety.
-- `copilot-tracker.otelFilePath` — optional user-level path for the OTel JSONL file. Workspace values are ignored because Copilot's OTel exporter is global.
+- `copilot-tracker.otelCollectionMode` — `otlp-http` by default, or `file` for the JSONL fallback.
+- `copilot-tracker.otelFilePath` — optional user-level path for the fallback OTel JSONL file. Workspace values are ignored because Copilot's OTel exporter is global.
 - `copilot-tracker.syncIntervalSeconds` — fallback polling interval.
 - `copilot-tracker.showCurrentSessionTokensInStatusBar` — show current session tokens and estimated cost in the status bar.
 

@@ -19,10 +19,13 @@ const maxRequestAttempts = 3;
 const maxAzureDevOpsWorkItemId = 2_147_483_647;
 const defaultOtelMaxFileSizeMb = 25;
 const defaultOtelRetainedLineCount = 5000;
+const defaultOtelCollectionMode: TrackerConfig["otelCollectionMode"] =
+  "otlp-http";
 
 export interface TrackerConfig {
   serverUrl: string;
   otelFilePath: string;
+  otelCollectionMode: "otlp-http" | "file";
   otelMaxFileSizeMb: number;
   otelRetainedLineCount: number;
   syncIntervalSeconds: number;
@@ -73,6 +76,9 @@ export function getTrackerConfigFromConfiguration(
   return {
     serverUrl,
     otelFilePath,
+    otelCollectionMode: normalizeOtelCollectionMode(
+      config.get<unknown>("otelCollectionMode", defaultOtelCollectionMode),
+    ),
     otelMaxFileSizeMb: normalizeNumberSetting(
       config.get<number>("otelMaxFileSizeMb", defaultOtelMaxFileSizeMb),
       defaultOtelMaxFileSizeMb,
@@ -106,6 +112,10 @@ export function getTrackerConfigFromConfiguration(
       config.get<unknown>("taskBranchNamePrefix", defaultTaskBranchNamePrefix),
     ),
   };
+}
+
+function normalizeOtelCollectionMode(value: unknown): "otlp-http" | "file" {
+  return value === "file" ? "file" : defaultOtelCollectionMode;
 }
 
 function normalizeNumberSetting(

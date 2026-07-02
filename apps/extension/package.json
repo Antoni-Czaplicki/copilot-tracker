@@ -80,6 +80,15 @@
           "default": "",
           "description": "Optional path for the Copilot Chat OTel JSONL file. Set this in user settings; workspace values are ignored because Copilot's OTel exporter is global. Leave empty to use extension global storage."
         },
+        "copilot-tracker.otelCollectionMode": {
+          "type": "string",
+          "default": "otlp-http",
+          "enum": [
+            "otlp-http",
+            "file"
+          ],
+          "description": "How Copilot Tracker collects Copilot Chat OpenTelemetry. otlp-http runs a local loopback OTLP receiver; file uses Copilot's JSONL file exporter fallback."
+        },
         "copilot-tracker.otelMaxFileSizeMb": {
           "type": "number",
           "default": 25,

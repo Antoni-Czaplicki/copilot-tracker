@@ -124,7 +124,7 @@ export function resolveOtelFilePath(
   return config.otelFilePath || getDefaultOtelFilePath(context);
 }
 
-export async function ensureCopilotOtelConfiguration(
+export async function ensureCopilotOtelFileConfiguration(
   context: vscode.ExtensionContext,
   config: TrackerConfig,
 ): Promise<string> {
@@ -163,6 +163,46 @@ export async function ensureCopilotOtelConfiguration(
     });
   }
   return otelFilePath;
+}
+
+export async function ensureCopilotOtelHttpConfiguration(
+  otlpEndpoint: string,
+): Promise<void> {
+  const copilotConfig = vscode.workspace.getConfiguration(
+    "github.copilot.chat.otel",
+  );
+  const updatedSettings = [];
+  if (await updateConfigurationValue(copilotConfig, "enabled", true)) {
+    updatedSettings.push("enabled");
+  }
+  if (
+    await updateConfigurationValue(copilotConfig, "exporterType", "otlp-http")
+  ) {
+    updatedSettings.push("exporterType");
+  }
+  if (
+    await updateConfigurationValue(copilotConfig, "otlpEndpoint", otlpEndpoint)
+  ) {
+    updatedSettings.push("otlpEndpoint");
+  }
+  if (
+    await updateConfigurationValue(copilotConfig, "captureContent", false)
+  ) {
+    updatedSettings.push("captureContent");
+  }
+
+  if (updatedSettings.length > 0) {
+    logInfo("Copilot OTel HTTP exporter configured", {
+      otlpEndpoint,
+      captureContent: false,
+      updatedSettingCount: updatedSettings.length,
+      updatedSettings,
+    });
+  } else {
+    logDebug("Copilot OTel HTTP exporter already configured", {
+      otlpEndpoint,
+    });
+  }
 }
 
 export async function getOtelFileSignature(otelFilePath: string) {
@@ -259,6 +299,20 @@ export async function readCopilotOtelRequests(
     .filter(Boolean)
     .map((line) => safeJsonParse(line))
     .filter((record): record is unknown => Boolean(record));
+  return readCopilotOtelRequestsFromRecords(
+    workspaceContext,
+    records,
+    resolveTaskForRequest,
+    resolveSessionForRequest,
+  );
+}
+
+export function readCopilotOtelRequestsFromRecords(
+  workspaceContext: WorkspaceContext,
+  records: unknown[],
+  resolveTaskForRequest?: RequestTaskResolver,
+  resolveSessionForRequest?: OtelSessionResolver,
+): CopilotChatRequest[] {
   const spans = records.flatMap((record) => collectOtelSpans(record));
   const logRecords = records.flatMap((record) => collectOtelLogRecords(record));
   const parsedRequests = [
@@ -601,6 +655,7 @@ function readPlainLogRecord(
     return null;
   }
 
+  const bodyValue = readOtelValue(readUnknown(value, ["body"]));
   return {
     traceId,
     spanId:
@@ -612,7 +667,8 @@ function readPlainLogRecord(
       toIsoDate(readUnknown(value, ["timestamp"])),
     body:
       readStringFromRecord(value, "_body") ??
-      readStringFromRecord(value, "body"),
+      readStringFromRecord(value, "body") ??
+      (typeof bodyValue === "string" ? bodyValue : null),
     attributes,
     resourceAttributes,
   };

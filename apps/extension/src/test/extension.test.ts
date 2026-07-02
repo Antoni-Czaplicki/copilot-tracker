@@ -15,7 +15,13 @@ import {
   compactCopilotOtelFile,
   normalizeRepositoryRemoteUrl,
   readCopilotOtelRequests,
+  readCopilotOtelRequestsFromRecords,
 } from "../otel";
+import { startOtlpHttpReceiver } from "../otlpHttpReceiver";
+import {
+  decodeOtlpHttpPayload,
+  encodeOtlpHttpPayload,
+} from "../otlpProto";
 import { estimateRequestsCostUsd } from "../pricing";
 import {
   planRequestUpload,
@@ -189,6 +195,10 @@ suite("Extension Test Suite", () => {
       25,
     );
     assert.strictEqual(
+      getTrackerConfigFromConfiguration(config).otelCollectionMode,
+      "otlp-http",
+    );
+    assert.strictEqual(
       getTrackerConfigFromConfiguration(config).otelRetainedLineCount,
       5000,
     );
@@ -197,8 +207,13 @@ suite("Extension Test Suite", () => {
       globalValues: {
         otelMaxFileSizeMb: 0,
         otelRetainedLineCount: 250,
+        otelCollectionMode: "file",
       },
     });
+    assert.strictEqual(
+      getTrackerConfigFromConfiguration(compactionConfig).otelCollectionMode,
+      "file",
+    );
     assert.strictEqual(
       getTrackerConfigFromConfiguration(compactionConfig).otelMaxFileSizeMb,
       0,
@@ -951,6 +966,63 @@ suite("Extension Test Suite", () => {
       assert.strictEqual(result?.retainedLineCount, 1);
     } finally {
       await rm(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  test("Decodes OTLP HTTP protobuf logs into Copilot requests", () => {
+    const encoded = encodeOtlpHttpPayload("logs", createOtlpLogExport());
+    const decoded = decodeOtlpHttpPayload(
+      "logs",
+      encoded,
+      "application/x-protobuf",
+    );
+    const requests = readCopilotOtelRequestsFromRecords(
+      createWorkspaceContext(),
+      [decoded],
+    );
+
+    assert.strictEqual(requests.length, 1);
+    assert.strictEqual(
+      requests[0]?.requestRecordId,
+      "otel-log:1234567890abcdef1234567890abcdef:http-response-1",
+    );
+    assert.strictEqual(requests[0]?.requestId, "1234567890abcdef1234567890abcdef");
+    assert.strictEqual(requests[0]?.responseId, "http-response-1");
+    assert.strictEqual(requests[0]?.sessionId, "http-chat-session");
+    assert.strictEqual(requests[0]?.modelId, "gpt-5-nano");
+    assert.strictEqual(requests[0]?.inputTokens, 321);
+    assert.strictEqual(requests[0]?.outputTokens, 123);
+    assert.strictEqual(requests[0]?.totalTokens, 444);
+  });
+
+  test("Receives OTLP HTTP protobuf logs on the local receiver", async () => {
+    const received: unknown[] = [];
+    const receiver = await startOtlpHttpReceiver((records) => {
+      received.push(...records);
+    });
+
+    try {
+      const encoded = encodeOtlpHttpPayload("logs", createOtlpLogExport());
+      const response = await fetch(`${receiver.endpoint}/v1/logs`, {
+        method: "POST",
+        headers: { "content-type": "application/x-protobuf" },
+        body: Buffer.from(encoded),
+      });
+
+      assert.strictEqual(response.status, 200);
+      assert.strictEqual(
+        response.headers.get("content-type"),
+        "application/x-protobuf",
+      );
+      assert.strictEqual(received.length, 1);
+      const requests = readCopilotOtelRequestsFromRecords(
+        createWorkspaceContext(),
+        received,
+      );
+      assert.strictEqual(requests.length, 1);
+      assert.strictEqual(requests[0]?.totalTokens, 444);
+    } finally {
+      receiver.dispose();
     }
   });
 
@@ -2411,6 +2483,75 @@ function createWorkspaceContext(
     selectedTask: null,
     ...overrides,
   };
+}
+
+function createOtlpLogExport() {
+  const traceId = hexBytes("1234567890abcdef1234567890abcdef");
+  const spanId = hexBytes("fedcba0987654321");
+  return {
+    resourceLogs: [
+      {
+        resource: {
+          attributes: [
+            otlpString("service.name", "copilot-chat"),
+            otlpString("session.id", "otel-window-session"),
+          ],
+        },
+        scopeLogs: [
+          {
+            logRecords: [
+              {
+                timeUnixNano: "1782918561000000000",
+                traceId,
+                spanId,
+                body: { stringValue: "copilot_chat.session.start" },
+                attributes: [
+                  otlpString("event.name", "copilot_chat.session.start"),
+                  otlpString("session.id", "http-chat-session"),
+                  otlpString("gen_ai.request.model", "gpt-5-nano"),
+                  otlpString("gen_ai.agent.name", "GitHub Copilot Chat"),
+                ],
+              },
+              {
+                timeUnixNano: "1782918567000000000",
+                traceId,
+                spanId,
+                body: { stringValue: "GenAI inference: gpt-5-nano" },
+                attributes: [
+                  otlpString(
+                    "event.name",
+                    "gen_ai.client.inference.operation.details",
+                  ),
+                  otlpString("gen_ai.operation.name", "chat"),
+                  otlpString("gen_ai.request.model", "gpt-5-nano"),
+                  otlpString("gen_ai.response.model", "gpt-5-nano-2025-08-07"),
+                  otlpString("gen_ai.response.id", "http-response-1"),
+                  otlpInt("gen_ai.usage.input_tokens", 321),
+                  otlpInt("gen_ai.usage.output_tokens", 123),
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+}
+
+function otlpString(key: string, value: string) {
+  return { key, value: { stringValue: value } };
+}
+
+function otlpInt(key: string, value: number) {
+  return { key, value: { intValue: String(value) } };
+}
+
+function hexBytes(value: string) {
+  const bytes: number[] = [];
+  for (let index = 0; index < value.length; index += 2) {
+    bytes.push(Number.parseInt(value.slice(index, index + 2), 16));
+  }
+  return bytes;
 }
 
 async function writeStateDb(pathValue: string, indexValue: unknown) {
