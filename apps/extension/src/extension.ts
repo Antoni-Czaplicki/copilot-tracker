@@ -39,6 +39,15 @@ import {
   formatNumber,
 } from "./statusFormatting";
 import {
+  type TaskBranchRef,
+  checkoutTaskBranch,
+  createTaskBranch,
+  findTaskBranches,
+  isTaskBranchBaseBranch,
+  suggestedTaskBranchName,
+  validateTaskBranchName,
+} from "./taskBranchSwitch";
+import {
   type TaskHistoryEntry,
   createTaskResolverFromHistory,
   getTaskHistorySource,
@@ -361,11 +370,21 @@ async function setTask(
     return;
   }
 
-  await setSelectedTask(context, task.trim());
-  logInfo("Manual task selected", { task: task.trim() });
+  const selectedTask = task.trim();
+  await setSelectedTask(context, selectedTask);
+  logInfo("Manual task selected", { task: selectedTask });
   await refreshContext(context, client, "task-changed", {
     source: "manual-input",
   });
+  const switchedBranch = await maybePromptForTaskBranchSwitch(
+    snapshot,
+    selectedTask,
+  );
+  if (switchedBranch) {
+    await refreshContext(context, client, "task-changed", {
+      source: "manual-task-branch-switch",
+    });
+  }
   await syncCopilotSessions(context, client);
 }
 
@@ -509,6 +528,206 @@ async function pickAzureDevOpsTask(
 
     scheduleSearch(initialValue);
     quickPick.show();
+  });
+}
+
+async function maybePromptForTaskBranchSwitch(
+  snapshot: WorkspaceContext,
+  task: string,
+) {
+  const config = getTrackerConfig();
+  if (
+    !task ||
+    !snapshot.repositoryRoot ||
+    !isTaskBranchBaseBranch(snapshot.branch, config.taskBranchBaseBranches)
+  ) {
+    return false;
+  }
+
+  let branches: TaskBranchRef[];
+  try {
+    branches = await findTaskBranches(snapshot.repositoryRoot, task);
+  } catch (error) {
+    logWarn("Could not search task branches", {
+      task,
+      repositoryRoot: snapshot.repositoryRoot,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return false;
+  }
+
+  if (branches.length === 1) {
+    const branch = branches[0];
+    if (!branch) {
+      return false;
+    }
+
+    const switchChoice = `Switch to ${branch.branchName}`;
+    const createChoice = "Create new branch";
+    const choice = await vscode.window.showInformationMessage(
+      `Task ${task} has branch ${branch.branchName}. Switch to it?`,
+      switchChoice,
+      createChoice,
+      "Stay here",
+    );
+    if (choice === switchChoice) {
+      return checkoutTaskBranchWithFeedback(snapshot.repositoryRoot, branch);
+    }
+    if (choice === createChoice) {
+      return promptAndCreateTaskBranch(
+        snapshot.repositoryRoot,
+        task,
+        config.taskBranchNamePrefix,
+      );
+    }
+    return false;
+  }
+
+  if (branches.length > 1) {
+    return pickTaskBranch(
+      snapshot.repositoryRoot,
+      task,
+      branches,
+      config.taskBranchNamePrefix,
+    );
+  }
+
+  const choice = await vscode.window.showInformationMessage(
+    `Create a branch for task ${task}?`,
+    "Create branch",
+    "Stay here",
+  );
+  if (choice !== "Create branch") {
+    return false;
+  }
+
+  return promptAndCreateTaskBranch(
+    snapshot.repositoryRoot,
+    task,
+    config.taskBranchNamePrefix,
+  );
+}
+
+interface TaskBranchQuickPickItem extends vscode.QuickPickItem {
+  branch?: TaskBranchRef;
+  createNew?: boolean;
+}
+
+async function pickTaskBranch(
+  repositoryRoot: string,
+  task: string,
+  branches: TaskBranchRef[],
+  branchNamePrefix: string,
+) {
+  const selected = await vscode.window.showQuickPick<TaskBranchQuickPickItem>(
+    [
+      ...branches.map((branch) => ({
+        label: `$(git-branch) ${branch.branchName}`,
+        description: branch.kind === "local" ? "local" : "remote",
+        detail: branch.kind === "remote" ? branch.refName : undefined,
+        branch,
+      })),
+      {
+        label: "$(plus) Create new branch",
+        description: suggestedTaskBranchName(task, branchNamePrefix),
+        createNew: true,
+      },
+    ],
+    {
+      title: `Switch to a branch for task ${task}`,
+      placeHolder: "Choose an existing branch or create a new one",
+      matchOnDescription: true,
+      matchOnDetail: true,
+    },
+  );
+
+  if (!selected) {
+    return false;
+  }
+  if (selected.createNew) {
+    return promptAndCreateTaskBranch(repositoryRoot, task, branchNamePrefix);
+  }
+  if (!selected.branch) {
+    return false;
+  }
+
+  return checkoutTaskBranchWithFeedback(repositoryRoot, selected.branch);
+}
+
+async function promptAndCreateTaskBranch(
+  repositoryRoot: string,
+  task: string,
+  branchNamePrefix: string,
+) {
+  const branchName = await vscode.window.showInputBox({
+    title: `Create branch for task ${task}`,
+    prompt: "Edit the new branch name",
+    value: suggestedTaskBranchName(task, branchNamePrefix),
+    ignoreFocusOut: true,
+    validateInput: (value) => validateTaskBranchName(value) ?? undefined,
+  });
+  if (branchName === undefined) {
+    return false;
+  }
+
+  const normalizedBranchName = branchName.trim();
+  try {
+    await createTaskBranch(repositoryRoot, normalizedBranchName);
+    logInfo("Created task branch", {
+      task,
+      branchName: normalizedBranchName,
+      repositoryRoot,
+    });
+    void vscode.window.showInformationMessage(
+      `Created and switched to ${normalizedBranchName}.`,
+    );
+    return true;
+  } catch (error) {
+    logWarn("Could not create task branch", {
+      task,
+      branchName: normalizedBranchName,
+      repositoryRoot,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    showGitBranchFailure("Could not create the task branch.");
+    return false;
+  }
+}
+
+async function checkoutTaskBranchWithFeedback(
+  repositoryRoot: string,
+  branch: TaskBranchRef,
+) {
+  try {
+    await checkoutTaskBranch(repositoryRoot, branch);
+    logInfo("Switched to task branch", {
+      branchName: branch.branchName,
+      refName: branch.refName,
+      kind: branch.kind,
+      repositoryRoot,
+    });
+    void vscode.window.showInformationMessage(
+      `Switched to ${branch.branchName}.`,
+    );
+    return true;
+  } catch (error) {
+    logWarn("Could not switch to task branch", {
+      branchName: branch.branchName,
+      refName: branch.refName,
+      kind: branch.kind,
+      repositoryRoot,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    showGitBranchFailure("Could not switch to the task branch.");
+    return false;
+  }
+}
+
+function showGitBranchFailure(message: string) {
+  void vscode.window.showWarningMessage(message, "Show Logs").then((choice) => {
+    if (choice === "Show Logs") {
+      showLogs();
+    }
   });
 }
 

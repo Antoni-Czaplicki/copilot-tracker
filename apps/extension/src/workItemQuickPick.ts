@@ -190,8 +190,8 @@ function compareRank(
 ) {
   return (
     left.exactId - right.exactId ||
-    left.state - right.state ||
     left.project - right.project ||
+    left.state - right.state ||
     right.changedAt - left.changedAt
   );
 }

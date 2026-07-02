@@ -1,6 +1,11 @@
 import * as vscode from "vscode";
 
 import { logInfo, logWarn } from "./logger";
+import {
+  defaultTaskBranchBaseBranches,
+  defaultTaskBranchNamePrefix,
+  normalizeTaskBranchBaseBranches,
+} from "./taskBranchSwitch";
 import { CopilotChatRequest, TrackerEvent } from "./types";
 
 const extensionId = "copilot-tracker";
@@ -17,6 +22,8 @@ export interface TrackerConfig {
   otelFilePath: string;
   syncIntervalSeconds: number;
   showCurrentSessionTokensInStatusBar: boolean;
+  taskBranchBaseBranches: string[];
+  taskBranchNamePrefix: string;
 }
 
 export interface TrackerConfigurationInspect<T> {
@@ -56,7 +63,8 @@ export function getTrackerConfigFromConfiguration(
 ): TrackerConfig {
   const serverUrl =
     config.inspect<string>("serverUrl")?.globalValue ?? defaultServerUrl;
-  const otelFilePath = config.inspect<string>("otelFilePath")?.globalValue ?? "";
+  const otelFilePath =
+    config.inspect<string>("otelFilePath")?.globalValue ?? "";
   return {
     serverUrl,
     otelFilePath,
@@ -67,6 +75,16 @@ export function getTrackerConfigFromConfiguration(
     showCurrentSessionTokensInStatusBar: config.get<boolean>(
       "showCurrentSessionTokensInStatusBar",
       true,
+    ),
+    taskBranchBaseBranches: normalizeTaskBranchBaseBranches(
+      config.get<unknown>(
+        "taskBranchBaseBranches",
+        defaultTaskBranchBaseBranches,
+      ),
+    ),
+    taskBranchNamePrefix: config.get<string>(
+      "taskBranchNamePrefix",
+      defaultTaskBranchNamePrefix,
     ),
   };
 }

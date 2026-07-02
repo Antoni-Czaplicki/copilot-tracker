@@ -29,6 +29,15 @@ import {
   formatNumber,
 } from "../statusFormatting";
 import {
+  defaultTaskBranchBaseBranches,
+  defaultTaskBranchNamePrefix,
+  isTaskBranchBaseBranch,
+  normalizeTaskBranchBaseBranches,
+  parseGitBranchRefs,
+  suggestedTaskBranchName,
+  validateTaskBranchName,
+} from "../taskBranchSwitch";
+import {
   createTaskResolverFromHistory,
   latestTaskHistoryForWorkspace,
   readTaskHistoryFromValue,
@@ -161,6 +170,14 @@ suite("Extension Test Suite", () => {
     assert.strictEqual(
       getTrackerConfigFromConfiguration(config).otelFilePath,
       "/tmp/copilot-tracker-global-otel.jsonl",
+    );
+    assert.deepStrictEqual(
+      getTrackerConfigFromConfiguration(config).taskBranchBaseBranches,
+      defaultTaskBranchBaseBranches,
+    );
+    assert.strictEqual(
+      getTrackerConfigFromConfiguration(config).taskBranchNamePrefix,
+      defaultTaskBranchNamePrefix,
     );
   });
 
@@ -524,6 +541,76 @@ suite("Extension Test Suite", () => {
         undefined,
       ),
       null,
+    );
+  });
+
+  test("Task branch switch settings match base branches case-insensitively", () => {
+    assert.deepStrictEqual(
+      normalizeTaskBranchBaseBranches([" main ", "DEV", ""]),
+      ["main", "DEV"],
+    );
+    assert.deepStrictEqual(
+      normalizeTaskBranchBaseBranches("not-an-array"),
+      defaultTaskBranchBaseBranches,
+    );
+    assert.strictEqual(
+      isTaskBranchBaseBranch("Main", ["main", "dev", "beta"]),
+      true,
+    );
+    assert.strictEqual(
+      isTaskBranchBaseBranch("feature/123-login", ["main", "dev", "beta"]),
+      false,
+    );
+  });
+
+  test("Task branch switch parses and ranks local and remote refs for task lookup", () => {
+    const branches = parseGitBranchRefs(
+      [
+        "refs/remotes/origin/HEAD",
+        "refs/remotes/origin/task/16648",
+        "refs/remotes/upstream/task/16648",
+        "refs/remotes/origin/feature/16648-login",
+        "refs/heads/task/16648",
+        "refs/heads/task/99999",
+      ].join("\n"),
+    );
+
+    assert.deepStrictEqual(
+      branches.map((branch) => ({
+        branchName: branch.branchName,
+        refName: branch.refName,
+        kind: branch.kind,
+      })),
+      [
+        {
+          branchName: "task/16648",
+          refName: "refs/heads/task/16648",
+          kind: "local",
+        },
+        {
+          branchName: "task/99999",
+          refName: "refs/heads/task/99999",
+          kind: "local",
+        },
+        {
+          branchName: "feature/16648-login",
+          refName: "refs/remotes/origin/feature/16648-login",
+          kind: "remote",
+        },
+      ],
+    );
+  });
+
+  test("Task branch switch suggests and validates branch names", () => {
+    assert.strictEqual(suggestedTaskBranchName("16648", "task/"), "task/16648");
+    assert.strictEqual(
+      suggestedTaskBranchName("ABC 123: Fix Login", "feature/"),
+      "feature/abc-123-fix-login",
+    );
+    assert.strictEqual(validateTaskBranchName("task/16648"), null);
+    assert.strictEqual(
+      validateTaskBranchName("task has spaces"),
+      "Use a valid Git branch name.",
     );
   });
 
@@ -1151,7 +1238,7 @@ suite("Extension Test Suite", () => {
         ],
         context,
       ).map((item) => item.id),
-      [2, 1, 3, 4],
+      [2, 1, 4, 3],
     );
     assert.strictEqual(
       sortWorkItemsForQuickPick(

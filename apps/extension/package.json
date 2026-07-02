@@ -90,6 +90,23 @@
           "type": "boolean",
           "default": true,
           "description": "Show current Copilot chat session token usage in the status bar."
+        },
+        "copilot-tracker.taskBranchBaseBranches": {
+          "type": "array",
+          "default": [
+            "main",
+            "dev",
+            "beta"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "description": "Branches where manually switching tasks should offer to switch to or create a task branch. Matching is case-insensitive."
+        },
+        "copilot-tracker.taskBranchNamePrefix": {
+          "type": "string",
+          "default": "task/",
+          "description": "Prefix used for suggested task branch names when creating a branch from the task switch prompt."
         }
       }
     }
