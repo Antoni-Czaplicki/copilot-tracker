@@ -28,6 +28,15 @@ where they can be explored on a dashboard and leaderboard.
 
 - `copilot-tracker.serverUrl` — Copilot Tracker server URL from user settings. Workspace values are ignored for token safety.
 - `copilot-tracker.otelHttpPort` — local loopback OTLP/HTTP receiver port. Defaults to `4318`.
+
+## Multiple VS Code windows
+
+Copilot Chat sends OTel telemetry from every window to the same local port, so
+only one window can host the receiver at a time. The receiving window writes
+all records to a shared spool file in the extension's global storage, and every
+window (including ones that could not bind the port) reads that spool and keeps
+only the requests that belong to its own workspace. Windows that lose the port
+retry binding periodically and take over when the receiving window closes.
 - `copilot-tracker.showCurrentSessionTokensInStatusBar` — show current session tokens and estimated cost in the status bar.
 
 See the [project README](https://github.com/Antoni-Czaplicki/copilot-tracker)
