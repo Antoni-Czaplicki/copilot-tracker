@@ -21,6 +21,12 @@ import {
 } from "./otel";
 import { startOtlpHttpReceiver } from "./otlpHttpReceiver";
 import {
+  appendOtlpSpoolRecords,
+  otlpSpoolPath,
+  readOtlpSpoolRecords,
+  statOtlpSpool,
+} from "./otlpRecordSpool";
+import {
   planRequestUpload,
   readRequestUploadState,
   writeRequestUploadState,
@@ -89,9 +95,11 @@ let syncInProgress = false;
 let syncQueued = false;
 let otelLifecycleDisposables: vscode.Disposable[] = [];
 let activeOtlpHttpEndpoint: string | undefined;
-let bufferedOtlpRecords: unknown[] = [];
+let lastSpoolSignature: string | null | undefined;
 const otelLifecycleRebuildQueue = new SingleFlightTaskQueue();
-const maxBufferedOtlpRecords = 5_000;
+const maxSpooledOtlpRecordsRead = 5_000;
+const receiverRetryDelayMs = 15_000;
+const spoolPollIntervalMs = 10_000;
 
 export function activate(context: vscode.ExtensionContext) {
   const outputChannel = initializeLogger();
@@ -172,6 +180,12 @@ export function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push({ dispose: () => clearInterval(branchPoller) });
 
+  const spoolPoller = setInterval(
+    () => void syncOnSpoolChange(context, client),
+    spoolPollIntervalMs,
+  );
+  context.subscriptions.push({ dispose: () => clearInterval(spoolPoller) });
+
   context.subscriptions.push(
     vscode.workspace.onDidChangeWorkspaceFolders(() => {
       logInfo("Workspace folders changed");
@@ -244,21 +258,22 @@ async function replaceOtelSyncLifecycle(
   client: TrackerClient,
 ) {
   disposeOtelSyncLifecycle();
+  const config = getTrackerConfig();
+  const desiredEndpoint = `http://127.0.0.1:${config.otelHttpPort}`;
+  activeOtlpHttpEndpoint = undefined;
   try {
-    const config = getTrackerConfig();
-    activeOtlpHttpEndpoint = undefined;
-    bufferedOtlpRecords = [];
+    await ensureCopilotOtelHttpConfiguration(desiredEndpoint);
+  } catch (error) {
+    logWarn("Could not update Copilot OTel settings", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+
+  try {
     const receiver = await startOtlpHttpReceiver((records, signal) => {
-      bufferOtlpRecords(records);
-      logInfo("Buffered OTLP HTTP records", {
-        signal,
-        receivedRecordCount: records.length,
-        bufferedRecordCount: bufferedOtlpRecords.length,
-      });
-      scheduleSync(context, client, 1_500);
+      void spoolReceivedOtlpRecords(context, client, records, signal);
     }, config.otelHttpPort);
     activeOtlpHttpEndpoint = receiver.endpoint;
-    await ensureCopilotOtelHttpConfiguration(receiver.endpoint);
     logInfo("Creating Copilot OTel HTTP sync lifecycle", {
       otlpEndpoint: receiver.endpoint,
       otelHttpPort: config.otelHttpPort,
@@ -266,10 +281,75 @@ async function replaceOtelSyncLifecycle(
     otelLifecycleDisposables = [receiver];
     lastSyncError = null;
   } catch (error) {
+    scheduleOtlpReceiverRetry(context, client);
+    if ((error as NodeJS.ErrnoException).code === "EADDRINUSE") {
+      logInfo(
+        "OTLP port is busy; another VS Code window is receiving Copilot telemetry. This window reads the shared record spool and will retry binding.",
+        { otelHttpPort: config.otelHttpPort },
+      );
+      return;
+    }
     lastSyncError = error instanceof Error ? error.message : String(error);
     logError("Could not initialize Copilot OTel sync lifecycle", error);
     updateStatusItem(currentWorkspaceContext);
   }
+}
+
+async function spoolReceivedOtlpRecords(
+  context: vscode.ExtensionContext,
+  client: TrackerClient,
+  records: unknown[],
+  signal: string,
+) {
+  try {
+    await appendOtlpSpoolRecords(otlpSpoolFilePath(context), records, signal);
+    logInfo("Spooled OTLP HTTP records", {
+      signal,
+      receivedRecordCount: records.length,
+    });
+  } catch (error) {
+    logWarn("Could not spool OTLP HTTP records", {
+      signal,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+  scheduleSync(context, client, 1_500);
+}
+
+function scheduleOtlpReceiverRetry(
+  context: vscode.ExtensionContext,
+  client: TrackerClient,
+) {
+  const retryTimer = setTimeout(
+    () => void rebuildOtelSyncLifecycle(context, client),
+    receiverRetryDelayMs,
+  );
+  otelLifecycleDisposables.push({ dispose: () => clearTimeout(retryTimer) });
+}
+
+async function syncOnSpoolChange(
+  context: vscode.ExtensionContext,
+  client: TrackerClient,
+) {
+  const spoolStat = await statOtlpSpool(otlpSpoolFilePath(context));
+  const signature = spoolStat
+    ? `${spoolStat.sizeBytes}:${spoolStat.modifiedAtMs}`
+    : null;
+  if (lastSpoolSignature === undefined) {
+    lastSpoolSignature = signature;
+    return;
+  }
+  if (signature === lastSpoolSignature) {
+    return;
+  }
+
+  lastSpoolSignature = signature;
+  logInfo("OTLP record spool changed; scheduling sync");
+  scheduleSync(context, client, 350);
+}
+
+function otlpSpoolFilePath(context: vscode.ExtensionContext) {
+  return otlpSpoolPath(context.globalStorageUri.fsPath);
 }
 
 function disposeOtelSyncLifecycle() {
@@ -277,12 +357,6 @@ function disposeOtelSyncLifecycle() {
     disposable.dispose();
   }
   otelLifecycleDisposables = [];
-}
-
-function bufferOtlpRecords(records: unknown[]) {
-  bufferedOtlpRecords = [...bufferedOtlpRecords, ...records].slice(
-    -maxBufferedOtlpRecords,
-  );
 }
 
 async function signIn(
@@ -748,8 +822,8 @@ async function showContext(context: vscode.ExtensionContext) {
     `Selected task: ${snapshot.selectedTask ?? "none"}`,
     `Server: ${config.serverUrl}`,
     `OTLP HTTP port: ${config.otelHttpPort}`,
-    `OTLP HTTP endpoint: ${activeOtlpHttpEndpoint ?? "none"}`,
-    `Buffered OTLP records: ${bufferedOtlpRecords.length}`,
+    `OTLP HTTP receiver: ${activeOtlpHttpEndpoint ?? "standby (another window is receiving)"}`,
+    `Spooled OTLP records: ${(await readOtlpSpoolRecords(otlpSpoolFilePath(context), maxSpooledOtlpRecordsRead)).length}`,
     `Chat title storage: default VS Code workspace storage`,
     `Last sync: ${lastSyncStats.requestCount} requests, ${lastSyncStats.tokenCount} tokens, ${lastSyncStats.missingTokenCount} missing token counts`,
     `Current session tokens: ${lastSessionStats ? `${lastSessionStats.totalTokens} total (${lastSessionStats.inputTokens} input / ${lastSessionStats.outputTokens} output)` : "none"}`,
@@ -1059,8 +1133,11 @@ async function performCopilotSessionSync(
       selectedTask: workspaceContext.selectedTask,
       serverUrl: config.serverUrl,
       otlpEndpoint: activeOtlpHttpEndpoint ?? null,
-      bufferedOtlpRecordCount: bufferedOtlpRecords.length,
     });
+    const spooledRecords = await readOtlpSpoolRecords(
+      otlpSpoolFilePath(context),
+      maxSpooledOtlpRecordsRead,
+    );
     const sessionResolver = await createChatSessionTitleResolver(
       workspaceContext,
       undefined,
@@ -1069,7 +1146,7 @@ async function performCopilotSessionSync(
     const taskResolver = createTaskResolver(context, workspaceContext);
     const requests = readCopilotOtelRequestsFromRecords(
       workspaceContext,
-      bufferedOtlpRecords,
+      spooledRecords.map((entry) => entry.record),
       taskResolver,
       sessionResolver,
     );

@@ -1,5 +1,12 @@
 import * as assert from "assert";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import {
+  appendFile,
+  mkdir,
+  mkdtemp,
+  readFile,
+  rm,
+  writeFile,
+} from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
 import * as vscode from "vscode";
@@ -17,6 +24,12 @@ import {
   readCopilotOtelRequestsFromRecords,
 } from "../otel";
 import { startOtlpHttpReceiver } from "../otlpHttpReceiver";
+import {
+  appendOtlpSpoolRecords,
+  otlpSpoolPath,
+  readOtlpSpoolRecords,
+  statOtlpSpool,
+} from "../otlpRecordSpool";
 import {
   decodeOtlpHttpPayload,
   encodeOtlpHttpPayload,
@@ -1019,6 +1032,101 @@ suite("Extension Test Suite", () => {
       assert.strictEqual(requests[0]?.totalTokens, 444);
     } finally {
       receiver.dispose();
+    }
+  });
+
+  test("Rejects a second OTLP receiver on the same port", async () => {
+    const first = await startOtlpHttpReceiver(() => {});
+    const port = Number(new URL(first.endpoint).port);
+    try {
+      await assert.rejects(
+        startOtlpHttpReceiver(() => {}, port),
+        (error: NodeJS.ErrnoException) => error.code === "EADDRINUSE",
+      );
+    } finally {
+      first.dispose();
+    }
+  });
+
+  test("Spools received OTLP records and reads them back for any window", async () => {
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "otlp-spool-"));
+    const spoolPath = otlpSpoolPath(path.join(tempDir, "global-storage"));
+    try {
+      const decoded = decodeOtlpHttpPayload(
+        "logs",
+        encodeOtlpHttpPayload("logs", createOtlpLogExport()),
+        "application/x-protobuf",
+      );
+      await appendOtlpSpoolRecords(spoolPath, [decoded], "logs");
+
+      const spooled = await readOtlpSpoolRecords(spoolPath, 5_000);
+      assert.strictEqual(spooled.length, 1);
+      assert.strictEqual(spooled[0]?.signal, "logs");
+
+      const requests = readCopilotOtelRequestsFromRecords(
+        createWorkspaceContext(),
+        spooled.map((entry) => entry.record),
+      );
+      assert.strictEqual(requests.length, 1);
+      assert.strictEqual(requests[0]?.totalTokens, 444);
+
+      const spoolStat = await statOtlpSpool(spoolPath);
+      assert.ok(spoolStat && spoolStat.sizeBytes > 0);
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  test("Skips corrupt spool lines and caps how many records are read", async () => {
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "otlp-spool-"));
+    const spoolPath = otlpSpoolPath(tempDir);
+    try {
+      await appendOtlpSpoolRecords(spoolPath, [{ index: 1 }, { index: 2 }], "logs");
+      await appendFile(spoolPath, '{"receivedAt":"2026-07-03T00:00:00.000Z","si\n');
+      await appendOtlpSpoolRecords(spoolPath, [{ index: 3 }], "traces");
+
+      const allRecords = await readOtlpSpoolRecords(spoolPath, 5_000);
+      assert.deepStrictEqual(
+        allRecords.map((entry) => entry.record),
+        [{ index: 1 }, { index: 2 }, { index: 3 }],
+      );
+
+      const cappedRecords = await readOtlpSpoolRecords(spoolPath, 2);
+      assert.deepStrictEqual(
+        cappedRecords.map((entry) => entry.record),
+        [{ index: 2 }, { index: 3 }],
+      );
+
+      assert.deepStrictEqual(await readOtlpSpoolRecords(
+        path.join(tempDir, "missing.jsonl"),
+        5_000,
+      ), []);
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  test("Compacts the spool once it grows past the byte cap", async () => {
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "otlp-spool-"));
+    const spoolPath = otlpSpoolPath(tempDir);
+    try {
+      const records = Array.from({ length: 50 }, (_, index) => ({
+        index,
+        padding: "x".repeat(100),
+      }));
+      await appendOtlpSpoolRecords(spoolPath, records, "logs", {
+        maxSpoolBytes: 1_000,
+        compactKeepRecords: 5,
+      });
+
+      const kept = await readOtlpSpoolRecords(spoolPath, 5_000);
+      assert.strictEqual(kept.length, 5);
+      assert.deepStrictEqual(
+        kept.map((entry) => (entry.record as { index: number }).index),
+        [45, 46, 47, 48, 49],
+      );
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
     }
   });
 
