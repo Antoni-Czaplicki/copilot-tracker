@@ -1,10 +1,7 @@
 import * as vscode from "vscode";
 
 import { branchTaskSwitchPrompt } from "./branchTaskPrompt";
-import {
-  createChatSessionTitleResolver,
-  getDefaultWorkspaceStorageRoot,
-} from "./chatSessionTitles";
+import { createCachedChatSessionTitleResolver } from "./chatSessionTitles";
 import { trackerDashboardUrl } from "./dashboardUrl";
 import {
   initializeLogger,
@@ -65,7 +62,6 @@ import {
   parseTrackerServerUrl,
 } from "./trackerClient";
 import {
-  type CopilotChatRequest,
   TrackerEvent,
   TrackerEventType,
   WorkspaceContext,
@@ -77,7 +73,11 @@ import {
   sortWorkItemsForQuickPick,
   workItemQuickPickItem,
 } from "./workItemQuickPick";
-import { buildWorkspaceContext, setSelectedTask } from "./workspaceContext";
+import {
+  buildWorkspaceContext,
+  getGitApi,
+  setSelectedTask,
+} from "./workspaceContext";
 
 const extensionId = "copilot-tracker";
 const lastBranchPromptKey = "lastBranchPrompt";
@@ -174,9 +174,14 @@ export function activate(context: vscode.ExtensionContext) {
 
   void initializeExtension(context, client);
 
+  void subscribeToGitRepositoryChanges(context, client);
+
+  // Safety-net poller for when the built-in Git extension is unavailable and
+  // its repository change events cannot drive context refreshes. Git-driven
+  // refreshes (subscribeToGitRepositoryChanges) handle the common case.
   const branchPoller = setInterval(
     () => void refreshContext(context, client),
-    10_000,
+    30_000,
   );
   context.subscriptions.push({ dispose: () => clearInterval(branchPoller) });
 
@@ -233,6 +238,90 @@ export function activate(context: vscode.ExtensionContext) {
 
 export function deactivate() {
   logInfo("Extension deactivated");
+}
+
+async function subscribeToGitRepositoryChanges(
+  context: vscode.ExtensionContext,
+  client: TrackerClient,
+) {
+  // The extension activates on "*", which can run before the built-in Git
+  // extension has registered its API. Wait for it to appear so branch changes
+  // drive event-based refreshes instead of only the slower safety-net poller.
+  const api = (await getGitApi()) ?? (await waitForGitApi(context));
+  if (!api) {
+    logInfo("Git extension API unavailable; relying on poller for refreshes");
+    return;
+  }
+
+  let debounceTimer: ReturnType<typeof setTimeout> | undefined;
+  const scheduleRefresh = () => {
+    if (debounceTimer) {
+      clearTimeout(debounceTimer);
+    }
+    debounceTimer = setTimeout(() => {
+      debounceTimer = undefined;
+      void refreshContext(context, client);
+    }, 500);
+  };
+  context.subscriptions.push({
+    dispose: () => {
+      if (debounceTimer) {
+        clearTimeout(debounceTimer);
+        debounceTimer = undefined;
+      }
+    },
+  });
+
+  const subscribeToRepository = (repository: {
+    state: { onDidChange: vscode.Event<void> };
+  }) => {
+    context.subscriptions.push(repository.state.onDidChange(scheduleRefresh));
+  };
+
+  for (const repository of api.repositories) {
+    subscribeToRepository(repository);
+  }
+  context.subscriptions.push(
+    api.onDidOpenRepository((repository) => {
+      subscribeToRepository(repository);
+      scheduleRefresh();
+    }),
+  );
+
+  logInfo("Subscribed to Git repository changes", {
+    repositoryCount: api.repositories.length,
+  });
+}
+
+type ResolvedGitApi = NonNullable<Awaited<ReturnType<typeof getGitApi>>>;
+
+// Resolve the Git API once the built-in extension registers (it can load after
+// our "*" activation), or give up after the timeout and let the poller cover it.
+function waitForGitApi(
+  context: vscode.ExtensionContext,
+  timeoutMs = 15_000,
+): Promise<ResolvedGitApi | null> {
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = (value: ResolvedGitApi | null) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      clearTimeout(timer);
+      changeSubscription.dispose();
+      resolve(value);
+    };
+    const timer = setTimeout(() => finish(null), timeoutMs);
+    const changeSubscription = vscode.extensions.onDidChange(() => {
+      void getGitApi().then((api) => {
+        if (api) {
+          finish(api);
+        }
+      });
+    });
+    context.subscriptions.push({ dispose: () => finish(null) });
+  });
 }
 
 async function initializeExtension(
@@ -556,6 +645,7 @@ async function pickAzureDevOpsTask(
                 label: "Azure DevOps search unavailable",
                 description: "Use the typed task value instead",
                 disabled: true,
+                alwaysShow: true,
               },
               manualTaskQuickPickItem(query),
             ];
@@ -1121,7 +1211,6 @@ async function performCopilotSessionSync(
   try {
     const config = getTrackerConfig();
     await refreshContext(context, client);
-    await sendEvent(context, client, "session-sync-started");
 
     const workspaceContext =
       currentWorkspaceContext ?? (await buildWorkspaceContext(context));
@@ -1138,7 +1227,7 @@ async function performCopilotSessionSync(
       otlpSpoolFilePath(context),
       maxSpooledOtlpRecordsRead,
     );
-    const sessionResolver = await createChatSessionTitleResolver(
+    const sessionResolver = await createCachedChatSessionTitleResolver(
       workspaceContext,
       undefined,
       context.storageUri?.fsPath,
@@ -1183,6 +1272,7 @@ async function performCopilotSessionSync(
       uploadScope,
     );
     lastSessionStats = currentSessionTokenStats(requests);
+    const previousSyncStats = lastSyncStats;
     lastSyncStats = {
       requestCount: requests.length,
       tokenCount: requests.reduce(
@@ -1196,7 +1286,12 @@ async function performCopilotSessionSync(
     lastSyncError = null;
     updateStatusItem(workspaceContext);
     logInfo("OTel session sync finished", lastSyncStats);
-    await sendEvent(context, client, "session-sync-finished", lastSyncStats);
+    if (
+      uploadPlan.requestsToUpload.length > 0 ||
+      !isSameSyncStats(previousSyncStats, lastSyncStats)
+    ) {
+      await sendEvent(context, client, "session-sync-finished", lastSyncStats);
+    }
   } catch (error) {
     lastSyncError = error instanceof Error ? error.message : String(error);
     logError("Session sync failed", error);
@@ -1205,6 +1300,17 @@ async function performCopilotSessionSync(
       message: lastSyncError,
     });
   }
+}
+
+function isSameSyncStats(
+  first: typeof lastSyncStats,
+  second: typeof lastSyncStats,
+): boolean {
+  return (
+    first.requestCount === second.requestCount &&
+    first.tokenCount === second.tokenCount &&
+    first.missingTokenCount === second.missingTokenCount
+  );
 }
 
 function requestUploadScope(serverUrl: string) {

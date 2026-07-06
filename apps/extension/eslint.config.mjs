@@ -27,6 +27,10 @@ export default [
       curly: "warn",
       eqeqeq: "warn",
       "no-throw-literal": "warn",
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+      ],
       semi: "warn",
     },
   },

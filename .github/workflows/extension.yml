@@ -34,6 +34,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # The extension bundles @copilot-tracker/shared; build it first so esbuild
+      # and tsc can resolve its declaration files and CommonJS output.
+      - name: Build shared package
+        run: pnpm --filter @copilot-tracker/shared build
+
       - name: Compile extension
         run: pnpm --filter copilot-tracker compile
 

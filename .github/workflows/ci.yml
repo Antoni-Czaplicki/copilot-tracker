@@ -75,6 +75,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # The extension bundles @copilot-tracker/shared; build it first so its
+      # declaration files and CommonJS output exist for tsc and the test host.
+      - name: Build shared package
+        run: pnpm --filter @copilot-tracker/shared build
+
       # The VS Code integration tests launch an Electron instance, which needs a
       # virtual framebuffer on headless CI.
       - name: Run extension tests

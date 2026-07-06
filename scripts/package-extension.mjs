@@ -12,6 +12,26 @@ const packageName = String(manifest.name);
 const packageVersion = String(manifest.version);
 const packageFileName = `${packageName}-${packageVersion}.vsix`;
 
+// The extension bundles @copilot-tracker/shared, so its build output must exist
+// before vsce runs the esbuild-based prepublish step.
+const sharedBuild = spawnSync(
+  "pnpm",
+  ["--filter", "@copilot-tracker/shared", "build"],
+  {
+    cwd: repoRoot,
+    stdio: "inherit",
+    shell: process.platform === "win32",
+  },
+);
+
+if (sharedBuild.error) {
+  throw sharedBuild.error;
+}
+
+if (sharedBuild.status !== 0) {
+  process.exit(sharedBuild.status ?? 1);
+}
+
 const result = spawnSync(
   "pnpm",
   [

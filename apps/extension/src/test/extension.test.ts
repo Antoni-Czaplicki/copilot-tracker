@@ -2711,7 +2711,10 @@ function createSessionStats(
 }
 
 function createChatRequest(
-  overrides: Partial<CopilotChatRequest> = {},
+  overrides: Partial<CopilotChatRequest> & {
+    workspaceFolderPaths?: string[];
+    workspaceFilePath?: string | null;
+  } = {},
 ): CopilotChatRequest {
   return {
     ...createWorkspaceContext(),
