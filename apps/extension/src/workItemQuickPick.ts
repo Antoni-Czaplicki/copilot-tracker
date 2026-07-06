@@ -39,6 +39,7 @@ export function manualTaskQuickPickItem(value: string): TaskQuickPickItem {
     description: value ? "Manual task value" : undefined,
     taskId: value || undefined,
     disabled: !value,
+    alwaysShow: true,
   };
 }
 
@@ -67,6 +68,7 @@ export function workItemQuickPickItem(
     taskId: String(workItem.id),
     workItemUrl: workItemUrl ?? undefined,
     buttons: workItemUrl ? [openWorkItemButton] : undefined,
+    alwaysShow: true,
   };
 }
 

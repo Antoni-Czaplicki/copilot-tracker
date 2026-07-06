@@ -6,6 +6,19 @@
   "categories": [
     "Other"
   ],
+  "keywords": [
+    "github copilot",
+    "copilot",
+    "tokens",
+    "usage",
+    "telemetry",
+    "opentelemetry",
+    "azure devops"
+  ],
+  "galleryBanner": {
+    "color": "#1e1e1e",
+    "theme": "dark"
+  },
   "publisher": "antoni-czaplicki",
   "license": "MIT",
   "homepage": "https://github.com/Antoni-Czaplicki/copilot-tracker#readme",
@@ -20,13 +33,14 @@
   "main": "./out/extension.js",
   "scripts": {
     "build": "pnpm run compile",
+    "bundle": "esbuild ./src/extension.ts --bundle --platform=node --format=cjs --external:vscode --outfile=out/extension.js --target=node20",
     "compile": "tsc -p ./",
     "lint": "eslint src",
     "package": "node ../../scripts/package-extension.mjs",
     "pretest": "pnpm run compile && pnpm run lint",
     "test": "vscode-test",
     "typecheck": "tsc -p ./ --noEmit",
-    "vscode:prepublish": "pnpm run compile",
+    "vscode:prepublish": "pnpm run bundle",
     "watch": "tsc -watch -p ./"
   },
   "contributes": {
@@ -108,16 +122,11 @@
     }
   },
   "activationEvents": [
-    "*",
-    "onUri",
-    "onCommand:copilot-tracker.setTask",
-    "onCommand:copilot-tracker.useBranchTask",
-    "onCommand:copilot-tracker.syncCopilotSessions",
-    "onCommand:copilot-tracker.signIn",
-    "onCommand:copilot-tracker.openDashboard",
-    "onCommand:copilot-tracker.showContext",
-    "onCommand:copilot-tracker.showLogs"
+    "*"
   ],
+  "dependencies": {
+    "@copilot-tracker/shared": "workspace:*"
+  },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
     "@types/node": "~26.0.1",
@@ -125,6 +134,7 @@
     "@vscode/test-cli": "^0.0.15",
     "@vscode/test-electron": "^3.0.0",
     "@vscode/vsce": "^3.2.0",
+    "esbuild": "^0.25.0",
     "eslint": "^10.6.0",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.61.1"

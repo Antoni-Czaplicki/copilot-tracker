@@ -440,7 +440,7 @@ function collectOtelSpans(record: unknown): OtelSpan[] {
     );
   }
 
-  const span = readPlainSpan(record, readSpanResourceAttributes(record));
+  const span = readPlainSpan(record, readResourceAttributes(record));
   return span ? [span] : [];
 }
 
@@ -457,7 +457,7 @@ function collectOtelLogRecords(record: unknown): OtelLogRecord[] {
 
   const logRecord = readPlainLogRecord(
     record,
-    readLogRecordResourceAttributes(record),
+    readResourceAttributes(record),
   );
   return logRecord ? [logRecord] : [];
 }
@@ -502,7 +502,7 @@ function readPlainLogRecord(
   const spanContext = isRecord(value.spanContext) ? value.spanContext : {};
   const traceId =
     readString(spanContext, "traceId") ??
-    readStringFromRecord(value, "traceId");
+    readString(value, "traceId");
   if (!traceId) {
     return null;
   }
@@ -512,14 +512,14 @@ function readPlainLogRecord(
     traceId,
     spanId:
       readString(spanContext, "spanId") ??
-      readStringFromRecord(value, "spanId"),
+      readString(value, "spanId"),
     timestamp:
       toIsoDate(readUnknown(value, ["timeUnixNano"])) ??
       toIsoDate(readUnknown(value, ["hrTime"])) ??
       toIsoDate(readUnknown(value, ["timestamp"])),
     body:
-      readStringFromRecord(value, "_body") ??
-      readStringFromRecord(value, "body") ??
+      readString(value, "_body") ??
+      readString(value, "body") ??
       (typeof bodyValue === "string" ? bodyValue : null),
     attributes,
     resourceAttributes,
@@ -558,8 +558,8 @@ function readPlainSpan(
     return null;
   }
 
-  const traceId = readStringFromRecord(value, "traceId");
-  const name = readStringFromRecord(value, "name");
+  const traceId = readString(value, "traceId");
+  const name = readString(value, "name");
   if (!traceId || !name) {
     return null;
   }
@@ -567,11 +567,11 @@ function readPlainSpan(
   return {
     traceId,
     spanId:
-      readStringFromRecord(value, "spanId") ??
-      readStringFromRecord(value, "id"),
+      readString(value, "spanId") ??
+      readString(value, "id"),
     parentSpanId:
-      readStringFromRecord(value, "parentSpanId") ??
-      readStringFromRecord(value, "parentId"),
+      readString(value, "parentSpanId") ??
+      readString(value, "parentId"),
     name,
     startTime:
       toIsoDate(readUnknown(value, ["startTimeUnixNano"])) ??
@@ -587,15 +587,7 @@ function readPlainSpan(
   };
 }
 
-function readSpanResourceAttributes(value: Record<string, unknown>) {
-  return mergeAttributes(
-    readAttributes(readUnknown(value, ["resource", "attributes"])),
-    readAttributes(readUnknown(value, ["resource", "_rawAttributes"])),
-    readAttributes(readUnknown(value, ["resourceAttributes"])),
-  );
-}
-
-function readLogRecordResourceAttributes(value: Record<string, unknown>) {
+function readResourceAttributes(value: Record<string, unknown>) {
   return mergeAttributes(
     readAttributes(readUnknown(value, ["resource", "attributes"])),
     readAttributes(readUnknown(value, ["resource", "_rawAttributes"])),
@@ -615,7 +607,7 @@ function readAttributes(value: unknown): Record<string, unknown> {
             return null;
           }
           return [
-            readStringFromRecord(entry, "key"),
+            readString(entry, "key"),
             readOtelValue(readUnknown(entry, ["value"])),
           ] as const;
         })
@@ -903,19 +895,48 @@ function dedupeChatRequests(
   requests: CopilotChatRequest[],
 ): CopilotChatRequest[] {
   const deduped: CopilotChatRequest[] = [];
+  const indexByRecordId = new Map<string, number>();
+  const indicesByRequestId = new Map<string, number[]>();
+
+  const registerRequest = (index: number) => {
+    const request = deduped[index];
+    indexByRecordId.set(request.requestRecordId, index);
+    if (request.requestId !== null) {
+      const bucket = indicesByRequestId.get(request.requestId);
+      if (bucket) {
+        bucket.push(index);
+      } else {
+        indicesByRequestId.set(request.requestId, [index]);
+      }
+    }
+  };
+
   for (const request of requests) {
-    const previousIndex = deduped.findIndex((candidate) =>
-      areSameCapturedRequest(candidate, request),
-    );
-    if (previousIndex === -1) {
-      deduped.push(request);
+    let previousIndex = indexByRecordId.get(request.requestRecordId);
+    if (previousIndex === undefined && request.requestId !== null) {
+      const bucket = indicesByRequestId.get(request.requestId);
+      if (bucket) {
+        previousIndex = bucket.find((candidateIndex) =>
+          areSameCapturedRequest(deduped[candidateIndex], request),
+        );
+      }
+    }
+
+    if (previousIndex === undefined) {
+      const index = deduped.push(request) - 1;
+      registerRequest(index);
       continue;
     }
 
-    deduped[previousIndex] = mergeRicherRequest(
-      deduped[previousIndex],
-      request,
-    );
+    const previous = deduped[previousIndex];
+    const merged = mergeRicherRequest(previous, request);
+    deduped[previousIndex] = merged;
+    if (
+      merged.requestRecordId !== previous.requestRecordId ||
+      merged.requestId !== previous.requestId
+    ) {
+      registerRequest(previousIndex);
+    }
   }
 
   return deduped;
@@ -1116,14 +1137,6 @@ async function clearConfigurationValue(
 }
 
 function readString(
-  source: Record<string, unknown>,
-  key: string,
-): string | null {
-  const value = source[key];
-  return typeof value === "string" && value.length > 0 ? value : null;
-}
-
-function readStringFromRecord(
   source: Record<string, unknown>,
   key: string,
 ): string | null {

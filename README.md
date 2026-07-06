@@ -170,12 +170,15 @@ The extension signs in by opening the tracker web app and receiving a tracker se
 - `Copilot Tracker: Sign In`
 - `Copilot Tracker: Open Dashboard`
 - `Copilot Tracker: Show Current Context`
+- `Copilot Tracker: Show Logs`
 
 ## Extension Settings
 
 - `copilot-tracker.serverUrl`
 - `copilot-tracker.otelHttpPort`
 - `copilot-tracker.showCurrentSessionTokensInStatusBar`
+- `copilot-tracker.taskBranchBaseBranches`
+- `copilot-tracker.taskBranchNamePrefix`
 
 ## Web API
 
