@@ -111,6 +111,42 @@ export async function createChatSessionTitleResolver(
   return (request) => matchChatSessionTitle(request, candidates);
 }
 
+interface CachedChatSessionTitleResolver {
+  resolver: OtelSessionResolver;
+  builtAtMs: number;
+}
+
+const chatSessionTitleResolverCache = new Map<
+  string,
+  CachedChatSessionTitleResolver
+>();
+
+export async function createCachedChatSessionTitleResolver(
+  workspaceContext: WorkspaceContext,
+  storageRoot?: string,
+  currentExtensionStoragePath?: string | null,
+  ttlMs = 60_000,
+): Promise<OtelSessionResolver> {
+  const cacheKey = `${workspaceContext.workspaceId}|${storageRoot ?? ""}|${
+    currentExtensionStoragePath ?? ""
+  }`;
+  const cached = chatSessionTitleResolverCache.get(cacheKey);
+  if (cached && Date.now() - cached.builtAtMs < ttlMs) {
+    return cached.resolver;
+  }
+
+  const resolver = await createChatSessionTitleResolver(
+    workspaceContext,
+    storageRoot,
+    currentExtensionStoragePath,
+  );
+  chatSessionTitleResolverCache.set(cacheKey, {
+    resolver,
+    builtAtMs: Date.now(),
+  });
+  return resolver;
+}
+
 export async function findWorkspaceStorage(
   storageRoot: string,
   workspaceContext: WorkspaceContext,

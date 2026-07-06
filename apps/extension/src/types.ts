@@ -1,73 +1,20 @@
-export interface WorkspaceContext {
-  workspaceId: string;
-  workspacePath: string | null;
+import type { WorkspaceContext as WireWorkspaceContext } from "@copilot-tracker/shared";
+
+export type {
+  AuthenticatedIdentity,
+  CopilotChatRequest,
+  PromptTokenDetail,
+  TokenSource,
+  TrackerEvent,
+  TrackerEventType,
+} from "@copilot-tracker/shared";
+
+/**
+ * The extension augments the shared wire contract with two local-only fields
+ * used to match VS Code workspace storage. The server payload schema strips
+ * unknown keys, so these never persist and are not part of the shared contract.
+ */
+export interface WorkspaceContext extends WireWorkspaceContext {
   workspaceFolderPaths: string[];
   workspaceFilePath: string | null;
-  workspaceName: string | null;
-  repositoryRoot: string | null;
-  repositoryRemoteUrl: string | null;
-  branch: string | null;
-  defaultTask: string | null;
-  selectedTask: string | null;
-}
-
-export type TrackerEventType =
-  | "extension-started"
-  | "task-changed"
-  | "branch-changed"
-  | "session-sync-started"
-  | "session-sync-finished"
-  | "session-sync-failed";
-
-export interface TrackerEvent extends WorkspaceContext {
-  eventId: string;
-  eventType: TrackerEventType;
-  timestamp: string;
-  user: string;
-  vscodeVersion: string;
-  extensionVersion: string;
-  payload?: Record<string, unknown>;
-}
-
-export interface PromptTokenDetail {
-  category: string | null;
-  label: string | null;
-  percentageOfPrompt: number | null;
-}
-
-export type TokenSource =
-  | "copilot-otel"
-  | "partial-in-copilot-otel"
-  | "missing-in-copilot-otel";
-
-export interface CopilotChatRequest extends WorkspaceContext {
-  requestRecordId: string;
-  requestId: string | null;
-  responseId: string | null;
-  sessionId: string;
-  sessionTitle: string | null;
-  sessionCreatedAt: string | null;
-  requestStartedAt: string | null;
-  requestCompletedAt: string | null;
-  modelId: string | null;
-  resolvedModel: string | null;
-  modelName: string | null;
-  modelVendor: string | null;
-  modelFamily: string | null;
-  inputTokens: number | null;
-  outputTokens: number | null;
-  totalTokens: number | null;
-  tokenSource: TokenSource;
-  promptTokenDetails: PromptTokenDetail[];
-  toolCallRoundCount: number;
-  stopReasons: string[];
-  capturedAt: string;
-}
-
-export interface AuthenticatedIdentity {
-  userId: string | null;
-  userLogin: string | null;
-  userName: string | null;
-  userEmail: string | null;
-  githubLogin: string | null;
 }

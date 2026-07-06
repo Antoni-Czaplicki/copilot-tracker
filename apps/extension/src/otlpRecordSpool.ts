@@ -20,7 +20,28 @@ export function otlpSpoolPath(globalStoragePath: string) {
   return path.join(globalStoragePath, spoolFileName);
 }
 
+const spoolWriteChains = new Map<string, Promise<unknown>>();
+
 export async function appendOtlpSpoolRecords(
+  spoolPath: string,
+  records: unknown[],
+  signal: string,
+  options?: { maxSpoolBytes?: number; compactKeepRecords?: number },
+): Promise<void> {
+  const previous = spoolWriteChains.get(spoolPath) ?? Promise.resolve();
+  const run = previous.then(() =>
+    appendOtlpSpoolRecordsUnsafe(spoolPath, records, signal, options),
+  );
+  // Keep the chain alive even if this write fails, but let the real error
+  // propagate to this caller.
+  spoolWriteChains.set(
+    spoolPath,
+    run.catch(() => undefined),
+  );
+  return run;
+}
+
+async function appendOtlpSpoolRecordsUnsafe(
   spoolPath: string,
   records: unknown[],
   signal: string,
