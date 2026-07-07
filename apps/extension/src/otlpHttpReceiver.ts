@@ -10,7 +10,9 @@ import {
 } from "./otlpProto";
 
 const gunzipAsync = promisify(gunzip);
-const maxOtlpRequestBytes = 50 * 1024 * 1024;
+// Copilot exports batched telemetry in the low-KB range; anything close to
+// this cap is misdirected traffic and only risks large heap spikes.
+const maxOtlpRequestBytes = 8 * 1024 * 1024;
 
 export interface OtlpHttpReceiver {
   endpoint: string;
@@ -29,6 +31,13 @@ export async function startOtlpHttpReceiver(
     server.once("error", reject);
     server.listen(port, "127.0.0.1", () => {
       server.off("error", reject);
+      // An "error" event without a listener is rethrown as an uncaught
+      // exception and would take down the extension host.
+      server.on("error", (error) => {
+        logWarn("OTLP HTTP receiver server error", {
+          error: error instanceof Error ? error.message : String(error),
+        });
+      });
       resolve();
     });
   });
@@ -47,6 +56,10 @@ export async function startOtlpHttpReceiver(
   return {
     endpoint,
     dispose: () => {
+      // close() alone waits for keep-alive sockets (Copilot's exporter uses
+      // them) to drain, leaving the port bound and the next bind failing
+      // with EADDRINUSE.
+      server.closeAllConnections();
       server.close();
       logInfo("Stopped local OTLP HTTP receiver", { endpoint });
     },

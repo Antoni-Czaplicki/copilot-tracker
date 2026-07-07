@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { readFile, readdir } from "node:fs/promises";
+import { copyFile, readFile, readdir, rm } from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
 
@@ -125,7 +125,9 @@ export async function createCachedChatSessionTitleResolver(
   workspaceContext: WorkspaceContext,
   storageRoot?: string,
   currentExtensionStoragePath?: string | null,
-  ttlMs = 60_000,
+  // Rebuilding scans the whole workspaceStorage root and snapshots SQLite
+  // databases, so keep the resolver alive well beyond the sync cadence.
+  ttlMs = 300_000,
 ): Promise<OtelSessionResolver> {
   const cacheKey = `${workspaceContext.workspaceId}|${storageRoot ?? ""}|${
     currentExtensionStoragePath ?? ""
@@ -558,8 +560,28 @@ async function readSessionIndex(
 }
 
 async function readSessionIndexValue(stateDbPath: string): Promise<string> {
+  // Never open the live database directly: state.vscdb belongs to the running
+  // VS Code process and is mid-write while we read. A fault inside the
+  // synchronous native SQLite bindings is not catchable and would kill the
+  // whole extension host, so query a snapshot copy instead. At worst the copy
+  // is slightly stale or corrupt, which surfaces as a catchable JS error.
+  const snapshotPath = path.join(
+    os.tmpdir(),
+    `copilot-tracker-state-${process.pid}-${crypto.randomUUID()}.vscdb`,
+  );
+  await copyFile(stateDbPath, snapshotPath);
+  try {
+    return await readSessionIndexValueFromSnapshot(snapshotPath);
+  } finally {
+    await rm(snapshotPath, { force: true });
+  }
+}
+
+async function readSessionIndexValueFromSnapshot(
+  snapshotPath: string,
+): Promise<string> {
   const { DatabaseSync } = await import("node:sqlite");
-  const database = new DatabaseSync(stateDbPath, { readOnly: true });
+  const database = new DatabaseSync(snapshotPath, { readOnly: true });
   try {
     const row = database
       .prepare(
@@ -896,7 +918,12 @@ function readTimestamp(value: unknown): number | null {
 }
 
 function toIsoDate(value: number | null) {
-  return value === null ? null : new Date(value).toISOString();
+  // Date#toISOString throws a RangeError outside the representable range.
+  if (value === null || Math.abs(value) > 8_640_000_000_000_000) {
+    return null;
+  }
+
+  return new Date(value).toISOString();
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

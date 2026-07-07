@@ -1115,7 +1115,7 @@ suite("Extension Test Suite", () => {
         padding: "x".repeat(100),
       }));
       await appendOtlpSpoolRecords(spoolPath, records, "logs", {
-        maxSpoolBytes: 1_000,
+        maxSpoolBytes: 2_000,
         compactKeepRecords: 5,
       });
 
@@ -1124,6 +1124,59 @@ suite("Extension Test Suite", () => {
       assert.deepStrictEqual(
         kept.map((entry) => (entry.record as { index: number }).index),
         [45, 46, 47, 48, 49],
+      );
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  test("Compaction byte budget bounds the spool even with few large records", async () => {
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "otlp-spool-"));
+    const spoolPath = otlpSpoolPath(tempDir);
+    try {
+      const records = Array.from({ length: 10 }, (_, index) => ({
+        index,
+        padding: "x".repeat(400),
+      }));
+      await appendOtlpSpoolRecords(spoolPath, records, "logs", {
+        maxSpoolBytes: 2_000,
+        compactKeepRecords: 5,
+      });
+
+      const kept = await readOtlpSpoolRecords(spoolPath, 5_000);
+      assert.ok(kept.length >= 1, "keeps the newest record");
+      assert.ok(kept.length < 5, "byte budget binds before the record cap");
+      assert.strictEqual(
+        (kept.at(-1)?.record as { index: number }).index,
+        9,
+        "keeps the newest records",
+      );
+
+      const spoolStat = await statOtlpSpool(spoolPath);
+      assert.ok(spoolStat && spoolStat.sizeBytes <= 2_000);
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  test("Drops oversized records instead of spooling them", async () => {
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "otlp-spool-"));
+    const spoolPath = otlpSpoolPath(tempDir);
+    try {
+      const appendResult = await appendOtlpSpoolRecords(
+        spoolPath,
+        [{ padding: "x".repeat(200) }, { small: true }],
+        "logs",
+        { maxRecordBytes: 100 },
+      );
+
+      assert.strictEqual(appendResult.appendedRecordCount, 1);
+      assert.strictEqual(appendResult.droppedOversizedRecordCount, 1);
+      assert.deepStrictEqual(
+        (await readOtlpSpoolRecords(spoolPath, 10)).map(
+          (entry) => entry.record,
+        ),
+        [{ small: true }],
       );
     } finally {
       await rm(tempDir, { recursive: true, force: true });

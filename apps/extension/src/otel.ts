@@ -1204,33 +1204,42 @@ function toIsoDate(value: unknown): string | null {
     const seconds = toNumber(value[0]);
     const nanos = toNumber(value[1]);
     if (seconds !== null && nanos !== null) {
-      return new Date(
-        seconds * 1000 + Math.round(nanos / 1_000_000),
-      ).toISOString();
+      return isoDateFromMs(seconds * 1000 + Math.round(nanos / 1_000_000));
     }
   }
   if (typeof value === "bigint") {
-    return new Date(Number(value / 1_000_000n)).toISOString();
+    return isoDateFromMs(Number(value / 1_000_000n));
   }
   if (typeof value === "number" && Number.isFinite(value)) {
     if (value > 10_000_000_000_000) {
-      return new Date(Math.round(value / 1_000_000)).toISOString();
+      return isoDateFromMs(Math.round(value / 1_000_000));
     }
-    return new Date(value).toISOString();
+    return isoDateFromMs(value);
   }
   if (typeof value === "string" && value.length > 0) {
     const numeric = Number(value);
     if (Number.isFinite(numeric)) {
       if (numeric > 10_000_000_000_000) {
-        return new Date(Math.round(numeric / 1_000_000)).toISOString();
+        return isoDateFromMs(Math.round(numeric / 1_000_000));
       }
-      return new Date(numeric).toISOString();
+      return isoDateFromMs(numeric);
     }
     const date = new Date(value);
     return Number.isNaN(date.getTime()) ? null : date.toISOString();
   }
 
   return null;
+}
+
+function isoDateFromMs(ms: number): string | null {
+  // Garbage attribute values must not throw: Date#toISOString raises a
+  // RangeError outside the representable range, which would abort the whole
+  // sync instead of skipping one record.
+  if (!Number.isFinite(ms) || Math.abs(ms) > 8_640_000_000_000_000) {
+    return null;
+  }
+
+  return new Date(ms).toISOString();
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

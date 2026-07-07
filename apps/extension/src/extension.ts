@@ -199,14 +199,29 @@ export function activate(context: vscode.ExtensionContext) {
       scheduleSync(context, client, 350);
     }),
   );
+  // Editor switches only matter for multi-root workspace-folder resolution,
+  // and each refresh spawns git processes — debounce instead of refreshing
+  // (and logging) on every tab change.
+  let editorRefreshTimer: ReturnType<typeof setTimeout> | undefined;
   context.subscriptions.push(
-    vscode.window.onDidChangeActiveTextEditor((editor) => {
-      logInfo("Active editor changed", {
-        hasEditor: Boolean(editor),
-      });
-      void refreshContext(context, client);
+    vscode.window.onDidChangeActiveTextEditor(() => {
+      if (editorRefreshTimer) {
+        clearTimeout(editorRefreshTimer);
+      }
+      editorRefreshTimer = setTimeout(() => {
+        editorRefreshTimer = undefined;
+        void refreshContext(context, client);
+      }, 1_000);
     }),
   );
+  context.subscriptions.push({
+    dispose: () => {
+      if (editorRefreshTimer) {
+        clearTimeout(editorRefreshTimer);
+        editorRefreshTimer = undefined;
+      }
+    },
+  });
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration((event) => {
       const affectsTrackerConfig = event.affectsConfiguration(extensionId);
@@ -370,8 +385,11 @@ async function replaceOtelSyncLifecycle(
     otelLifecycleDisposables = [receiver];
     lastSyncError = null;
   } catch (error) {
-    scheduleOtlpReceiverRetry(context, client);
     if ((error as NodeJS.ErrnoException).code === "EADDRINUSE") {
+      // Only the busy-port case resolves by waiting (another window closes);
+      // other bind failures wait for a configuration change instead of
+      // retrying forever.
+      scheduleOtlpReceiverRetry(context, client);
       logInfo(
         "OTLP port is busy; another VS Code window is receiving Copilot telemetry. This window reads the shared record spool and will retry binding.",
         { otelHttpPort: config.otelHttpPort },
@@ -391,10 +409,16 @@ async function spoolReceivedOtlpRecords(
   signal: string,
 ) {
   try {
-    await appendOtlpSpoolRecords(otlpSpoolFilePath(context), records, signal);
+    const appendResult = await appendOtlpSpoolRecords(
+      otlpSpoolFilePath(context),
+      records,
+      signal,
+    );
     logInfo("Spooled OTLP HTTP records", {
       signal,
       receivedRecordCount: records.length,
+      appendedRecordCount: appendResult.appendedRecordCount,
+      droppedOversizedRecordCount: appendResult.droppedOversizedRecordCount,
     });
   } catch (error) {
     logWarn("Could not spool OTLP HTTP records", {
