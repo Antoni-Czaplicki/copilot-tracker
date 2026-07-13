@@ -21,14 +21,14 @@
   },
   "prettier": "@solvro/config/prettier",
   "devDependencies": {
-    "@next/eslint-plugin-next": "^16.2.9",
+    "@next/eslint-plugin-next": "^16.2.10",
     "@solvro/config": "^2.3.4",
-    "@types/node": "~26.0.1",
-    "eslint": "^9.39.4",
-    "prettier": "^3.8.5",
-    "tsx": "^4.22.4",
-    "typescript": "^6.0.3",
-    "typescript-eslint": "^8.61.1"
+    "@types/node": "~26.1.1",
+    "eslint": "^10.7.0",
+    "prettier": "^3.9.5",
+    "tsx": "^4.23.1",
+    "typescript": "^7.0.2",
+    "typescript-eslint": "^8.63.0"
   },
   "packageManager": "pnpm@11.7.0"
 }
